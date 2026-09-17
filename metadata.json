@@ -1,0 +1,6 @@
+{
+  "name": "서대전고 사이트",
+  "description": "서대전고등학교 학생들을 위한 NEIS 실시간 연동 급식·시간표·학사일정 및 실명제 건의게시판 스마트 포털",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

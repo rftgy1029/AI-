@@ -1,0 +1,544 @@
+import { useState, type FormEvent } from 'react';
+import {
+  X,
+  ThumbsUp,
+  MessageSquare,
+  ShieldCheck,
+  Calendar,
+  Eye,
+  Trash2,
+  CheckCircle2,
+  Clock,
+  Send,
+  Lock,
+  User,
+  AlertCircle,
+  Building,
+} from 'lucide-react';
+import { SuggestionItem, UserProfile } from '../types';
+
+interface SuggestionDetailModalProps {
+  suggestion: SuggestionItem | null;
+  onClose: () => void;
+  currentUser: UserProfile;
+  onToggleLike: (id: string, currentlyLiked: boolean) => Promise<void>;
+  onDelete: (id: string, pin: string) => Promise<{ success: boolean; message: string }>;
+  onAddComment: (
+    suggestionId: string,
+    comment: { authorName: string; grade: number; classNum: number; content: string }
+  ) => Promise<void>;
+  onPostReply: (
+    suggestionId: string,
+    reply: { author: string; content: string; date: string },
+    status: '검토중' | '답변완료'
+  ) => Promise<void>;
+}
+
+export default function SuggestionDetailModal({
+  suggestion,
+  onClose,
+  currentUser,
+  onToggleLike,
+  onDelete,
+  onAddComment,
+  onPostReply,
+}: SuggestionDetailModalProps) {
+  const [commentName, setCommentName] = useState(
+    currentUser.name === '서대전고 학생' ? '' : currentUser.name
+  );
+  const [commentGrade, setCommentGrade] = useState(currentUser.grade || 2);
+  const [commentClass, setCommentClass] = useState(currentUser.classNum || 3);
+  const [commentText, setCommentText] = useState('');
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  // Delete modal state
+  const [showDeletePrompt, setShowDeletePrompt] = useState(false);
+  const [deletePin, setDeletePin] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Reply simulation / editor state (for school council / administration)
+  const [showReplyForm, setShowReplyForm] = useState(false);
+  const [replyAuthor, setReplyAuthor] = useState('제52대 서대전고 학생회');
+  const [replyContent, setReplyContent] = useState('');
+  const [replyStatus, setReplyStatus] = useState<'검토중' | '답변완료'>('답변완료');
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+
+  if (!suggestion) return null;
+
+  const handleLike = async () => {
+    await onToggleLike(suggestion.id, !!suggestion.likedByMe);
+  };
+
+  const handleCommentSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!commentName.trim() || !commentText.trim()) return;
+
+    setIsSubmittingComment(true);
+    try {
+      await onAddComment(suggestion.id, {
+        authorName: commentName.trim(),
+        grade: commentGrade,
+        classNum: commentClass,
+        content: commentText.trim(),
+      });
+      setCommentText('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setDeleteError('');
+    setIsDeleting(true);
+
+    try {
+      const res = await onDelete(suggestion.id, deletePin);
+      if (res.success) {
+        onClose();
+      } else {
+        setDeleteError(res.message);
+      }
+    } catch (err) {
+      setDeleteError('삭제 중 오류가 발생했습니다.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleReplySubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!replyContent.trim()) return;
+
+    setIsSubmittingReply(true);
+    try {
+      await onPostReply(
+        suggestion.id,
+        {
+          author: replyAuthor.trim(),
+          content: replyContent.trim(),
+          date: new Date().toISOString().slice(0, 10),
+        },
+        replyStatus
+      );
+      setShowReplyForm(false);
+      setReplyContent('');
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSubmittingReply(false);
+    }
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case '답변완료':
+        return {
+          label: '답변완료',
+          bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
+          icon: CheckCircle2,
+        };
+      case '검토중':
+        return {
+          label: '검토중',
+          bg: 'bg-amber-50 text-amber-700 border-amber-200/80',
+          icon: Clock,
+        };
+      default:
+        return {
+          label: '접수대기',
+          bg: 'bg-slate-100 text-slate-700 border-slate-200',
+          icon: Clock,
+        };
+    }
+  };
+
+  const statusBadge = getStatusBadge(suggestion.status);
+  const StatusIcon = statusBadge.icon;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
+      <div
+        className="bg-white rounded-t-[28px] sm:rounded-[28px] max-w-2xl w-full max-h-[92vh] shadow-2xl border border-black/[0.06] overflow-hidden flex flex-col pb-safe"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Mobile handle indicator */}
+        <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mt-3 sm:hidden" />
+
+        {/* Modal Top Nav Header */}
+        <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-black/[0.04] flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 flex-wrap min-w-0">
+            <span
+              className={`text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 shrink-0 ${statusBadge.bg}`}
+            >
+              <StatusIcon className="w-3 h-3" />
+              {statusBadge.label}
+            </span>
+            <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200/60">
+              {suggestion.category}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowDeletePrompt(true)}
+              title="건의사항 삭제"
+              className="p-2 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition cursor-pointer"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-[#F5F5F7] hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Modal Scrollable Content */}
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-6">
+          {/* Main Title & Real-Name Author Info */}
+          <div className="space-y-3">
+            <h2 className="text-lg sm:text-2xl font-bold text-slate-900 leading-snug tracking-tight">
+              {suggestion.title}
+            </h2>
+
+            <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-black/[0.04] text-xs text-slate-500">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1 font-bold text-slate-900 bg-[#F5F5F7] px-2.5 py-1 rounded-full border border-black/[0.03]">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>{suggestion.authorName}</span>
+                  <span className="text-slate-400 font-normal">
+                    ({suggestion.grade}학년 {suggestion.classNum}반
+                    {suggestion.studentNumber ? ` ${suggestion.studentNumber}번` : ''})
+                  </span>
+                </span>
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200/60">
+                  실명 인증
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 text-[11px] text-slate-400">
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" />
+                  {suggestion.createdAt.slice(0, 10)}
+                </span>
+                {suggestion.viewCount !== undefined && (
+                  <span className="flex items-center gap-1">
+                    <Eye className="w-3.5 h-3.5" />
+                    조회 {suggestion.viewCount}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Body Content */}
+          <div className="bg-[#F5F5F7] p-4 sm:p-5 rounded-2xl border border-black/[0.03]">
+            <p className="text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-medium">
+              {suggestion.content}
+            </p>
+
+            {/* Like/Agree button */}
+            <div className="mt-5 pt-4 border-t border-black/[0.04] flex items-center justify-between">
+              <span className="text-[11px] text-slate-500 font-medium">
+                이 건의사항에 공감하신다면 추천해 주세요.
+              </span>
+              <button
+                type="button"
+                onClick={handleLike}
+                className={`px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95 shadow-2xs ${
+                  suggestion.likedByMe
+                    ? 'bg-rose-500 text-white'
+                    : 'bg-white hover:bg-slate-50 text-slate-700 border border-black/[0.06]'
+                }`}
+              >
+                <ThumbsUp className={`w-3.5 h-3.5 ${suggestion.likedByMe ? 'fill-current' : ''}`} />
+                <span>공감 {suggestion.likeCount}</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Official Reply Card (If any) */}
+          {suggestion.reply ? (
+            <div className="p-4 sm:p-5 rounded-2xl bg-indigo-50/70 border border-indigo-100/90 space-y-3">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-xl bg-indigo-600 text-white flex items-center justify-center">
+                    <Building className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-bold text-indigo-950">
+                      공식 처리 답변
+                    </h4>
+                    <span className="text-[10px] text-indigo-600 font-semibold block">
+                      {suggestion.reply.author}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-[10px] text-indigo-400 font-medium">
+                  {suggestion.reply.date}
+                </span>
+              </div>
+
+              <p className="text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-medium pl-9">
+                {suggestion.reply.content}
+              </p>
+            </div>
+          ) : (
+            <div className="p-4 rounded-2xl border border-dashed border-slate-200 bg-white flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+              <div className="space-y-0.5">
+                <span className="text-xs font-bold text-slate-700 block">
+                  아직 공식 답변이 등록되지 않았습니다
+                </span>
+                <span className="text-[11px] text-slate-400 block">
+                  담당 부서 및 학생회에서 건의 내용을 검토하고 있습니다.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowReplyForm(!showReplyForm)}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700 transition cursor-pointer"
+              >
+                {showReplyForm ? '답변 작성 닫기' : '관리자/학생회 답변 작성하기'}
+              </button>
+            </div>
+          )}
+
+          {/* Reply Form (Simulation/Real officer submission) */}
+          {showReplyForm && (
+            <form onSubmit={handleReplySubmit} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                  <Building className="w-3.5 h-3.5 text-indigo-600" />
+                  공식 답변 작성 (학생회 / 교무·행정부)
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowReplyForm(false)}
+                  className="text-xs text-slate-400 hover:text-slate-600"
+                >
+                  취소
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="text-[10px] font-semibold text-slate-500 block mb-1">
+                    답변 주체 / 부서명
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={replyAuthor}
+                    onChange={(e) => setReplyAuthor(e.target.value)}
+                    className="w-full px-3 py-1.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] font-semibold text-slate-500 block mb-1">
+                    상태 변경
+                  </label>
+                  <select
+                    value={replyStatus}
+                    onChange={(e) => setReplyStatus(e.target.value as '검토중' | '답변완료')}
+                    className="w-full px-3 py-1.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="답변완료">답변완료 (해결 및 조치 결과)</option>
+                    <option value="검토중">검토중 (대의원회 상정 등 진행 상황 안내)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-semibold text-slate-500 block mb-1">
+                  답변 본문
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="건의사항에 대한 학교/학생회의 공식 검토 결과 및 조치 계획을 정중히 작성해 주세요."
+                  value={replyContent}
+                  onChange={(e) => setReplyContent(e.target.value)}
+                  className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
+                />
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={isSubmittingReply}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm cursor-pointer disabled:opacity-50"
+                >
+                  {isSubmittingReply ? '등록 중...' : '공식 답변 등록'}
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Real-Name Comments Section */}
+          <div className="space-y-4 pt-2 border-t border-black/[0.04]">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                <MessageSquare className="w-4 h-4 text-indigo-600" />
+                <span>실명 의견 및 동의 댓글 ({suggestion.comments?.length || 0})</span>
+              </h4>
+              <span className="text-[10px] text-slate-400 font-medium">
+                실명제 댓글 공간
+              </span>
+            </div>
+
+            {/* Comments List */}
+            <div className="space-y-2.5">
+              {suggestion.comments && suggestion.comments.length > 0 ? (
+                suggestion.comments.map((cmt) => (
+                  <div
+                    key={cmt.id}
+                    className="p-3 sm:p-3.5 rounded-2xl bg-[#F5F5F7] border border-black/[0.02] space-y-1.5"
+                  >
+                    <div className="flex items-center justify-between text-[11px]">
+                      <div className="flex items-center gap-1.5 font-bold text-slate-800">
+                        <User className="w-3 h-3 text-slate-400" />
+                        <span>{cmt.authorName}</span>
+                        <span className="text-slate-400 font-medium">
+                          ({cmt.grade}학년 {cmt.classNum}반)
+                        </span>
+                      </div>
+                      <span className="text-[10px] text-slate-400">
+                        {cmt.createdAt.slice(0, 10)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-700 font-medium leading-relaxed pl-4">
+                      {cmt.content}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <div className="py-6 text-center text-xs text-slate-400 bg-[#F5F5F7] rounded-2xl">
+                  아직 등록된 의견이 없습니다. 첫 번째 동의 댓글을 남겨보세요!
+                </div>
+              )}
+            </div>
+
+            {/* Comment Form */}
+            <form
+              onSubmit={handleCommentSubmit}
+              className="p-3.5 rounded-2xl bg-white border border-black/[0.06] shadow-2xs space-y-2.5"
+            >
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  required
+                  placeholder="작성자 실명"
+                  value={commentName}
+                  onChange={(e) => setCommentName(e.target.value)}
+                  className="w-28 px-2.5 py-1.5 text-xs bg-[#F5F5F7] rounded-xl border border-transparent focus:bg-white focus:border-indigo-500 focus:outline-none font-medium"
+                />
+                <select
+                  value={commentGrade}
+                  onChange={(e) => setCommentGrade(Number(e.target.value))}
+                  className="px-2 py-1.5 text-xs bg-[#F5F5F7] rounded-xl border border-transparent focus:bg-white focus:border-indigo-500 focus:outline-none"
+                >
+                  <option value={1}>1학년</option>
+                  <option value={2}>2학년</option>
+                  <option value={3}>3학년</option>
+                </select>
+                <select
+                  value={commentClass}
+                  onChange={(e) => setCommentClass(Number(e.target.value))}
+                  className="px-2 py-1.5 text-xs bg-[#F5F5F7] rounded-xl border border-transparent focus:bg-white focus:border-indigo-500 focus:outline-none"
+                >
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((c) => (
+                    <option key={c} value={c}>
+                      {c}반
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  required
+                  placeholder="건의사항에 대한 의견이나 추가 건의를 실명으로 작성해 주세요"
+                  value={commentText}
+                  onChange={(e) => setCommentText(e.target.value)}
+                  className="flex-1 px-3 py-2 text-xs bg-[#F5F5F7] rounded-xl border border-transparent focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                />
+                <button
+                  type="submit"
+                  disabled={isSubmittingComment}
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-black text-white hover:bg-slate-800 transition cursor-pointer shrink-0 disabled:opacity-50 active:scale-95"
+                >
+                  <Send className="w-3 h-3" />
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        {/* Delete Prompt Dialog Sub-modal */}
+        {showDeletePrompt && (
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-10">
+            <div className="bg-white rounded-2xl max-w-xs w-full p-5 shadow-xl border border-black/[0.06] space-y-4">
+              <div className="flex items-center gap-2.5 text-slate-900">
+                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                  <Lock className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold">건의사항 삭제 확인</h4>
+                  <p className="text-[10px] text-slate-400">
+                    작성 시 등록한 4자리 비밀번호를 입력해 주세요.
+                  </p>
+                </div>
+              </div>
+
+              {deleteError && (
+                <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px]">
+                  {deleteError}
+                </div>
+              )}
+
+              <input
+                type="password"
+                maxLength={4}
+                autoFocus
+                placeholder="PIN 4자리 (예: 1234)"
+                value={deletePin}
+                onChange={(e) => setDeletePin(e.target.value)}
+                className="w-full text-center tracking-widest text-sm font-mono py-2 rounded-xl bg-[#F5F5F7] border border-transparent focus:border-rose-400 focus:bg-white focus:outline-none font-bold"
+              />
+
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeletePrompt(false);
+                    setDeleteError('');
+                  }}
+                  className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg"
+                >
+                  취소
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteSubmit}
+                  disabled={isDeleting || deletePin.length < 4}
+                  className="px-3.5 py-1.5 text-xs font-bold bg-rose-600 text-white rounded-lg hover:bg-rose-700 disabled:opacity-50"
+                >
+                  {isDeleting ? '삭제 중...' : '삭제'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

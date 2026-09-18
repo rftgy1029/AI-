@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   BookOpen,
@@ -12,15 +12,22 @@ import {
   Edit3,
   X,
   Camera,
+  Layers,
 } from 'lucide-react';
-import { ExamScopeItem, getExamScopes, saveExamScope } from '../services/assessmentService';
+import {
+  ExamScopeItem,
+  getExamScopes,
+  saveExamScope,
+  saveMultipleExamScopes,
+} from '../services/assessmentService';
 import ExamScopeOcrModal from './ExamScopeOcrModal';
 
 interface ExamScopeSectionProps {
   grade: number;
+  classNum?: number;
 }
 
-export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
+export default function ExamScopeSection({ grade, classNum }: ExamScopeSectionProps) {
   const [scopes, setScopes] = useState<ExamScopeItem[]>(() => getExamScopes(grade));
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'announced' | 'pending'>('all');
@@ -28,6 +35,11 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
   const [isOcrOpen, setIsOcrOpen] = useState(
     () => new URLSearchParams(window.location.search).get('openOcr') === 'true'
   );
+
+  // Fix bug: immediately sync when grade changes without needing to exit & re-enter
+  useEffect(() => {
+    setScopes(getExamScopes(grade));
+  }, [grade]);
 
   const filteredScopes = scopes.filter((item) => {
     const matchesQuery = item.subject.toLowerCase().includes(searchQuery.toLowerCase());
@@ -43,6 +55,11 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
     saveExamScope(updated);
     setScopes(getExamScopes(grade));
     setEditingItem(null);
+  };
+
+  const handleSaveMultipleScopes = (newScopes: ExamScopeItem[]) => {
+    saveMultipleExamScopes(newScopes);
+    setScopes(getExamScopes(grade));
   };
 
   return (
@@ -64,7 +81,7 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
           </div>
 
           <h2 className="text-xl sm:text-3xl font-black tracking-tight">
-            {grade}학년 2학기 중간고사 시험범위 안내
+            {grade}학년 {classNum ? `${classNum}반 ` : ''}2학기 중간고사 시험범위 안내
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-2xl leading-relaxed">
@@ -123,7 +140,7 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
             className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 text-white shadow-xs flex items-center gap-2 cursor-pointer transition shrink-0 active:scale-95"
           >
             <Camera className="w-4 h-4" />
-            <span>📸 AI 칠판·공지문 OCR</span>
+            <span>📸 AI 전과목 시험범위표 일괄 OCR</span>
           </button>
         </div>
 
@@ -389,7 +406,7 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
       <ExamScopeOcrModal
         isOpen={isOcrOpen}
         onClose={() => setIsOcrOpen(false)}
-        onSaveScope={handleSaveEdit}
+        onSaveMultipleScopes={handleSaveMultipleScopes}
         grade={grade}
       />
     </div>

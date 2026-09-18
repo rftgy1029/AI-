@@ -69,13 +69,21 @@ export default function TimetableSection({
   const currentKstDay = periodInfo.dayOfWeek;
   const defaultDayIndex = dayIndexMap[currentKstDay] ?? 0;
 
-  const [selectedGrade, setSelectedGrade] = useState(currentUser.grade || 2);
-  const [selectedClass, setSelectedClass] = useState(currentUser.classNum || 1);
+  const [selectedGrade, setSelectedGrade] = useState(() => {
+    const p = new URLSearchParams(window.location.search).get('grade');
+    return p ? Number(p) : (currentUser.grade || 2);
+  });
+  const [selectedClass, setSelectedClass] = useState(() => {
+    const p = new URLSearchParams(window.location.search).get('class');
+    return p ? Number(p) : (currentUser.classNum || 1);
+  });
   const [activeDayIndex, setActiveDayIndex] = useState(defaultDayIndex);
 
   useEffect(() => {
-    setSelectedGrade(currentUser.grade || 2);
-    setSelectedClass(currentUser.classNum || 1);
+    const pGrade = new URLSearchParams(window.location.search).get('grade');
+    const pClass = new URLSearchParams(window.location.search).get('class');
+    if (!pGrade && currentUser.grade) setSelectedGrade(currentUser.grade);
+    if (!pClass && currentUser.classNum) setSelectedClass(currentUser.classNum);
   }, [currentUser.grade, currentUser.classNum]);
 
   const handleGradeChange = (g: number) => {
@@ -318,7 +326,7 @@ export default function TimetableSection({
 
       {/* Main Timetable Content */}
       {viewMode === 'exam' ? (
-        <ExamScopeSection grade={selectedGrade} />
+        <ExamScopeSection grade={selectedGrade} classNum={selectedClass} />
       ) : viewMode === 'daily' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left 2 Cols: Periods for the selected day */}

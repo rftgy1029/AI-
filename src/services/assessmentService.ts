@@ -90,17 +90,64 @@ const DEFAULT_ASSESSMENTS: AssessmentInfo[] = [
 ];
 
 const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
+  // 1학년 과목
   {
-    id: 'scope-eng2',
-    grade: 2,
-    subject: '영어2',
-    status: 'announced',
-    scope: '교과서 Lesson 3 ~ Lesson 5 전체',
-    textbookPages: 'p.38 ~ p.84',
-    supplementary: '2026 9월 고2 전국연합학력평가 독해 지문 (21~40번)',
-    notice: '서술형 5문항 (단어 조건 영작 포함), 객관식 22문항',
-    updatedAt: '2026-09-18 16:30',
+    id: 'scope-g1-korean',
+    grade: 1,
+    subject: '국어',
+    status: 'pending',
+    scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
+    textbookPages: '공지 대기 중',
+    supplementary: '국어 학습 활동지',
+    notice: '월요일 전체 공지 후 일괄 업데이트됩니다.',
+    updatedAt: '2026-09-18 (공간 확보)',
   },
+  {
+    id: 'scope-g1-math',
+    grade: 1,
+    subject: '수학',
+    status: 'pending',
+    scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
+    textbookPages: '공지 대기 중',
+    supplementary: '수학 익힘책 p.10~75',
+    notice: '월요일 전체 공지 후 일괄 업데이트됩니다.',
+    updatedAt: '2026-09-18 (공간 확보)',
+  },
+  {
+    id: 'scope-g1-english',
+    grade: 1,
+    subject: '영어',
+    status: 'pending',
+    scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
+    textbookPages: '공지 대기 중',
+    supplementary: '9월 모의평가 지문',
+    notice: '월요일 전체 공지 후 일괄 업데이트됩니다.',
+    updatedAt: '2026-09-18 (공간 확보)',
+  },
+  {
+    id: 'scope-g1-society',
+    grade: 1,
+    subject: '통합사회',
+    status: 'pending',
+    scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
+    textbookPages: '공지 대기 중',
+    supplementary: '사회 탐구 유인물',
+    notice: '월요일 전체 공지 후 일괄 업데이트됩니다.',
+    updatedAt: '2026-09-18 (공간 확보)',
+  },
+  {
+    id: 'scope-g1-science',
+    grade: 1,
+    subject: '통합과학',
+    status: 'pending',
+    scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
+    textbookPages: '공지 대기 중',
+    supplementary: '과학 탐구 실험 보고서 연계',
+    notice: '월요일 전체 공지 후 일괄 업데이트됩니다.',
+    updatedAt: '2026-09-18 (공간 확보)',
+  },
+
+  // 2학년 과목
   {
     id: 'scope-lit',
     grade: 2,
@@ -122,6 +169,17 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     supplementary: '수학 익힘책 및 부교재',
     notice: '수학 교과협의회 최종 확정 후 즉시 반영됩니다.',
     updatedAt: '2026-09-18 (공간 확보 완료)',
+  },
+  {
+    id: 'scope-eng2',
+    grade: 2,
+    subject: '영어2',
+    status: 'announced',
+    scope: '교과서 Lesson 3 ~ Lesson 5 전체',
+    textbookPages: 'p.38 ~ p.84',
+    supplementary: '2026 9월 고2 전국연합학력평가 독해 지문 (21~40번)',
+    notice: '서술형 5문항 (단어 조건 영작 포함), 객관식 22문항',
+    updatedAt: '2026-09-18 16:30',
   },
   {
     id: 'scope-chem',
@@ -156,10 +214,45 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     notice: '월요일 전체 공지 예정입니다.',
     updatedAt: '2026-09-18 (공간 확보 완료)',
   },
+
+  // 3학년 과목
+  {
+    id: 'scope-g3-eonmae',
+    grade: 3,
+    subject: '언어와매체',
+    status: 'pending',
+    scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
+    textbookPages: '공지 대기 중',
+    supplementary: 'EBS 수능특강 및 수능완성',
+    notice: '월요일 수능 연계 범위 확정 공지 예정',
+    updatedAt: '2026-09-18 (공간 확보)',
+  },
+  {
+    id: 'scope-g3-calc',
+    grade: 3,
+    subject: '미적분',
+    status: 'pending',
+    scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
+    textbookPages: '공지 대기 중',
+    supplementary: 'EBS 수능완성 미적분',
+    notice: '월요일 수능 연계 범위 확정 공지 예정',
+    updatedAt: '2026-09-18 (공간 확보)',
+  },
+  {
+    id: 'scope-g3-engread',
+    grade: 3,
+    subject: '영어독해',
+    status: 'pending',
+    scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
+    textbookPages: '공지 대기 중',
+    supplementary: 'EBS 수능특강 영어독해연습',
+    notice: '월요일 수능 연계 범위 확정 공지 예정',
+    updatedAt: '2026-09-18 (공간 확보)',
+  },
 ];
 
-const ASSESSMENTS_STORAGE_KEY = 'sdj_assessments_v2';
-const EXAM_SCOPES_STORAGE_KEY = 'sdj_exam_scopes_v2';
+const ASSESSMENTS_STORAGE_KEY = 'sdj_assessments_v3';
+const EXAM_SCOPES_STORAGE_KEY = 'sdj_exam_scopes_v3';
 
 export function getAssessments(grade: number, classNum?: number): AssessmentInfo[] {
   try {
@@ -217,7 +310,7 @@ export function saveExamScope(scope: ExamScopeItem) {
   try {
     const raw = localStorage.getItem(EXAM_SCOPES_STORAGE_KEY);
     const list: ExamScopeItem[] = raw ? JSON.parse(raw) : [...DEFAULT_EXAM_SCOPES];
-    const idx = list.findIndex((s) => s.id === scope.id);
+    const idx = list.findIndex((s) => s.id === scope.id || (s.grade === scope.grade && s.subject === scope.subject));
     if (idx >= 0) {
       list[idx] = scope;
     } else {
@@ -226,5 +319,23 @@ export function saveExamScope(scope: ExamScopeItem) {
     localStorage.setItem(EXAM_SCOPES_STORAGE_KEY, JSON.stringify(list));
   } catch (err) {
     console.error('Failed to save exam scope', err);
+  }
+}
+
+export function saveMultipleExamScopes(newScopes: ExamScopeItem[]) {
+  try {
+    const raw = localStorage.getItem(EXAM_SCOPES_STORAGE_KEY);
+    const list: ExamScopeItem[] = raw ? JSON.parse(raw) : [...DEFAULT_EXAM_SCOPES];
+    for (const scope of newScopes) {
+      const idx = list.findIndex((s) => s.id === scope.id || (s.grade === scope.grade && s.subject === scope.subject));
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], ...scope };
+      } else {
+        list.push(scope);
+      }
+    }
+    localStorage.setItem(EXAM_SCOPES_STORAGE_KEY, JSON.stringify(list));
+  } catch (err) {
+    console.error('Failed to save multiple exam scopes', err);
   }
 }

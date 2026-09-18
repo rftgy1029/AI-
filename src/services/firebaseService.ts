@@ -437,3 +437,93 @@ export async function postOfficialReply(
     // Normal on Vercel
   }
 }
+
+// ==================== ADMIN CRUD OPERATIONS ====================
+
+// Admin: Direct delete suggestion without student PIN
+export async function adminDeleteSuggestion(id: string): Promise<void> {
+  const current = getLocalSuggestions();
+  const updated = current.filter((item) => item.id !== id);
+  saveLocalSuggestions(updated);
+
+  // Primary Cloud Firestore delete
+  try {
+    await deleteDoc(doc(db, 'suggestions', id));
+  } catch (err) {
+    console.warn('[AdminDelete] Firestore delete failed:', err);
+  }
+
+  // Local server API sync
+  try {
+    await fetch('/api/suggestions/delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, pin: 'sdjhsadminlogin' }),
+    });
+  } catch {
+    // Normal on Vercel
+  }
+}
+
+// Admin: Delete a specific comment from a suggestion
+export async function adminDeleteComment(suggestionId: string, commentId: string): Promise<void> {
+  const current = getLocalSuggestions();
+  let updatedComments: SuggestionComment[] = [];
+
+  const updated = current.map((item) => {
+    if (item.id === suggestionId) {
+      updatedComments = (item.comments || []).filter((c) => c.id !== commentId);
+      return {
+        ...item,
+        comments: updatedComments,
+      };
+    }
+    return item;
+  });
+  saveLocalSuggestions(updated);
+
+  try {
+    await updateDoc(doc(db, 'suggestions', suggestionId), {
+      comments: cleanUndefined(updatedComments),
+    });
+  } catch (err) {
+    console.warn('[AdminDeleteComment] Firestore update failed:', err);
+  }
+}
+
+// Admin: Update suggestion fields (title, content, category, status, isNotice)
+export async function adminUpdateSuggestion(
+  suggestionId: string,
+  updates: Partial<SuggestionItem>
+): Promise<void> {
+  const current = getLocalSuggestions();
+  const updated = current.map((item) => {
+    if (item.id === suggestionId) {
+      return {
+        ...item,
+        ...updates,
+      };
+    }
+    return item;
+  });
+  saveLocalSuggestions(updated);
+
+  try {
+    await updateDoc(doc(db, 'suggestions', suggestionId), cleanUndefined(updates));
+  } catch (err) {
+    console.warn('[AdminUpdateSuggestion] Firestore update failed:', err);
+  }
+}
+
+// Admin: Clear all suggestions (DB Reset / Bulk cleanup)
+export async function adminClearAllSuggestions(): Promise<void> {
+  saveLocalSuggestions([]);
+
+  try {
+    const snap = await getDocs(collection(db, 'suggestions'));
+    const deletePromises = snap.docs.map((d) => deleteDoc(d.ref));
+    await Promise.all(deletePromises);
+  } catch (err) {
+    console.warn('[AdminClearAllSuggestions] Firestore clear failed:', err);
+  }
+}

@@ -121,5 +121,6 @@ export interface SuggestionItem {
   viewCount?: number;
   imageUrl?: string;
   images?: string[];
+  isNotice?: boolean;
 }
 

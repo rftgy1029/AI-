@@ -13,6 +13,8 @@ import {
   ArrowUpDown,
   Filter,
   Image as ImageIcon,
+  Pin,
+  Trash2,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SuggestionItem, SuggestionCategory, SuggestionStatus, UserProfile } from '../types';
@@ -35,6 +37,10 @@ interface SuggestionBoardSectionProps {
     reply: { author: string; content: string; date: string },
     status: '검토중' | '답변완료'
   ) => Promise<void>;
+  onAdminDeleteSuggestion?: (id: string) => Promise<boolean>;
+  onAdminDeleteComment?: (suggestionId: string, commentId: string) => Promise<boolean>;
+  onAdminUpdateSuggestion?: (id: string, updates: Partial<SuggestionItem>) => Promise<boolean>;
+  onAdminClearAll?: () => Promise<boolean>;
 }
 
 const CATEGORIES: SuggestionCategory[] = [
@@ -55,6 +61,10 @@ export default function SuggestionBoardSection({
   onDeleteSuggestion,
   onAddComment,
   onPostReply,
+  onAdminDeleteSuggestion,
+  onAdminDeleteComment,
+  onAdminUpdateSuggestion,
+  onAdminClearAll,
 }: SuggestionBoardSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<SuggestionCategory>('전체');
   const [selectedStatus, setSelectedStatus] = useState<'all' | SuggestionStatus>('all');
@@ -63,6 +73,7 @@ export default function SuggestionBoardSection({
 
   // Modals
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isNoticeMode, setIsNoticeMode] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<SuggestionItem | null>(null);
 
   // Status counts
@@ -75,7 +86,7 @@ export default function SuggestionBoardSection({
     };
   }, [suggestions]);
 
-  // Filtered & Sorted Suggestions
+  // Filtered & Sorted Suggestions (Notices pinned to the top)
   const filteredSuggestions = useMemo(() => {
     let result = [...suggestions];
 
@@ -100,8 +111,11 @@ export default function SuggestionBoardSection({
       );
     }
 
-    // Sorting
+    // Sorting: Notices always pinned to top
     result.sort((a, b) => {
+      if (a.isNotice && !b.isNotice) return -1;
+      if (!a.isNotice && b.isNotice) return 1;
+
       if (sortBy === 'likes') {
         return b.likeCount - a.likeCount;
       }
@@ -198,6 +212,66 @@ export default function SuggestionBoardSection({
           })}
         </div>
       </motion.div>
+
+      {/* Admin Management Bar */}
+      {isAdmin && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3.5 shadow-md border border-indigo-500/20"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center shrink-0 shadow-xs">
+              <ShieldCheck className="w-5 h-5 text-indigo-300" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs sm:text-sm font-bold text-white">관리자 모드 활성화 (Master CRUD)</span>
+                <span className="text-[10px] font-extrabold bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full">
+                  보안 관리 권한
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5">
+                공지사항 상단 등록, 학생 글/댓글 즉시 수정 및 삭제, 테스트 데이터 초기화가 가능합니다.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setIsNoticeMode(true);
+                setIsCreateOpen(true);
+              }}
+              className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+            >
+              <Pin className="w-3.5 h-3.5 fill-current" />
+              <span>공식 공지 등록</span>
+            </button>
+            {onAdminClearAll && (
+              <button
+                type="button"
+                onClick={async () => {
+                  const confirmed = window.confirm(
+                    '[관리자 DB 일괄 정리]\n\n정말로 게시판의 모든 건의사항과 댓글을 초기화하시겠습니까?\n월요일 시험 출제 전 테스트 데이터 정리에 사용할 수 있습니다.'
+                  );
+                  if (confirmed) {
+                    const second = window.confirm('초기화 시 이전 데이터는 복구할 수 없습니다. 계속 진행하시겠습니까?');
+                    if (second) {
+                      await onAdminClearAll();
+                    }
+                  }
+                }}
+                className="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>테스트글 일괄 비우기</span>
+              </button>
+            )}
+          </div>
+        </motion.div>
+      )}
 
       {/* Filter and Search Controls */}
       <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-black/[0.04] shadow-2xs space-y-3.5">
@@ -319,12 +393,23 @@ export default function SuggestionBoardSection({
                   whileHover={{ y: -3 }}
                   transition={{ duration: 0.2 }}
                   onClick={() => setSelectedSuggestion(item)}
-                  className="bg-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 border border-black/[0.04] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-indigo-200 hover:shadow-md transition cursor-pointer group"
+                  className={`rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 border transition cursor-pointer group ${
+                    item.isNotice
+                      ? 'bg-amber-50/25 border-amber-300/90 shadow-[0_2px_12px_rgba(245,158,11,0.08)] hover:border-amber-400'
+                      : 'bg-white border-black/[0.04] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-indigo-200 hover:shadow-md'
+                  }`}
                 >
                   <div className="space-y-3">
                     {/* Top Badges & Real-name chip */}
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5 flex-wrap">
+                        {item.isNotice && (
+                          <span className="text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-500 text-white flex items-center gap-1 shadow-2xs shrink-0">
+                            <Pin className="w-3 h-3 fill-current" />
+                            공지사항
+                          </span>
+                        )}
+
                         <span
                           className={`text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
                             isResolved
@@ -357,7 +442,7 @@ export default function SuggestionBoardSection({
                       {/* Verified Author Badge */}
                       <div className="flex items-center gap-1.5 text-xs text-slate-600">
                         <span className="inline-flex items-center gap-1 font-bold text-slate-900 bg-[#F5F5F7] px-2 py-0.5 rounded-full border border-black/[0.03]">
-                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
                           <span>{item.authorName}</span>
                           <span className="text-slate-400 font-medium text-[11px]">
                             ({item.grade}학년 {item.classNum}반)
@@ -408,13 +493,30 @@ export default function SuggestionBoardSection({
                       </div>
                     )}
 
-                    {/* Card Footer: Date, Stats, Upvote button */}
+                    {/* Card Footer: Date, Stats, Upvote button, Admin Delete */}
                     <div className="flex items-center justify-between pt-2 border-t border-black/[0.03] text-xs text-slate-400">
                       <span className="text-[11px]">
                         {item.createdAt.slice(0, 10)}
                       </span>
 
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-2.5 sm:gap-3">
+                        {isAdmin && onAdminDeleteSuggestion && (
+                          <button
+                            type="button"
+                            title="관리자 즉시 삭제"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              const ok = window.confirm(`[관리자 삭제] "${item.title}" 글을 즉시 삭제하시겠습니까?`);
+                              if (ok) {
+                                await onAdminDeleteSuggestion(item.id);
+                              }
+                            }}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+
                         <span className="flex items-center gap-1 text-[11px]">
                           <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
                           <span>{item.comments?.length || 0}</span>
@@ -454,8 +556,13 @@ export default function SuggestionBoardSection({
       {/* Modal: Create Suggestion */}
       <CreateSuggestionModal
         isOpen={isCreateOpen}
-        onClose={() => setIsCreateOpen(false)}
+        onClose={() => {
+          setIsCreateOpen(false);
+          setIsNoticeMode(false);
+        }}
         currentUser={currentUser}
+        isAdmin={isAdmin}
+        initialNotice={isNoticeMode}
         onSubmit={onCreateSuggestion}
       />
 
@@ -469,6 +576,9 @@ export default function SuggestionBoardSection({
         onDelete={onDeleteSuggestion}
         onAddComment={onAddComment}
         onPostReply={onPostReply}
+        onAdminDelete={onAdminDeleteSuggestion}
+        onAdminDeleteComment={onAdminDeleteComment}
+        onAdminUpdate={onAdminUpdateSuggestion}
       />
     </div>
   );

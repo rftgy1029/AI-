@@ -35,6 +35,10 @@ import {
   addCommentToSuggestion,
   postOfficialReply,
   getLocalSuggestions,
+  adminDeleteSuggestion,
+  adminDeleteComment,
+  adminUpdateSuggestion,
+  adminClearAllSuggestions,
 } from './services/firebaseService';
 
 import {
@@ -182,6 +186,62 @@ export default function App() {
           : s
       )
     );
+  };
+
+  // Admin CRUD Handlers
+  const handleAdminDeleteSuggestion = async (id: string): Promise<boolean> => {
+    try {
+      await adminDeleteSuggestion(id);
+      setSuggestions((prev) => prev.filter((s) => s.id !== id));
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const handleAdminDeleteComment = async (suggestionId: string, commentId: string): Promise<boolean> => {
+    try {
+      await adminDeleteComment(suggestionId, commentId);
+      setSuggestions((prev) =>
+        prev.map((s) =>
+          s.id === suggestionId
+            ? { ...s, comments: (s.comments || []).filter((c) => c.id !== commentId) }
+            : s
+        )
+      );
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const handleAdminUpdateSuggestion = async (
+    suggestionId: string,
+    updates: Partial<SuggestionItem>
+  ): Promise<boolean> => {
+    try {
+      await adminUpdateSuggestion(suggestionId, updates);
+      setSuggestions((prev) =>
+        prev.map((s) => (s.id === suggestionId ? { ...s, ...updates } : s))
+      );
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
+  };
+
+  const handleAdminClearAll = async (): Promise<boolean> => {
+    try {
+      await adminClearAllSuggestions();
+      setSuggestions([]);
+      return true;
+    } catch (err) {
+      console.error(err);
+      return false;
+    }
   };
 
   // Cleanup any old mock storage keys from previous sessions
@@ -372,6 +432,10 @@ export default function App() {
                 onDeleteSuggestion={handleDeleteSuggestion}
                 onAddComment={handleAddComment}
                 onPostReply={handlePostReply}
+                onAdminDeleteSuggestion={handleAdminDeleteSuggestion}
+                onAdminDeleteComment={handleAdminDeleteComment}
+                onAdminUpdateSuggestion={handleAdminUpdateSuggestion}
+                onAdminClearAll={handleAdminClearAll}
               />
             </motion.div>
           )}

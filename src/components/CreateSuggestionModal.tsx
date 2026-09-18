@@ -12,6 +12,7 @@ import {
   Loader2,
   Image as ImageIcon,
   Plus,
+  Pin,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserProfile, SuggestionItem, SuggestionCategory } from '../types';
@@ -20,6 +21,8 @@ interface CreateSuggestionModalProps {
   isOpen: boolean;
   onClose: () => void;
   currentUser: UserProfile;
+  isAdmin?: boolean;
+  initialNotice?: boolean;
   onSubmit: (data: Omit<SuggestionItem, 'id'>) => Promise<void>;
 }
 
@@ -72,10 +75,17 @@ export default function CreateSuggestionModal({
   isOpen,
   onClose,
   currentUser,
+  isAdmin = false,
+  initialNotice = false,
   onSubmit,
 }: CreateSuggestionModalProps) {
+  const [isNotice, setIsNotice] = useState(initialNotice);
   const [authorName, setAuthorName] = useState(
-    currentUser.name === '서대전고 학생' ? '' : currentUser.name
+    initialNotice
+      ? '학생생활안전부 (관리자)'
+      : currentUser.name === '서대전고 학생'
+      ? ''
+      : currentUser.name
   );
   const [grade, setGrade] = useState<number>(currentUser.grade || 2);
   const [classNum, setClassNum] = useState<number>(currentUser.classNum || 3);
@@ -142,7 +152,7 @@ export default function CreateSuggestionModal({
       setErrorMsg('구체적인 검토를 위해 건의 내용을 최소 10자 이상 작성해 주세요.');
       return;
     }
-    if (pin.length < 4) {
+    if (!isAdmin && pin.length < 4) {
       setErrorMsg('글 수정 및 삭제 시 사용할 4자리 비밀번호(PIN)를 입력해 주세요.');
       return;
     }
@@ -157,15 +167,16 @@ export default function CreateSuggestionModal({
         classNum,
         studentNumber: studentNumber ? Number(studentNumber) : undefined,
         category,
-        status: '접수대기',
+        status: isNotice ? '답변완료' : '접수대기',
         likeCount: 0,
         likedByMe: false,
-        passwordHash: pin,
+        passwordHash: pin || '0000',
         createdAt: new Date().toISOString(),
         viewCount: 1,
         comments: [],
         images: images.length > 0 ? images : undefined,
         imageUrl: images[0] || undefined,
+        isNotice,
       });
 
       // Show success feedback
@@ -241,6 +252,39 @@ export default function CreateSuggestionModal({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 overflow-y-auto space-y-4 sm:space-y-5">
+          {/* Admin Notice Banner Toggle */}
+          {isAdmin && (
+            <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/90 flex items-center justify-between gap-3 shadow-2xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <Pin className="w-4 h-4" />
+                </div>
+                <div>
+                  <span className="text-xs font-bold text-amber-950 block">
+                    학교/학생회 공식 공지사항 등록
+                  </span>
+                  <span className="text-[11px] text-amber-700 font-medium block">
+                    게시판 최상단에 고정되며 [공지사항] 배지가 표시됩니다.
+                  </span>
+                </div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                <input
+                  type="checkbox"
+                  checked={isNotice}
+                  onChange={(e) => {
+                    setIsNotice(e.target.checked);
+                    if (e.target.checked && (!authorName || authorName === '서대전고 학생')) {
+                      setAuthorName('학생생활안전부 (관리자)');
+                    }
+                  }}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600"></div>
+              </label>
+            </div>
+          )}
+
           {/* Real-name policy alert */}
           <div className="p-3.5 rounded-2xl bg-indigo-50/60 border border-indigo-100 flex items-start gap-2.5 text-xs text-indigo-950 leading-relaxed">
             <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
@@ -464,29 +508,48 @@ export default function CreateSuggestionModal({
           </div>
 
           {/* 4-digit PIN password */}
-          <div className="p-3 bg-[#F5F5F7] rounded-xl border border-black/[0.03] flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Lock className="w-4 h-4 text-slate-400 shrink-0" />
-              <div>
-                <span className="text-xs font-bold text-slate-800 block">
-                  비밀번호 (PIN 4자리)
-                </span>
-                <span className="text-[10px] text-slate-400 block">
-                  추후 본인 확인 및 건의글 삭제 시 필요합니다
-                </span>
+          {!isAdmin ? (
+            <div className="p-3 bg-[#F5F5F7] rounded-xl border border-black/[0.03] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Lock className="w-4 h-4 text-slate-400 shrink-0" />
+                <div>
+                  <span className="text-xs font-bold text-slate-800 block">
+                    비밀번호 (PIN 4자리)
+                  </span>
+                  <span className="text-[10px] text-slate-400 block">
+                    추후 본인 확인 및 건의글 삭제 시 필요합니다
+                  </span>
+                </div>
               </div>
+              <input
+                type="password"
+                required
+                maxLength={4}
+                pattern="[0-9]*"
+                placeholder="1234"
+                value={pin}
+                onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
+                className="w-24 px-3 py-1.5 text-center text-xs tracking-widest bg-white rounded-xl border border-slate-200 focus:border-indigo-500 focus:outline-none font-mono font-bold"
+              />
             </div>
-            <input
-              type="password"
-              required
-              maxLength={4}
-              pattern="[0-9]*"
-              placeholder="1234"
-              value={pin}
-              onChange={(e) => setPin(e.target.value.replace(/[^0-9]/g, ''))}
-              className="w-24 px-3 py-1.5 text-center text-xs tracking-widest bg-white rounded-xl border border-slate-200 focus:border-indigo-500 focus:outline-none font-mono font-bold"
-            />
-          </div>
+          ) : (
+            <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                <div>
+                  <span className="text-xs font-bold text-indigo-950 block">
+                    관리자 자동 인증 (PIN 면제)
+                  </span>
+                  <span className="text-[10px] text-indigo-600 block">
+                    관리자 권한으로 등록되며 언제든 비밀번호 없이 즉시 수정/삭제가 가능합니다
+                  </span>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-indigo-600 bg-white px-2.5 py-1 rounded-lg border border-indigo-200 shrink-0 shadow-2xs">
+                Master Pass
+              </span>
+            </div>
+          )}
 
           {/* Footer CTA */}
           <div className="pt-3 flex items-center justify-end gap-3 border-t border-black/[0.04]">

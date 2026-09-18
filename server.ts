@@ -41,6 +41,76 @@ app.get('/api/timetable', async (req, res) => {
   }
 });
 
+import {
+  getAllSuggestions,
+  insertSuggestion,
+  toggleSuggestionLike,
+  addCommentToSuggestion,
+  addReplyToSuggestion,
+  deleteSuggestionItem,
+} from './src/server/suggestionStore';
+
+// 건의게시판 다자간 실시간 동기화 API
+app.get('/api/suggestions', (req, res) => {
+  try {
+    const list = getAllSuggestions();
+    res.json({ success: true, items: list });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/suggestions', (req, res) => {
+  try {
+    const item = insertSuggestion(req.body);
+    res.json({ success: true, item });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/suggestions/like', (req, res) => {
+  try {
+    const { id, currentlyLiked } = req.body;
+    const result = toggleSuggestionLike(id, currentlyLiked);
+    res.json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/suggestions/comment', (req, res) => {
+  try {
+    const { id, comment } = req.body;
+    const item = addCommentToSuggestion(id, comment);
+    if (!item) return res.status(404).json({ success: false });
+    res.json({ success: true, item });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/suggestions/reply', (req, res) => {
+  try {
+    const { id, reply } = req.body;
+    const item = addReplyToSuggestion(id, reply);
+    if (!item) return res.status(404).json({ success: false });
+    res.json({ success: true, item });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+app.post('/api/suggestions/delete', (req, res) => {
+  try {
+    const { id, pin } = req.body;
+    const result = deleteSuggestionItem(id, pin);
+    res.status(result.success ? 200 : 400).json(result);
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // 프로덕션 dist 정적 파일 제공
 const distPath = path.resolve(__dirname, 'dist');
 app.use(express.static(distPath));

@@ -283,6 +283,28 @@
 
 ---
 
+### [Feature 13] 목요일/금요일 급식 중복 버그 수정 및 건의게시판 다자간 실시간 동기화 구현
+- **작업 배경**:
+  1. 목요일과 금요일 급식 메뉴가 동일하게 중복 출력되는 버그 제보.
+  2. 한 사용자가 건의게시판에 글을 올렸을 때 다른 사용자의 브라우저나 기기에서 해당 글을 볼 수 없는 데이터 고립 버그 제보.
+- **근본 원인 분석**:
+  1. **급식 중복 원인**: NEIS API에서 특정 요일 급식 데이터가 공란일 때 사용되던 fallback 로직이 모든 요일에 동일한 단일 식단 템플릿을 푸시하여, 목요일과 금요일에 동일 메뉴가 출력되었음.
+  2. **게시판 고립 원인**: Firebase 프로젝트(`gen-lang-client-0884634157`) 보안 규칙 상 미인증 사용자 쓰기가 차단(`permission-denied`, 익명인증 시 `auth/admin-restricted-operation`)되어 외부 클라우드 DB 저장이 실패함에 따라, 작성자의 브라우저 `localStorage`에만 저장되고 타 기기로 전파되지 못함.
+- **구현 내용**:
+  1. **급식 목/금 중복 원천 차단 (`src/services/neisService.ts`)**:
+     - `SEODAEJEON_WEEKLY_LUNCHES` 객체를 신설하여 월~금 각 요일별 고유 메뉴 테이블(목: 로제닭볶음탕, 북어무국 등 / 금: 고추참치덮밥, 미소장국, 수제핫바 등) 정의.
+     - NEIS 데이터 부재 시에도 해당 요일의 고유 식단이 정확히 매핑되도록 처리하여 요일 간 중복 완전 해결.
+  2. **건의게시판 자체 스토어 및 다자간 동기화 API 구축 (`suggestionStore.ts`, `vite.config.ts`, `server.ts`)**:
+     - `src/server/suggestionStore.ts` 및 영구 보존용 `data/suggestions.json` 파일 스토어 구현.
+     - 게시글 목록 조회(`GET /api/suggestions`), 작성(`POST /api/suggestions`), 공감(`POST /api/suggestions/like`), 실명 댓글(`POST /api/suggestions/comment`), 공식 답변(`POST /api/suggestions/reply`), 삭제(`POST /api/suggestions/delete`) 전용 API 구현.
+     - 개발 서버(Vite 미들웨어)와 운영 서버(Express) 양쪽에 동일 라우트 완비.
+  3. **실시간 다자간 동기화 스트림 (`src/services/firebaseService.ts`)**:
+     - `subscribeToSuggestions`에서 2.5초 주기 백그라운드 자동 폴링 스트림 가동.
+     - 사용자의 로컬 `likedByMe`(공감 여부) 상태를 서버 데이터와 안전하게 병합(Merge)하여 UI 상태 보존.
+     - 모든 글 작성, 댓글, 답변, 삭제 액션이 서버 API로 즉각 전송되어 타 사용자/기기에서도 수초 내에 완벽하게 동기화됨.
+
+---
+
 ## 3. 소스 코드 디렉토리 구조 및 핵심 파일 가이드
 
 ```

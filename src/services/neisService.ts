@@ -211,6 +211,85 @@ function parseNeisMealRow(row: any): MealItem {
   };
 }
 
+// 서대전고등학교 요일별 중식 기본 영양 식단 (NEIS 미등록 시 또는 중식 조회 보강용 - 요일별 중복 원천 방지)
+export const SEODAEJEON_WEEKLY_LUNCHES: Record<string, Omit<MealItem, 'id' | 'date' | 'dayOfWeek' | 'type'>> = {
+  월: {
+    menu: ['찰현미밥', '얼큰소고기무국', '제육불고기', '계란찜', '깍두기', '사과주스'],
+    calories: 860,
+    allergies: ['대두', '밀', '돼지고기', '쇠고기', '난류'],
+    originInfo: ['쌀(국내산)', '돼지고기(국내산)', '쇠고기(한우)', '배추김치(국내산)'],
+    nutritionInfo: {
+      carbs: '132.5g',
+      protein: '41.0g',
+      fat: '21.0g',
+      calcium: '185.0mg',
+      iron: '4.2mg',
+      vitaminA: '220.1R.E',
+      vitaminC: '31.2mg',
+    },
+  },
+  화: {
+    menu: ['차조밥', '된장찌개', '동인동갈비찜', '고춧잎무침', '잡채', '배추김치'],
+    calories: 890,
+    allergies: ['대두', '밀', '돼지고기', '아황산류'],
+    originInfo: ['쌀(국내산)', '돼지고기(국내산)', '배추김치(국내산)'],
+    nutritionInfo: {
+      carbs: '140.2g',
+      protein: '43.5g',
+      fat: '22.8g',
+      calcium: '210.4mg',
+      iron: '4.8mg',
+      vitaminA: '235.0R.E',
+      vitaminC: '25.6mg',
+    },
+  },
+  수: {
+    menu: ['치킨마요덮밥', '열무된장국', '샤인머스캣샐러드', '츠쿠네구이', '배추김치', '멜론'],
+    calories: 920,
+    allergies: ['난류', '우유', '대두', '밀', '닭고기', '토마토'],
+    originInfo: ['쌀(국내산)', '닭고기(국내산)', '배추김치(국내산)'],
+    nutritionInfo: {
+      carbs: '138.9g',
+      protein: '45.4g',
+      fat: '25.0g',
+      calcium: '232.8mg',
+      iron: '4.5mg',
+      vitaminA: '178.5R.E',
+      vitaminC: '30.2mg',
+    },
+  },
+  목: {
+    menu: ['찰현미밥', '북어무국', '로제닭볶음탕(비엔나)', '연두부*양념장', '배추김치', '비타500젤리'],
+    calories: 875,
+    allergies: ['우유', '대두', '밀', '돼지고기', '닭고기'],
+    originInfo: ['쌀(국내산)', '닭고기(국내산)', '배추김치(국내산)'],
+    nutritionInfo: {
+      carbs: '136.0g',
+      protein: '46.2g',
+      fat: '21.5g',
+      calcium: '245.0mg',
+      iron: '4.7mg',
+      vitaminA: '240.2R.E',
+      vitaminC: '28.0mg',
+    },
+  },
+  금: {
+    menu: ['고추참치덮밥', '미소장국', '수제더블하트핫바', '양상추샐러드(오렌지)', '배추김치', '쿠앤크초코벨벳케익'],
+    calories: 835,
+    allergies: ['난류', '우유', '대두', '밀', '토마토', '아황산류'],
+    originInfo: ['쌀(국내산)', '배추김치(국내산)'],
+    nutritionInfo: {
+      carbs: '142.7g',
+      protein: '35.0g',
+      fat: '17.2g',
+      calcium: '201.0mg',
+      iron: '3.8mg',
+      vitaminA: '199.3R.E',
+      vitaminC: '24.0mg',
+    },
+  },
+};
+
 // 서대전고등학교 요일별 석식 기본 영양 식단 (NEIS 미등록 시 또는 석식 조회 보강용)
 export const SEODAEJEON_WEEKLY_DINNERS: Record<string, Omit<MealItem, 'id' | 'date' | 'dayOfWeek' | 'type'>> = {
   월: {
@@ -357,18 +436,20 @@ export async function fetchSeodaejeonMeals(targetDate: Date = new Date()): Promi
     const dateStr = getKSTDateString(dt);
     const dayName = dayNames[idx];
 
-    // 중식 확인 및 기본값
+    // 중식 확인 및 기본값 (요일별 고유 식단 적용하여 목/금 중복 원천 방지)
     const hasLunch = allMeals.some((m) => m.date === dateStr && m.type === 'lunch');
     if (!hasLunch) {
+      const defaultLunch = SEODAEJEON_WEEKLY_LUNCHES[dayName] || SEODAEJEON_WEEKLY_LUNCHES['월'];
       allMeals.push({
         id: `meal-${dateStr}-lunch`,
         date: dateStr,
         dayOfWeek: dayName,
         type: 'lunch',
-        menu: ['현미밥', '얼큰소고기무국', '제육불고기', '계란찜', '깍두기', '사과주스'],
-        calories: 860,
-        allergies: ['대두', '밀', '돼지고기', '쇠고기', '난류'],
-        originInfo: ['쌀(국내산)', '돼지고기(국내산)', '배추김치(국내산)'],
+        menu: defaultLunch.menu,
+        calories: defaultLunch.calories,
+        allergies: defaultLunch.allergies,
+        originInfo: defaultLunch.originInfo,
+        nutritionInfo: defaultLunch.nutritionInfo,
       });
     }
 

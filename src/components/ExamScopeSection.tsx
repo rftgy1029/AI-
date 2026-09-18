@@ -43,9 +43,7 @@ export default function ExamScopeSection({
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'announced' | 'pending'>('all');
   const [editingItem, setEditingItem] = useState<ExamScopeItem | null>(null);
-  const [isOcrOpen, setIsOcrOpen] = useState(
-    () => isAdmin && new URLSearchParams(window.location.search).get('openOcr') === 'true'
-  );
+  const [isOcrOpen, setIsOcrOpen] = useState(false);
 
   // Fix bug: immediately sync when grade changes without needing to exit & re-enter
   useEffect(() => {

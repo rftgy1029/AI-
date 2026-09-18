@@ -83,14 +83,8 @@ export default function App() {
 
   // 3. Modals & Admin State
   const [isClassChangeOpen, setIsClassChangeOpen] = useState(false);
-  const [isAdmin, setIsAdmin] = useState<boolean>(() => {
-    const param = new URLSearchParams(window.location.search).get('admin');
-    if (param === 'true') return true;
-    return isCurrentAdminSession();
-  });
-  const [isPasskeyModalOpen, setIsPasskeyModalOpen] = useState(
-    () => new URLSearchParams(window.location.search).get('openPasskey') === 'true'
-  );
+  const [isAdmin, setIsAdmin] = useState<boolean>(() => isCurrentAdminSession());
+  const [isPasskeyModalOpen, setIsPasskeyModalOpen] = useState(false);
   const [isAddScheduleOpen, setIsAddScheduleOpen] = useState(false);
 
   // 4. NEIS API Live Data State

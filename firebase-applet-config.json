@@ -1,12 +1,9 @@
 {
-  "projectId": "gen-lang-client-0884634157",
-  "appId": "1:849896948594:web:04ed72e0ea73fe04dbd3eb",
-  "apiKey": "AIzaSyAEIv2ma7J6V4fSFzUIXVVwJLUs5AXa-m0",
-  "authDomain": "gen-lang-client-0884634157.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-schoolhub-4a435f5a-4224-43b6-a9b7-0118644d6c3a",
-  "storageBucket": "gen-lang-client-0884634157.firebasestorage.app",
-  "messagingSenderId": "849896948594",
-  "measurementId": "",
-  "oAuthClientId": "849896948594-kpq7t61s9dgnu92u3pbeu7rhdk8907li.apps.googleusercontent.com",
-  "recaptchaSiteKey": ""
+  "projectId": "sdjhs-website",
+  "appId": "1:1067529517794:web:8a822e838a83bc01a57cbb",
+  "apiKey": "AIzaSyDoFLSL8aMJr6k1aRpBZjLoIC81VZrY-Js",
+  "authDomain": "sdjhs-website.firebaseapp.com",
+  "storageBucket": "sdjhs-website.firebasestorage.app",
+  "messagingSenderId": "1067529517794",
+  "measurementId": "G-ZWYK4QQP8Y"
 }

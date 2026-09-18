@@ -12,6 +12,7 @@ import {
   Sparkles,
   ArrowUpDown,
   Filter,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SuggestionItem, SuggestionCategory, SuggestionStatus, UserProfile } from '../types';
@@ -344,6 +345,13 @@ export default function SuggestionBoardSection({
                         <span className="text-[10px] sm:text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60">
                           {item.category}
                         </span>
+
+                        {(item.imageUrl || (item.images && item.images.length > 0)) && (
+                          <span className="text-[10px] sm:text-xs font-bold text-slate-700 bg-[#F5F5F7] px-2 py-0.5 rounded-full border border-black/[0.04] flex items-center gap-1">
+                            <ImageIcon className="w-3 h-3 text-indigo-600" />
+                            <span>사진 {item.images?.length || 1}장</span>
+                          </span>
+                        )}
                       </div>
 
                       {/* Verified Author Badge */}
@@ -358,14 +366,26 @@ export default function SuggestionBoardSection({
                       </div>
                     </div>
 
-                    {/* Title & Preview Content */}
-                    <div>
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-indigo-600 transition tracking-tight line-clamp-1">
-                        {item.title}
-                      </h3>
-                      <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 leading-relaxed">
-                        {item.content}
-                      </p>
+                    {/* Title & Preview Content with Thumbnail */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-indigo-600 transition tracking-tight line-clamp-1">
+                          {item.title}
+                        </h3>
+                        <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 leading-relaxed">
+                          {item.content}
+                        </p>
+                      </div>
+
+                      {(item.imageUrl || (item.images && item.images.length > 0)) && (
+                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl overflow-hidden shrink-0 border border-black/[0.08] shadow-2xs bg-slate-100">
+                          <img
+                            src={item.imageUrl || item.images![0]}
+                            alt="첨부 사진 썸네일"
+                            className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                          />
+                        </div>
+                      )}
                     </div>
 
                     {/* Official Reply Highlight Banner (If answered) */}

@@ -139,10 +139,44 @@ export function subscribeToSuggestions(
   const local = getLocalSuggestions();
   onUpdate(local);
 
-  // 2. Fetch server suggestions immediately
+  // 2. Real-time Firestore Stream (Primary cloud sync across all devices & Vercel)
+  const collectionPath = 'suggestions';
+  let firestoreUnsub: (() => void) | null = null;
+  try {
+    const q = query(collection(db, collectionPath), orderBy('createdAt', 'desc'));
+    firestoreUnsub = onSnapshot(
+      q,
+      (snapshot) => {
+        if (!isMounted) return;
+        const firestoreItems: SuggestionItem[] = [];
+        snapshot.forEach((docSnap) => {
+          const data = docSnap.data() as SuggestionItem;
+          if (!['sug-1', 'sug-2', 'sug-3', 'sug-4', 'sug-5'].includes(data.id)) {
+            firestoreItems.push(data);
+          }
+        });
+
+        const localCurrent = getLocalSuggestions();
+        const likedMap = new Map(localCurrent.map((i) => [i.id, i.likedByMe]));
+        const merged = firestoreItems.map((item) => ({
+          ...item,
+          likedByMe: likedMap.get(item.id) ?? false,
+        }));
+        saveLocalSuggestions(merged);
+        onUpdate(merged);
+      },
+      (error) => {
+        console.warn('[Firestore Subscription Notice]:', error.message);
+      }
+    );
+  } catch (err) {
+    console.warn('[Firestore Subscription Init Error]:', err);
+  }
+
+  // 3. Complementary server API poll (for local dev environment)
   const syncWithServer = async () => {
     const serverItems = await fetchServerSuggestions();
-    if (serverItems && isMounted) {
+    if (serverItems && isMounted && serverItems.length > 0) {
       const localCurrent = getLocalSuggestions();
       const likedMap = new Map(localCurrent.map((i) => [i.id, i.likedByMe]));
       const merged = serverItems.map((item) => ({
@@ -155,50 +189,9 @@ export function subscribeToSuggestions(
   };
 
   syncWithServer();
-
-  // 3. Real-time background sync polling (every 2.5 seconds)
-  // Ensures any post uploaded by another user appears automatically on all other devices
   const pollInterval = setInterval(() => {
-    if (isMounted) {
-      syncWithServer();
-    }
-  }, 2500);
-
-  // 4. Also listen to Firestore as complementary stream (if available)
-  const collectionPath = 'suggestions';
-  let firestoreUnsub: (() => void) | null = null;
-  try {
-    const q = query(collection(db, collectionPath), orderBy('createdAt', 'desc'));
-    firestoreUnsub = onSnapshot(
-      q,
-      (snapshot) => {
-        if (!snapshot.empty && isMounted) {
-          const firestoreItems: SuggestionItem[] = [];
-          snapshot.forEach((docSnap) => {
-            const data = docSnap.data() as SuggestionItem;
-            if (!['sug-1', 'sug-2', 'sug-3', 'sug-4', 'sug-5'].includes(data.id)) {
-              firestoreItems.push(data);
-            }
-          });
-          if (firestoreItems.length > 0) {
-            const localCurrent = getLocalSuggestions();
-            const likedMap = new Map(localCurrent.map((i) => [i.id, i.likedByMe]));
-            const merged = firestoreItems.map((item) => ({
-              ...item,
-              likedByMe: likedMap.get(item.id) ?? false,
-            }));
-            saveLocalSuggestions(merged);
-            onUpdate(merged);
-          }
-        }
-      },
-      () => {
-        // Silently ignore Firestore permission-denied; Server API takes full precedence
-      }
-    );
-  } catch {
-    // Handled by Server API
-  }
+    if (isMounted) syncWithServer();
+  }, 4000);
 
   return () => {
     isMounted = false;
@@ -207,7 +200,7 @@ export function subscribeToSuggestions(
   };
 }
 
-// Add a new suggestion (Saved to Server API + Local Storage + Firestore)
+// Add a new suggestion (Saved to Firestore + Local Storage + Local Server API)
 export async function createSuggestion(newSuggestion: Omit<SuggestionItem, 'id'>): Promise<SuggestionItem> {
   const id = `sug-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
   const item: SuggestionItem = {
@@ -220,24 +213,22 @@ export async function createSuggestion(newSuggestion: Omit<SuggestionItem, 'id'>
   const updated = [item, ...current.filter((i) => i.id !== id)];
   saveLocalSuggestions(updated);
 
-  // 2. Sync to Server API (enables all other users/devices to see this post)
+  // 2. Primary Cloud Firestore sync (enables all users on Vercel/mobile to see this post instantly)
+  try {
+    await setDoc(doc(db, 'suggestions', id), item);
+  } catch (err) {
+    console.warn('[CreateSuggestion] Firestore sync failed:', err);
+  }
+
+  // 3. Local Server API sync (if running in dev environment)
   try {
     await fetch('/api/suggestions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(item),
     });
-  } catch (err) {
-    console.warn('[CreateSuggestion] Server sync failed, cached locally:', err);
-  }
-
-  // 3. Background Firestore backup attempt (with timeout protection)
-  try {
-    const firestorePromise = setDoc(doc(db, 'suggestions', id), item);
-    const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 1000));
-    await Promise.race([firestorePromise, timeoutPromise]);
   } catch {
-    // Ignore Firestore permission error
+    // Normal on Vercel
   }
 
   return item;
@@ -260,24 +251,24 @@ export async function toggleSuggestionLike(id: string, currentlyLiked: boolean):
   });
   saveLocalSuggestions(updated);
 
-  // Sync to Server API
+  // 1. Primary Cloud Firestore sync
+  try {
+    await updateDoc(doc(db, 'suggestions', id), {
+      likeCount: newCount,
+    });
+  } catch (err) {
+    console.warn('[Like] Firestore update failed:', err);
+  }
+
+  // 2. Local Server API sync (for dev)
   try {
     await fetch('/api/suggestions/like', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, currentlyLiked }),
     });
-  } catch (err) {
-    console.warn('[Like] Server sync failed:', err);
-  }
-
-  // Background Firestore backup
-  try {
-    await updateDoc(doc(db, 'suggestions', id), {
-      likeCount: newCount,
-    });
   } catch {
-    // Ignore
+    // Normal on Vercel
   }
 
   return newCount;
@@ -300,7 +291,14 @@ export async function deleteSuggestion(id: string, pin: string): Promise<{ succe
   const updated = current.filter((item) => item.id !== id);
   saveLocalSuggestions(updated);
 
-  // Sync to Server API
+  // 1. Primary Cloud Firestore delete
+  try {
+    await deleteDoc(doc(db, 'suggestions', id));
+  } catch (err) {
+    console.warn('[Delete] Firestore delete failed:', err);
+  }
+
+  // 2. Local Server API sync (for dev)
   try {
     const res = await fetch('/api/suggestions/delete', {
       method: 'POST',
@@ -311,15 +309,8 @@ export async function deleteSuggestion(id: string, pin: string): Promise<{ succe
       const data = await res.json();
       return data;
     }
-  } catch (err) {
-    console.warn('[Delete] Server sync failed:', err);
-  }
-
-  // Background Firestore delete
-  try {
-    await deleteDoc(doc(db, 'suggestions', id));
   } catch {
-    // Ignore
+    // Normal on Vercel
   }
 
   return { success: true, message: '건의사항이 안전하게 삭제되었습니다.' };
@@ -351,24 +342,24 @@ export async function addCommentToSuggestion(
   });
   saveLocalSuggestions(updated);
 
-  // Sync to Server API
+  // 1. Primary Cloud Firestore update
+  try {
+    await updateDoc(doc(db, 'suggestions', suggestionId), {
+      comments: updatedComments,
+    });
+  } catch (err) {
+    console.warn('[Comment] Firestore update failed:', err);
+  }
+
+  // 2. Local Server API sync (for dev)
   try {
     await fetch('/api/suggestions/comment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: suggestionId, comment }),
     });
-  } catch (err) {
-    console.warn('[Comment] Server sync failed:', err);
-  }
-
-  // Background Firestore backup
-  try {
-    await updateDoc(doc(db, 'suggestions', suggestionId), {
-      comments: updatedComments,
-    });
   } catch {
-    // Ignore Firestore error
+    // Normal on Vercel
   }
 
   return comment;
@@ -393,24 +384,24 @@ export async function postOfficialReply(
   });
   saveLocalSuggestions(updated);
 
-  // Sync to Server API
+  // 1. Primary Cloud Firestore update
+  try {
+    await updateDoc(doc(db, 'suggestions', suggestionId), {
+      status,
+      reply,
+    });
+  } catch (err) {
+    console.warn('[Reply] Firestore update failed:', err);
+  }
+
+  // 2. Local Server API sync (for dev)
   try {
     await fetch('/api/suggestions/reply', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: suggestionId, reply, status }),
     });
-  } catch (err) {
-    console.warn('[Reply] Server sync failed:', err);
-  }
-
-  // Background Firestore backup
-  try {
-    await updateDoc(doc(db, 'suggestions', suggestionId), {
-      status,
-      reply,
-    });
   } catch {
-    // Ignore Firestore error
+    // Normal on Vercel
   }
 }

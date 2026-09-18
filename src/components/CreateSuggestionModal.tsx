@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useRef, type FormEvent, type ChangeEvent } from 'react';
 import {
   X,
   Send,
@@ -10,6 +10,8 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
+  Image as ImageIcon,
+  Plus,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { UserProfile, SuggestionItem, SuggestionCategory } from '../types';
@@ -19,6 +21,43 @@ interface CreateSuggestionModalProps {
   onClose: () => void;
   currentUser: UserProfile;
   onSubmit: (data: Omit<SuggestionItem, 'id'>) => Promise<void>;
+}
+
+// Client-side image compression for instant, lightweight cloud sync
+async function compressImageFile(file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.75): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxWidth || height > maxHeight) {
+          if (width > height) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          } else {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error('이미지 로딩에 실패했습니다.'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('파일 읽기에 실패했습니다.'));
+    reader.readAsDataURL(file);
+  });
 }
 
 const CATEGORIES: Exclude<SuggestionCategory, '전체'>[] = [
@@ -47,9 +86,44 @@ export default function CreateSuggestionModal({
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [pin, setPin] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [isProcessingImages, setIsProcessingImages] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (images.length + files.length > 3) {
+      setErrorMsg('사진은 최대 3장까지 첨부할 수 있습니다.');
+      return;
+    }
+
+    setIsProcessingImages(true);
+    try {
+      const compressedList: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!file.type.startsWith('image/')) continue;
+        const compressed = await compressImageFile(file);
+        compressedList.push(compressed);
+      }
+      setImages((prev) => [...prev, ...compressedList].slice(0, 3));
+    } catch (err) {
+      console.error(err);
+      setErrorMsg('이미지 처리 중 문제가 발생했습니다.');
+    } finally {
+      setIsProcessingImages(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index));
+  };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -90,6 +164,8 @@ export default function CreateSuggestionModal({
         createdAt: new Date().toISOString(),
         viewCount: 1,
         comments: [],
+        images: images.length > 0 ? images : undefined,
+        imageUrl: images[0] || undefined,
       });
 
       // Show success feedback
@@ -101,6 +177,7 @@ export default function CreateSuggestionModal({
         setTitle('');
         setContent('');
         setPin('');
+        setImages([]);
         setIsSuccess(false);
         onClose();
       }, 900);
@@ -317,6 +394,73 @@ export default function CreateSuggestionModal({
               onChange={(e) => setContent(e.target.value)}
               className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-[#F5F5F7] rounded-xl border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none transition leading-relaxed resize-none"
             />
+          </div>
+
+          {/* Photo / Image attachments */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-bold text-slate-600 flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
+                <span>사진 첨부 (시설 파손, 급식 등 증빙 자료, 최대 3장)</span>
+              </label>
+              <span className="text-[11px] font-medium text-slate-400">
+                {images.length}/3장
+              </span>
+            </div>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageUpload}
+              className="hidden"
+            />
+
+            {/* Image thumbnails and add button */}
+            <div className="flex flex-wrap items-center gap-2.5">
+              {images.map((imgSrc, idx) => (
+                <div
+                  key={idx}
+                  className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border border-black/10 shadow-2xs group bg-slate-100 shrink-0"
+                >
+                  <img
+                    src={imgSrc}
+                    alt={`첨부 이미지 ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(idx)}
+                    className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 hover:bg-rose-600 text-white flex items-center justify-center transition cursor-pointer shadow-xs"
+                    title="사진 삭제"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                  <span className="absolute bottom-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded-md font-bold">
+                    {idx + 1}
+                  </span>
+                </div>
+              ))}
+
+              {images.length < 3 && (
+                <button
+                  type="button"
+                  disabled={isProcessingImages}
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl border-2 border-dashed border-slate-300 hover:border-indigo-500 bg-[#F5F5F7] hover:bg-indigo-50/50 flex flex-col items-center justify-center gap-1 text-slate-500 hover:text-indigo-600 transition cursor-pointer shrink-0 disabled:opacity-50"
+                >
+                  {isProcessingImages ? (
+                    <Loader2 className="w-5 h-5 animate-spin text-indigo-600" />
+                  ) : (
+                    <>
+                      <Plus className="w-5 h-5" />
+                      <span className="text-[11px] font-bold">사진 추가</span>
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
           </div>
 
           {/* 4-digit PIN password */}

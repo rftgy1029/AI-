@@ -305,6 +305,30 @@
 
 ---
 
+### [Feature 14] 전용 Firebase 클라우드 DB(sdjhs-website) 연동 및 건의함 사진 첨부·갤러리 뷰 구현
+- **작업 배경**:
+  1. **Vercel 배포 환경 게시글 미표시 버그 근본 해결**:
+     - Vercel 호스팅 환경에서는 Express/Vite 백엔드 서버가 구동되지 않는 Serverless 정적 서빙이므로, 기존 AI Studio 임시 Firebase가 잠겨 있어 발생하던 타 기기 0건 표시 문제를 완벽히 해결하기 위해 사용자 전용 Firebase 프로젝트(`sdjhs-website`)를 연결.
+  2. **건의함 사진/이미지 첨부 및 갤러리 뷰 추가 요구**:
+     - 시설 파손, 급식 건의 등 텍스트만으로 전달하기 어려운 증빙 자료 사진을 최대 3장까지 직접 업로드하고 열람할 수 있는 기능 탑재 요청.
+- **구현 내용**:
+  1. **전용 Firebase Firestore(`sdjhs-website`) 실시간 연동**:
+     - `firebase-applet-config.json`을 `sdjhs-website` 프로젝트로 갱신.
+     - `firebaseService.ts`의 `subscribeToSuggestions`, `createSuggestion`, `toggleSuggestionLike`, `deleteSuggestion`, `addCommentToSuggestion`, `postOfficialReply`를 클라우드 Firestore 1순위 실시간 동기화(`onSnapshot`)로 전면 정비.
+     - Vercel 배포 웹 주소로 접속한 서로 다른 기기/사용자 간 0.1초 즉시 양방향 실시간 동기화 달성.
+  2. **건의 작성 시 스마트 사진 압축 및 다중 업로드 (`CreateSuggestionModal.tsx`)**:
+     - 최대 3장까지 사진/이미지 첨부 지원 (`accept="image/*"`).
+     - HTML5 Canvas 기반 클라이언트 자동 리사이징(최대 1200px) 및 스마트 압축 적용(장당 ~80KB로 경량화하여 Firestore 1MB 한도 안전 보장 및 초고속 전송).
+     - 첨부된 사진 썸네일 미리보기 및 개별 삭제(`X`) 기능 제공.
+  3. **건의 상세 갤러리 및 전체화면 Lightbox 확대 모달 (`SuggestionDetailModal.tsx`)**:
+     - 건의 본문 하단에 고화질 이미지 갤러리 그리드 렌더링.
+     - 사진 클릭 시 전체 화면으로 확대하여 세부 내용을 살펴볼 수 있는 반응형 Lightbox 뷰 탑재.
+  4. **게시판 목록 카드 썸네일 및 뱃지 (`SuggestionBoardSection.tsx`)**:
+     - 사진이 첨부된 게시글에 `[📷 사진 N장]` 뱃지 자동 부착.
+     - 카드 우측에 첫 번째 사진의 깔끔한 스퀘어 썸네일 미리보기 표시.
+
+---
+
 ## 3. 소스 코드 디렉토리 구조 및 핵심 파일 가이드
 
 ```

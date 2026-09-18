@@ -14,6 +14,7 @@ import {
   User,
   AlertCircle,
   Building,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SuggestionItem, UserProfile } from '../types';
@@ -69,6 +70,9 @@ export default function SuggestionDetailModal({
   const [deletePin, setDeletePin] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Full-screen image preview state
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Reply state (Only accessible when isAdmin is true)
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -283,6 +287,42 @@ export default function SuggestionDetailModal({
             <p className="text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-medium">
               {suggestion.content}
             </p>
+
+            {/* Attached Images Gallery */}
+            {((suggestion.images && suggestion.images.length > 0) || suggestion.imageUrl) && (
+              <div className="mt-4 pt-4 border-t border-black/[0.04] space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700">
+                  <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
+                  <span>첨부 사진 (클릭 시 확대)</span>
+                </div>
+                <div
+                  className={`grid gap-2.5 ${
+                    (suggestion.images?.length || 1) === 1
+                      ? 'grid-cols-1 max-w-sm'
+                      : 'grid-cols-2 sm:grid-cols-3'
+                  }`}
+                >
+                  {(suggestion.images || (suggestion.imageUrl ? [suggestion.imageUrl] : [])).map((img, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => setPreviewImage(img)}
+                      className="relative aspect-4/3 rounded-xl overflow-hidden border border-black/[0.08] shadow-2xs hover:border-indigo-400 group cursor-pointer bg-slate-100"
+                    >
+                      <img
+                        src={img}
+                        alt={`첨부 사진 ${idx + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition flex items-center justify-center">
+                        <span className="opacity-0 group-hover:opacity-100 text-white text-[11px] font-bold bg-black/70 px-2.5 py-1 rounded-full backdrop-blur-xs transition shadow-xs flex items-center gap-1">
+                          🔍 크게 보기
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Like/Agree button */}
             <div className="mt-5 pt-4 border-t border-black/[0.04] flex items-center justify-between">
@@ -611,6 +651,31 @@ export default function SuggestionDetailModal({
           </div>
         )}
       </motion.div>
+    </div>
+  )}
+
+  {/* Full-screen Lightbox Image Modal */}
+  {previewImage && (
+    <div
+      className="fixed inset-0 z-70 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+      onClick={() => setPreviewImage(null)}
+    >
+      <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
+        <button
+          type="button"
+          onClick={() => setPreviewImage(null)}
+          className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition cursor-pointer"
+          title="닫기"
+        >
+          <X className="w-6 h-6" />
+        </button>
+        <img
+          src={previewImage}
+          alt="확대 이미지"
+          className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10 cursor-default"
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
     </div>
   )}
 </AnimatePresence>

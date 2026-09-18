@@ -119,5 +119,7 @@ export interface SuggestionItem {
   passwordHash?: string; // 4-digit PIN for author self-action
   createdAt: string;
   viewCount?: number;
+  imageUrl?: string;
+  images?: string[];
 }
 

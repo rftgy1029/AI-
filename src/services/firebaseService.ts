@@ -82,6 +82,24 @@ async function testConnection() {
 }
 testConnection();
 
+// Helper to recursively strip undefined fields because Firestore rejects documents with undefined values
+export function cleanUndefined<T>(obj: T): T {
+  if (obj === null || obj === undefined) return obj;
+  if (Array.isArray(obj)) {
+    return obj.map(cleanUndefined) as unknown as T;
+  }
+  if (typeof obj === 'object') {
+    const res: any = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        res[key] = cleanUndefined(value);
+      }
+    }
+    return res;
+  }
+  return obj;
+}
+
 // Seed suggestions: Empty by default to respect user request (no AI-generated mock suggestions)
 export const INITIAL_SEODAEJEON_SUGGESTIONS: SuggestionItem[] = [];
 
@@ -157,8 +175,21 @@ export function subscribeToSuggestions(
         });
 
         const localCurrent = getLocalSuggestions();
+
+        // Safeguard: Protect recently created posts on this client (within last 30s)
+        // so that even before remote write propagates, local posts are NEVER deleted!
+        const now = Date.now();
+        const pendingLocalPosts = localCurrent.filter((item) => {
+          const itemTime = new Date(item.createdAt).getTime();
+          return now - itemTime < 30000 && !firestoreItems.some((f) => f.id === item.id);
+        });
+
+        const allItems = [...pendingLocalPosts, ...firestoreItems].sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
         const likedMap = new Map(localCurrent.map((i) => [i.id, i.likedByMe]));
-        const merged = firestoreItems.map((item) => ({
+        const merged = allItems.map((item) => ({
           ...item,
           likedByMe: likedMap.get(item.id) ?? false,
         }));
@@ -213,9 +244,10 @@ export async function createSuggestion(newSuggestion: Omit<SuggestionItem, 'id'>
   const updated = [item, ...current.filter((i) => i.id !== id)];
   saveLocalSuggestions(updated);
 
-  // 2. Primary Cloud Firestore sync (enables all users on Vercel/mobile to see this post instantly)
+  // 2. Primary Cloud Firestore sync (sanitize undefined fields so Firestore accepts it without error)
   try {
-    await setDoc(doc(db, 'suggestions', id), item);
+    const sanitized = cleanUndefined(item);
+    await setDoc(doc(db, 'suggestions', id), sanitized);
   } catch (err) {
     console.warn('[CreateSuggestion] Firestore sync failed:', err);
   }
@@ -345,7 +377,7 @@ export async function addCommentToSuggestion(
   // 1. Primary Cloud Firestore update
   try {
     await updateDoc(doc(db, 'suggestions', suggestionId), {
-      comments: updatedComments,
+      comments: cleanUndefined(updatedComments),
     });
   } catch (err) {
     console.warn('[Comment] Firestore update failed:', err);
@@ -388,7 +420,7 @@ export async function postOfficialReply(
   try {
     await updateDoc(doc(db, 'suggestions', suggestionId), {
       status,
-      reply,
+      reply: cleanUndefined(reply),
     });
   } catch (err) {
     console.warn('[Reply] Firestore update failed:', err);

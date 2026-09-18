@@ -329,6 +329,20 @@
 
 ---
 
+### [Bug Fix 3] 게시글 작성 직후 자동 삭제(소실) 버그 픽스
+- **문제점**:
+  - 건의글을 작성하면 화면에 잠깐 나타났다가 1~2초 만에 자동으로 사라져 버리는 현상 발생.
+- **근본 원인 분석**:
+  1. Firestore는 `undefined` 속성이 포함된 객체를 저장할 때 `Function setDoc() called with invalid data. Unsupported field value: undefined` 예외를 발생시키며 전체 저장을 거부함.
+  2. 사용자가 선택 사항(학번 `studentNumber`, 사진 `images`/`imageUrl`)을 입력하지 않은 경우 해당 필드가 `undefined` 상태로 `setDoc`에 전달되어 원격 DB 저장이 실패함.
+  3. 그 직후 Firestore의 `onSnapshot` 스트림이 비어있는 원격 컬렉션(`[]`)을 수신하면서, 방금 작성한 로컬 글을 덮어써 화면에서 지워버렸음.
+- **수정 내용**:
+  1. `firebaseService.ts`에 `cleanUndefined` 재귀 정제 함수를 탑재하여 `undefined` 필드를 완벽히 제거 후 Firestore에 저장.
+  2. `subscribeToSuggestions` 리스너에 최근 30초 내 작성된 로컬 게시글을 원격 스냅샷과 안전하게 결합하는 낙관적 보존 안전망(`pendingLocalPosts`) 추가.
+  3. 댓글 및 공식 답변 작성 로직에도 `cleanUndefined`를 일괄 적용하여 데이터 거부 가능성을 원천 차단.
+
+---
+
 ## 3. 소스 코드 디렉토리 구조 및 핵심 파일 가이드
 
 ```

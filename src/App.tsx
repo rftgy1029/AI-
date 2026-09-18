@@ -362,6 +362,7 @@ export default function App() {
               <SuggestionBoardSection
                 suggestions={suggestions}
                 currentUser={currentUser}
+                isAdmin={isAdmin}
                 onCreateSuggestion={handleCreateSuggestion}
                 onToggleLike={handleToggleLike}
                 onDeleteSuggestion={handleDeleteSuggestion}

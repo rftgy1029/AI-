@@ -21,6 +21,7 @@ import SuggestionDetailModal from './SuggestionDetailModal';
 interface SuggestionBoardSectionProps {
   suggestions: SuggestionItem[];
   currentUser: UserProfile;
+  isAdmin?: boolean;
   onCreateSuggestion: (data: Omit<SuggestionItem, 'id'>) => Promise<void>;
   onToggleLike: (id: string, currentlyLiked: boolean) => Promise<void>;
   onDeleteSuggestion: (id: string, pin: string) => Promise<{ success: boolean; message: string }>;
@@ -47,6 +48,7 @@ const CATEGORIES: SuggestionCategory[] = [
 export default function SuggestionBoardSection({
   suggestions,
   currentUser,
+  isAdmin = false,
   onCreateSuggestion,
   onToggleLike,
   onDeleteSuggestion,
@@ -403,6 +405,7 @@ export default function SuggestionBoardSection({
         suggestion={activeDetailSuggestion}
         onClose={() => setSelectedSuggestion(null)}
         currentUser={currentUser}
+        isAdmin={isAdmin}
         onToggleLike={onToggleLike}
         onDelete={onDeleteSuggestion}
         onAddComment={onAddComment}

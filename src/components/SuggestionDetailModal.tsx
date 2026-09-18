@@ -21,6 +21,7 @@ interface SuggestionDetailModalProps {
   suggestion: SuggestionItem | null;
   onClose: () => void;
   currentUser: UserProfile;
+  isAdmin?: boolean;
   onToggleLike: (id: string, currentlyLiked: boolean) => Promise<void>;
   onDelete: (id: string, pin: string) => Promise<{ success: boolean; message: string }>;
   onAddComment: (
@@ -34,10 +35,21 @@ interface SuggestionDetailModalProps {
   ) => Promise<void>;
 }
 
+export const OFFICIAL_DEPARTMENTS = [
+  '학생생활안전부 (학생부)',
+  '교무기획부 (교직원)',
+  '제52대 총학생회',
+  '진로진학상담부',
+  '교육정보부',
+  '행정실',
+  '직접 입력',
+] as const;
+
 export default function SuggestionDetailModal({
   suggestion,
   onClose,
   currentUser,
+  isAdmin = false,
   onToggleLike,
   onDelete,
   onAddComment,
@@ -47,7 +59,7 @@ export default function SuggestionDetailModal({
     currentUser.name === '서대전고 학생' ? '' : currentUser.name
   );
   const [commentGrade, setCommentGrade] = useState(currentUser.grade || 2);
-  const [commentClass, setCommentClass] = useState(currentUser.classNum || 3);
+  const [commentClass, setCommentClass] = useState(currentUser.classNum || 1);
   const [commentText, setCommentText] = useState('');
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
@@ -57,9 +69,10 @@ export default function SuggestionDetailModal({
   const [deleteError, setDeleteError] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Reply simulation / editor state (for school council / administration)
+  // Reply state (Only accessible when isAdmin is true)
   const [showReplyForm, setShowReplyForm] = useState(false);
-  const [replyAuthor, setReplyAuthor] = useState('제52대 서대전고 학생회');
+  const [selectedDepartment, setSelectedDepartment] = useState<string>('학생생활안전부 (학생부)');
+  const [customDepartment, setCustomDepartment] = useState('');
   const [replyContent, setReplyContent] = useState('');
   const [replyStatus, setReplyStatus] = useState<'검토중' | '답변완료'>('답변완료');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
@@ -111,14 +124,20 @@ export default function SuggestionDetailModal({
 
   const handleReplySubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!isAdmin) return;
     if (!replyContent.trim()) return;
+
+    const finalAuthor =
+      selectedDepartment === '직접 입력'
+        ? (customDepartment.trim() || '교무실 관리자')
+        : selectedDepartment;
 
     setIsSubmittingReply(true);
     try {
       await onPostReply(
         suggestion.id,
         {
-          author: replyAuthor.trim(),
+          author: finalAuthor,
           content: replyContent.trim(),
           date: new Date().toISOString().slice(0, 10),
         },
@@ -126,6 +145,7 @@ export default function SuggestionDetailModal({
       );
       setShowReplyForm(false);
       setReplyContent('');
+      setCustomDepartment('');
     } catch (err) {
       console.error(err);
     } finally {
@@ -282,9 +302,20 @@ export default function SuggestionDetailModal({
                     </span>
                   </div>
                 </div>
-                <span className="text-[10px] text-indigo-400 font-medium">
-                  {suggestion.reply.date}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-indigo-400 font-medium">
+                    {suggestion.reply.date}
+                  </span>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setShowReplyForm(!showReplyForm)}
+                      className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-50 transition cursor-pointer"
+                    >
+                      {showReplyForm ? '닫기' : '답변 수정'}
+                    </button>
+                  )}
+                </div>
               </div>
 
               <p className="text-xs sm:text-sm text-slate-800 leading-relaxed whitespace-pre-wrap font-medium pl-9">
@@ -298,85 +329,106 @@ export default function SuggestionDetailModal({
                   아직 공식 답변이 등록되지 않았습니다
                 </span>
                 <span className="text-[11px] text-slate-400 block">
-                  담당 부서 및 학생회에서 건의 내용을 검토하고 있습니다.
+                  {isAdmin
+                    ? '관리자 모드: 교직원, 학생부 등 공식 부서 자격으로 답변을 작성할 수 있습니다.'
+                    : '담당 부서 및 학생회에서 건의 내용을 검토하고 있습니다.'}
                 </span>
               </div>
-              <button
-                type="button"
-                onClick={() => setShowReplyForm(!showReplyForm)}
-                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700 transition cursor-pointer"
-              >
-                {showReplyForm ? '답변 작성 닫기' : '관리자/학생회 답변 작성하기'}
-              </button>
+              {isAdmin && (
+                <button
+                  type="button"
+                  onClick={() => setShowReplyForm(!showReplyForm)}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer shadow-xs shrink-0"
+                >
+                  {showReplyForm ? '작성 닫기' : '공식 답변 작성하기'}
+                </button>
+              )}
             </div>
           )}
 
-          {/* Reply Form (Simulation/Real officer submission) */}
-          {showReplyForm && (
-            <form onSubmit={handleReplySubmit} className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <Building className="w-3.5 h-3.5 text-indigo-600" />
-                  공식 답변 작성 (학생회 / 교무·행정부)
+          {/* Admin Official Reply Form (Only visible to admin) */}
+          {isAdmin && showReplyForm && (
+            <form onSubmit={handleReplySubmit} className="p-4 sm:p-5 bg-indigo-50/40 rounded-2xl border border-indigo-200 space-y-3 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-indigo-100/80 pb-2.5">
+                <span className="text-xs font-bold text-indigo-950 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-indigo-600" />
+                  관리자 전용 공식 답변 작성 (학생부 / 교직원 / 학생회)
                 </span>
                 <button
                   type="button"
                   onClick={() => setShowReplyForm(false)}
-                  className="text-xs text-slate-400 hover:text-slate-600"
+                  className="text-xs text-slate-400 hover:text-slate-600 cursor-pointer"
                 >
                   취소
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className="text-[10px] font-semibold text-slate-500 block mb-1">
-                    답변 주체 / 부서명
+                  <label className="text-[10px] font-bold text-slate-600 block mb-1">
+                    공식 답변 주체 (직급 / 부서 선택) <span className="text-indigo-600">*</span>
                   </label>
-                  <input
-                    type="text"
-                    required
-                    value={replyAuthor}
-                    onChange={(e) => setReplyAuthor(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500"
-                  />
+                  <select
+                    value={selectedDepartment}
+                    onChange={(e) => setSelectedDepartment(e.target.value)}
+                    className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 font-semibold text-slate-800"
+                  >
+                    {OFFICIAL_DEPARTMENTS.map((dept) => (
+                      <option key={dept} value={dept}>
+                        {dept}
+                      </option>
+                    ))}
+                  </select>
+
+                  {selectedDepartment === '직접 입력' && (
+                    <input
+                      type="text"
+                      required
+                      placeholder="부서 또는 직급명 입력 (예: 학생생활안전부장)"
+                      value={customDepartment}
+                      onChange={(e) => setCustomDepartment(e.target.value)}
+                      className="w-full mt-2 px-3 py-1.5 text-xs bg-white rounded-xl border border-indigo-300 focus:outline-none focus:border-indigo-500"
+                    />
+                  )}
                 </div>
+
                 <div>
-                  <label className="text-[10px] font-semibold text-slate-500 block mb-1">
-                    상태 변경
+                  <label className="text-[10px] font-bold text-slate-600 block mb-1">
+                    처리 상태 변경 <span className="text-indigo-600">*</span>
                   </label>
                   <select
                     value={replyStatus}
                     onChange={(e) => setReplyStatus(e.target.value as '검토중' | '답변완료')}
-                    className="w-full px-3 py-1.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 font-semibold text-slate-800"
                   >
-                    <option value="답변완료">답변완료 (해결 및 조치 결과)</option>
-                    <option value="검토중">검토중 (대의원회 상정 등 진행 상황 안내)</option>
+                    <option value="답변완료">답변완료 (해결 및 조치 결과 공식 안내)</option>
+                    <option value="검토중">검토중 (대의원회 및 교무부 검토 진행 중)</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="text-[10px] font-semibold text-slate-500 block mb-1">
-                  답변 본문
+                <label className="text-[10px] font-bold text-slate-600 block mb-1">
+                  공식 답변 내용 <span className="text-indigo-600">*</span>
                 </label>
                 <textarea
                   required
-                  rows={3}
-                  placeholder="건의사항에 대한 학교/학생회의 공식 검토 결과 및 조치 계획을 정중히 작성해 주세요."
+                  rows={4}
+                  placeholder="건의사항에 대한 학교 및 학생부의 공식 검토 결과, 조치 계획, 개선 사항을 정중하게 작성해 주세요."
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 resize-none"
+                  className="w-full px-3.5 py-2.5 text-xs bg-white rounded-xl border border-slate-200 focus:outline-none focus:border-indigo-500 resize-none leading-relaxed"
                 />
               </div>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-1">
                 <button
                   type="submit"
                   disabled={isSubmittingReply}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition shadow-sm cursor-pointer disabled:opacity-50 flex items-center gap-1.5 active:scale-95"
                 >
-                  {isSubmittingReply ? '등록 중...' : '공식 답변 등록'}
+                  <Send className="w-3.5 h-3.5" />
+                  <span>{isSubmittingReply ? '등록 중...' : '공식 답변 등록'}</span>
                 </button>
               </div>
             </form>

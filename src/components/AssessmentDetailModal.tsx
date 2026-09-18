@@ -101,10 +101,10 @@ export default function AssessmentDetailModal({
               <div className="p-3 rounded-2xl bg-[#F5F5F7] border border-black/[0.02] col-span-2 sm:col-span-1">
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
                   <User className="w-3.5 h-3.5 text-slate-500" />
-                  <span>담당 선생님</span>
+                  <span>평가 대상</span>
                 </div>
                 <div className="mt-1 text-sm font-bold text-slate-800">
-                  {assessment.teacher ? `${assessment.teacher} 선생님` : '교과 담당 교사'}
+                  {assessment.grade}학년 {assessment.classNum ? `${assessment.classNum}반` : '전체'}
                 </div>
               </div>
             </div>

@@ -11,8 +11,10 @@ import {
   Sparkles,
   Edit3,
   X,
+  Camera,
 } from 'lucide-react';
 import { ExamScopeItem, getExamScopes, saveExamScope } from '../services/assessmentService';
+import ExamScopeOcrModal from './ExamScopeOcrModal';
 
 interface ExamScopeSectionProps {
   grade: number;
@@ -23,11 +25,12 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'announced' | 'pending'>('all');
   const [editingItem, setEditingItem] = useState<ExamScopeItem | null>(null);
+  const [isOcrOpen, setIsOcrOpen] = useState(
+    () => new URLSearchParams(window.location.search).get('openOcr') === 'true'
+  );
 
   const filteredScopes = scopes.filter((item) => {
-    const matchesQuery =
-      item.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (item.teacher && item.teacher.includes(searchQuery));
+    const matchesQuery = item.subject.toLowerCase().includes(searchQuery.toLowerCase());
     if (filterStatus === 'announced') return matchesQuery && item.status === 'announced';
     if (filterStatus === 'pending') return matchesQuery && item.status === 'pending';
     return matchesQuery;
@@ -98,18 +101,30 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
         </div>
       </div>
 
-      {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        {/* Search */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="과목명 또는 선생님 성함 검색..."
-            className="w-full pl-10 pr-4 py-2 text-sm bg-white rounded-xl border border-black/[0.06] focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
-          />
+      {/* Filter & Search Bar + OCR Button */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <div className="flex flex-1 items-center gap-2.5 max-w-lg">
+          {/* Search */}
+          <div className="relative flex-1">
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="과목명 검색 (화학, 문학, 미적2 등)..."
+              className="w-full pl-10 pr-4 py-2 text-sm bg-white rounded-xl border border-black/[0.06] focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+            />
+          </div>
+
+          {/* AI OCR Button */}
+          <button
+            type="button"
+            onClick={() => setIsOcrOpen(true)}
+            className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 text-white shadow-xs flex items-center gap-2 cursor-pointer transition shrink-0 active:scale-95"
+          >
+            <Camera className="w-4 h-4" />
+            <span>📸 AI 칠판·공지문 OCR</span>
+          </button>
         </div>
 
         {/* Status Filter */}
@@ -174,11 +189,6 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
                       <h3 className="text-lg font-bold text-slate-900 tracking-tight">
                         {scope.subject}
                       </h3>
-                      {scope.teacher && (
-                        <span className="text-xs text-slate-500 font-medium bg-[#F5F5F7] px-2 py-0.5 rounded-md border border-black/[0.04]">
-                          {scope.teacher} 선생님
-                        </span>
-                      )}
                     </div>
                     <span className="text-[11px] text-slate-400 block mt-0.5">
                       {grade}학년 정규 지필평가 과목
@@ -374,6 +384,14 @@ export default function ExamScopeSection({ grade }: ExamScopeSectionProps) {
           </div>
         )}
       </AnimatePresence>
+
+      {/* AI OCR Blackboard Modal */}
+      <ExamScopeOcrModal
+        isOpen={isOcrOpen}
+        onClose={() => setIsOcrOpen(false)}
+        onSaveScope={handleSaveEdit}
+        grade={grade}
+      />
     </div>
   );
 }

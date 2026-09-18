@@ -7,11 +7,10 @@ export interface AssessmentInfo {
   subject: string;
   title: string;
   type: '논술형' | '실험·실습' | '발표' | '포트폴리오' | '보고서' | '구술평가';
-  weight: string; // e.g. "20%"
+  weight: string; // e.g. "15%"
   dueDate?: string;
   description: string;
   materials?: string; // 준비물
-  teacher?: string;
   notice?: string;
 }
 
@@ -19,7 +18,6 @@ export interface ExamScopeItem {
   id: string;
   grade: number;
   subject: string;
-  teacher?: string;
   status: 'announced' | 'pending';
   scope?: string;
   textbookPages?: string;
@@ -42,7 +40,6 @@ const DEFAULT_ASSESSMENTS: AssessmentInfo[] = [
     dueDate: '2026-09-19(금) 2교시',
     description: '교과서 Lesson 4 본문 핵심 쟁점을 분석하고, 주어진 조건(어휘 5종 포함, 150단어 내외)에 맞춰 논술형 에세이를 작성합니다.',
     materials: '검정색 볼펜, 수정테이프 (전자사전·단어장 지참 불가)',
-    teacher: '이규',
     notice: '당일 미응시 시 학교 학업성적관리규정에 따른 인정점 부여 (공결 사유 증빙 필요)',
   },
   {
@@ -58,7 +55,6 @@ const DEFAULT_ASSESSMENTS: AssessmentInfo[] = [
     dueDate: '2026-09-19(금) 3교시',
     description: '3주기 원소의 성질 변화 및 할로젠 원소의 반응성을 직접 실험·관찰하고, 조별 측정 데이터 기반 개별 보고서를 현장에서 작성하여 제출합니다.',
     materials: '실험복 필수 착용, 실험 활동지, 필기도구',
-    teacher: '임재',
     notice: '실험실 안전 규정 미준수 시 감점 처리되니 보안경 및 복장을 필히 준수 바랍니다.',
   },
   {
@@ -74,7 +70,6 @@ const DEFAULT_ASSESSMENTS: AssessmentInfo[] = [
     dueDate: '2026-09-24(수) 4교시',
     description: '현대 사회 주요 쟁점에 대한 찬반 논거를 수집하고, 입론서 개요를 작성한 뒤 3분간 설득적 구술 발표를 진행합니다.',
     materials: '토론 개요서 1부',
-    teacher: '박조',
     notice: '발표 시간 엄수 (3분 초과 시 감점)',
   },
   {
@@ -90,7 +85,6 @@ const DEFAULT_ASSESSMENTS: AssessmentInfo[] = [
     dueDate: '2026-09-25(목) 5교시',
     description: '고생대부터 신생대까지의 기후 변화와 화석 산출 양상을 정리한 탐구 마인드맵 및 개인 탐구 보고서 제출',
     materials: 'A4 포트폴리오 바인더',
-    teacher: '정영',
     notice: '표절 검사 실시 예정',
   },
 ];
@@ -100,7 +94,6 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     id: 'scope-eng2',
     grade: 2,
     subject: '영어2',
-    teacher: '이규',
     status: 'announced',
     scope: '교과서 Lesson 3 ~ Lesson 5 전체',
     textbookPages: 'p.38 ~ p.84',
@@ -112,7 +105,6 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     id: 'scope-lit',
     grade: 2,
     subject: '문학',
-    teacher: '김국',
     status: 'pending',
     scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
     textbookPages: '공지 대기 중',
@@ -124,7 +116,6 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     id: 'scope-calc2',
     grade: 2,
     subject: '미적2',
-    teacher: '안수',
     status: 'pending',
     scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
     textbookPages: '공지 대기 중',
@@ -136,7 +127,6 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     id: 'scope-chem',
     grade: 2,
     subject: '화학',
-    teacher: '임재',
     status: 'pending',
     scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
     textbookPages: '공지 대기 중',
@@ -148,7 +138,6 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     id: 'scope-earth',
     grade: 2,
     subject: '지구',
-    teacher: '정영',
     status: 'pending',
     scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
     textbookPages: '공지 대기 중',
@@ -160,7 +149,6 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     id: 'scope-history',
     grade: 2,
     subject: '한국사',
-    teacher: '최역',
     status: 'pending',
     scope: '(9월 22일 월요일 09:00 교무실 일괄 공지 예정)',
     textbookPages: '공지 대기 중',
@@ -170,8 +158,8 @@ const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
   },
 ];
 
-const ASSESSMENTS_STORAGE_KEY = 'sdj_assessments_v1';
-const EXAM_SCOPES_STORAGE_KEY = 'sdj_exam_scopes_v1';
+const ASSESSMENTS_STORAGE_KEY = 'sdj_assessments_v2';
+const EXAM_SCOPES_STORAGE_KEY = 'sdj_exam_scopes_v2';
 
 export function getAssessments(grade: number, classNum?: number): AssessmentInfo[] {
   try {

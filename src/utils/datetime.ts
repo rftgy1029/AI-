@@ -11,25 +11,25 @@ export interface PeriodScheduleItem {
   isBreak?: boolean;
 }
 
-// 서대전고 표준 일과 시간표 (월, 화, 목, 금: 7교시 / 수: 6교시 및 동아리)
+// 서대전고 컴시간 공식 일과 시간표 (1교시 08:20 시작, 50분 수업 / 10분 휴식, 점심 12:10~13:10)
 export const SEODAEJEON_BELL_SCHEDULE: PeriodScheduleItem[] = [
-  { period: 'morning', name: '등교 및 아침 자습', startMinutes: 8 * 60 + 30, endMinutes: 9 * 60, timeRangeStr: '08:30 - 09:00' },
-  { period: 1, name: '1교시', startMinutes: 9 * 60, endMinutes: 9 * 60 + 50, timeRangeStr: '09:00 - 09:50' },
-  { period: 'break', name: '쉬는 시간', startMinutes: 9 * 60 + 50, endMinutes: 10 * 60, timeRangeStr: '09:50 - 10:00', isBreak: true },
-  { period: 2, name: '2교시', startMinutes: 10 * 60, endMinutes: 10 * 60 + 50, timeRangeStr: '10:00 - 10:50' },
-  { period: 'break', name: '쉬는 시간', startMinutes: 10 * 60 + 50, endMinutes: 11 * 60, timeRangeStr: '10:50 - 11:00', isBreak: true },
-  { period: 3, name: '3교시', startMinutes: 11 * 60, endMinutes: 11 * 60 + 50, timeRangeStr: '11:00 - 11:50' },
-  { period: 'break', name: '쉬는 시간', startMinutes: 11 * 60 + 50, endMinutes: 12 * 60, timeRangeStr: '11:50 - 12:00', isBreak: true },
-  { period: 4, name: '4교시', startMinutes: 12 * 60, endMinutes: 12 * 60 + 50, timeRangeStr: '12:00 - 12:50' },
-  { period: 'lunch', name: '점심시간 & 방송', startMinutes: 12 * 60 + 50, endMinutes: 13 * 60 + 50, timeRangeStr: '12:50 - 13:50' },
-  { period: 5, name: '5교시', startMinutes: 13 * 60 + 50, endMinutes: 14 * 60 + 40, timeRangeStr: '13:50 - 14:40' },
-  { period: 'break', name: '쉬는 시간', startMinutes: 14 * 60 + 40, endMinutes: 14 * 60 + 50, timeRangeStr: '14:40 - 14:50', isBreak: true },
-  { period: 6, name: '6교시', startMinutes: 14 * 60 + 50, endMinutes: 15 * 60 + 40, timeRangeStr: '14:50 - 15:40' },
-  { period: 'break', name: '쉬는 시간', startMinutes: 15 * 60 + 40, endMinutes: 15 * 60 + 50, timeRangeStr: '15:40 - 15:50', isBreak: true },
-  { period: 7, name: '7교시', startMinutes: 15 * 60 + 50, endMinutes: 16 * 60 + 40, timeRangeStr: '15:50 - 16:40' },
-  { period: 'cleaning', name: '종례 및 청소', startMinutes: 16 * 60 + 40, endMinutes: 17 * 60, timeRangeStr: '16:40 - 17:00' },
-  { period: 'afterschool', name: '방과후 수업', startMinutes: 17 * 60, endMinutes: 18 * 60, timeRangeStr: '17:00 - 18:00' },
-  { period: 'night', name: '야간 자율학습', startMinutes: 19 * 60, endMinutes: 21 * 60, timeRangeStr: '19:00 - 21:00' },
+  { period: 'morning', name: '등교 및 아침 자습', startMinutes: 8 * 60, endMinutes: 8 * 60 + 20, timeRangeStr: '08:00 - 08:20' },
+  { period: 1, name: '1교시', startMinutes: 8 * 60 + 20, endMinutes: 9 * 60 + 10, timeRangeStr: '08:20 - 09:10' },
+  { period: 'break', name: '쉬는 시간', startMinutes: 9 * 60 + 10, endMinutes: 9 * 60 + 20, timeRangeStr: '09:10 - 09:20', isBreak: true },
+  { period: 2, name: '2교시', startMinutes: 9 * 60 + 20, endMinutes: 10 * 60 + 10, timeRangeStr: '09:20 - 10:10' },
+  { period: 'break', name: '쉬는 시간', startMinutes: 10 * 60 + 10, endMinutes: 10 * 60 + 20, timeRangeStr: '10:10 - 10:20', isBreak: true },
+  { period: 3, name: '3교시', startMinutes: 10 * 60 + 20, endMinutes: 11 * 60 + 10, timeRangeStr: '10:20 - 11:10' },
+  { period: 'break', name: '쉬는 시간', startMinutes: 11 * 60 + 10, endMinutes: 11 * 60 + 20, timeRangeStr: '11:10 - 11:20', isBreak: true },
+  { period: 4, name: '4교시', startMinutes: 11 * 60 + 20, endMinutes: 12 * 60 + 10, timeRangeStr: '11:20 - 12:10' },
+  { period: 'lunch', name: '점심시간 & 방송', startMinutes: 12 * 60 + 10, endMinutes: 13 * 60 + 10, timeRangeStr: '12:10 - 13:10' },
+  { period: 5, name: '5교시', startMinutes: 13 * 60 + 10, endMinutes: 14 * 60, timeRangeStr: '13:10 - 14:00' },
+  { period: 'break', name: '쉬는 시간', startMinutes: 14 * 60, endMinutes: 14 * 60 + 10, timeRangeStr: '14:00 - 14:10', isBreak: true },
+  { period: 6, name: '6교시', startMinutes: 14 * 60 + 10, endMinutes: 15 * 60, timeRangeStr: '14:10 - 15:00' },
+  { period: 'break', name: '쉬는 시간', startMinutes: 15 * 60, endMinutes: 15 * 60 + 10, timeRangeStr: '15:00 - 15:10', isBreak: true },
+  { period: 7, name: '7교시', startMinutes: 15 * 60 + 10, endMinutes: 16 * 60, timeRangeStr: '15:10 - 16:00' },
+  { period: 'cleaning', name: '종례 및 청소', startMinutes: 16 * 60, endMinutes: 16 * 60 + 30, timeRangeStr: '16:00 - 16:30' },
+  { period: 'afterschool', name: '방과후 수업', startMinutes: 16 * 60 + 40, endMinutes: 17 * 60 + 40, timeRangeStr: '16:40 - 17:40' },
+  { period: 'night', name: '야간 자율학습', startMinutes: 18 * 60 + 40, endMinutes: 21 * 60, timeRangeStr: '18:40 - 21:00' },
 ];
 
 export interface CurrentPeriodInfo {
@@ -225,9 +225,9 @@ export function getCurrentPeriodInfo(dateInput: Date = new Date()): CurrentPerio
     }
   }
 
-  // Before 08:30
-  if (totalMinutes < 8 * 60 + 30) {
-    const diffToSchool = 8 * 60 + 30 - totalMinutes;
+  // Before 08:20
+  if (totalMinutes < 8 * 60 + 20) {
+    const diffToSchool = 8 * 60 + 20 - totalMinutes;
     return {
       activePeriodNumber: null,
       isLunchTime: false,
@@ -235,12 +235,12 @@ export function getCurrentPeriodInfo(dateInput: Date = new Date()): CurrentPerio
       isSchoolHours: false,
       isWeekend: false,
       label: '등교 전',
-      subLabel: `08:30 등교 시간까지 ${Math.floor(diffToSchool / 60)}시간 ${diffToSchool % 60}분`,
+      subLabel: `08:20 1교시 시작까지 ${Math.floor(diffToSchool / 60)}시간 ${diffToSchool % 60}분`,
       timeRange: '등교 전',
       remainingMinutes: diffToSchool,
       remainingSeconds: diffToSchool * 60,
       progressPercent: 0,
-      nextPeriodName: '1교시 (09:00)',
+      nextPeriodName: '1교시 (08:20)',
       dayOfWeek,
       dateFormatted,
       timeFormatted,
@@ -292,9 +292,9 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
     };
   }
 
-  // 12:50 ~ 13:50: 점심시간 활성
-  if (totalMinutes >= 12 * 60 + 50 && totalMinutes < 13 * 60 + 50) {
-    const remaining = 13 * 60 + 50 - totalMinutes;
+  // 12:10 ~ 13:10: 점심시간 활성 (서대전고 컴시간 기준)
+  if (totalMinutes >= 12 * 60 + 10 && totalMinutes < 13 * 60 + 10) {
+    const remaining = 13 * 60 + 10 - totalMinutes;
     return {
       isLunchActive: true,
       statusLabel: '맛있는 점심 배식 중 🍱',
@@ -306,15 +306,15 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
     };
   }
 
-  // 오전: 점심 전 (00:00 ~ 12:50)
-  if (totalMinutes < 12 * 60 + 50) {
-    const diff = 12 * 60 + 50 - totalMinutes;
+  // 오전: 점심 전 (00:00 ~ 12:10)
+  if (totalMinutes < 12 * 60 + 10) {
+    const diff = 12 * 60 + 10 - totalMinutes;
     const diffH = Math.floor(diff / 60);
     const diffM = diff % 60;
     const timeText = diffH > 0 ? `${diffH}시간 ${diffM}분 후` : `${diffM}분 후`;
     return {
       isLunchActive: false,
-      statusLabel: `점심시간까지 ${timeText} (12:50)`,
+      statusLabel: `점심시간까지 ${timeText} (12:10)`,
       subLabel: '오늘의 메뉴를 미리 확인해보세요',
       badgeColor: 'amber',
       recommendedMealType: 'lunch',
@@ -323,7 +323,7 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
     };
   }
 
-  // 오후: 13:50 ~ 18:00
+  // 오후: 13:10 ~ 18:00
   if (totalMinutes < 18 * 60) {
     return {
       isLunchActive: false,

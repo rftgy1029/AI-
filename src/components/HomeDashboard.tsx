@@ -150,27 +150,27 @@ export default function HomeDashboard({
           </div>
 
           {/* Quick Action Buttons - Grid on mobile for easy thumb reach */}
-          <div className="grid grid-cols-3 sm:flex sm:items-center gap-2 pt-1 sm:pt-0 shrink-0">
+          <div className="grid grid-cols-3 sm:flex sm:items-center gap-2.5 pt-1 sm:pt-0 shrink-0">
             <button
               onClick={() => onNavigate('meal')}
-              className="py-2.5 px-3 rounded-2xl sm:rounded-full text-xs font-semibold bg-black text-white hover:bg-slate-800 active:scale-95 transition cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-black text-white hover:bg-slate-800 active:scale-95 transition cursor-pointer shadow-sm flex items-center justify-center gap-2"
             >
-              <Utensils className="w-3.5 h-3.5" />
+              <Utensils className="w-4 h-4" />
               <span>급식표</span>
             </button>
             <button
               onClick={() => onNavigate('timetable')}
-              className="py-2.5 px-3 rounded-2xl sm:rounded-full text-xs font-semibold bg-[#F5F5F7] text-slate-800 hover:bg-slate-200/80 active:scale-95 transition cursor-pointer border border-black/[0.04] flex items-center justify-center gap-1.5"
+              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-[#F5F5F7] text-slate-800 hover:bg-slate-200/80 active:scale-95 transition cursor-pointer border border-black/[0.04] flex items-center justify-center gap-2"
             >
-              <CalendarDays className="w-3.5 h-3.5" />
+              <CalendarDays className="w-4 h-4" />
               <span>시간표</span>
             </button>
             <button
               onClick={() => onNavigate('board')}
-              className="py-2.5 px-3 rounded-2xl sm:rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 active:scale-95 transition cursor-pointer border border-indigo-200/60 flex items-center justify-center gap-1.5"
+              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 active:scale-95 transition cursor-pointer border border-indigo-200/60 flex items-center justify-center gap-2"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-indigo-600" />
-              <span>건의함</span>
+              <MessageSquare className="w-4 h-4 text-indigo-600" />
+              <span>게시판</span>
             </button>
           </div>
         </div>
@@ -240,10 +240,10 @@ export default function HomeDashboard({
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-black/[0.04]">
             <button
               onClick={() => onNavigate('meal')}
-              className="w-full py-2.5 rounded-xl sm:rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+              className="w-full py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-800 text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer border border-black/[0.03]"
             >
-              <span>주간 급식표 및 영양성분 전체보기</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>주간 급식표 및 석식 전체보기</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </motion.div>
@@ -273,7 +273,7 @@ export default function HomeDashboard({
               <button
                 type="button"
                 onClick={onOpenClassChange}
-                className="text-xs font-bold text-indigo-600 hover:underline cursor-pointer"
+                className="text-xs sm:text-sm font-bold text-indigo-600 hover:underline cursor-pointer"
               >
                 학급 변경
               </button>
@@ -290,29 +290,45 @@ export default function HomeDashboard({
                   return (
                     <div
                       key={p.period}
-                      className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl flex items-center justify-between text-xs transition ${
-                        isCurrent
+                      className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl flex items-center justify-between text-xs sm:text-sm transition ${
+                        p.isChanged
+                          ? 'bg-amber-100/90 text-amber-950 font-bold border-2 border-amber-400'
+                          : isCurrent
                           ? 'bg-indigo-50 text-indigo-950 font-bold border border-indigo-200'
                           : 'bg-[#F5F5F7] text-slate-800 font-medium'
                       }`}
                     >
                       <div className="flex items-center gap-2.5 min-w-0">
                         <span
-                          className={`w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-black shrink-0 ${
-                            isCurrent
+                          className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black shrink-0 ${
+                            p.isChanged
+                              ? 'bg-amber-400 text-amber-950'
+                              : isCurrent
                               ? 'bg-indigo-600 text-white'
                               : 'bg-white text-slate-600 border border-black/[0.06]'
                           }`}
                         >
                           {p.period}
                         </span>
-                        <span className="truncate">{p.subject}</span>
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span className="truncate font-bold">{p.subject}</span>
+                          {p.teacher && (
+                            <span className="text-[11px] text-slate-500 font-normal shrink-0">
+                              ({p.teacher})
+                            </span>
+                          )}
+                          {p.isChanged && (
+                            <span className="text-[10px] font-extrabold text-amber-950 bg-amber-300 px-1.5 py-0.5 rounded shrink-0">
+                              변경 (원래: {p.originalSubject || '진로'})
+                            </span>
+                          )}
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] shrink-0 text-slate-400">
+                      <div className="flex items-center gap-1.5 text-xs shrink-0 text-slate-400">
                         <span className="hidden xs:inline">{p.timeRange || PERIOD_TIMES[p.period]}</span>
                         {isCurrent && (
-                          <span className="text-[10px] font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] sm:text-xs font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full">
                             진행 중
                           </span>
                         )}
@@ -332,16 +348,16 @@ export default function HomeDashboard({
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-black/[0.04]">
             <button
               onClick={() => onNavigate('timetable')}
-              className="w-full py-2.5 rounded-xl sm:rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+              className="w-full py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-800 text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer border border-black/[0.03]"
             >
-              <span>주간 시간표 및 일과표 전체보기</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <span>주간 시간표 전체보기</span>
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </motion.div>
       </div>
 
-      {/* 3. Bottom 2-Column Bento Grid: Academic Schedule D-Day & School Info */}
+      {/* 3. Bottom 2-Column Bento Grid: Academic Schedule D-Day & Board */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Bento 3: 공식 학사일정 D-Day 레이더 */}
         <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between">
@@ -357,7 +373,7 @@ export default function HomeDashboard({
                 </div>
               </div>
 
-              <span className="text-[11px] sm:text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+              <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200/60">
                 실시간 집계
               </span>
             </div>
@@ -371,17 +387,17 @@ export default function HomeDashboard({
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-[9px] sm:text-[10px] font-bold text-slate-500 bg-white px-1.5 py-0.2 rounded border border-black/[0.04]">
+                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 bg-white px-2 py-0.5 rounded border border-black/[0.04]">
                           {evt.typeLabel || '학사'}
                         </span>
-                        <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">{evt.date}</span>
+                        <span className="text-xs text-slate-400 font-medium">{evt.date}</span>
                       </div>
-                      <h4 className="text-xs font-bold text-slate-900 truncate">{evt.title}</h4>
+                      <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{evt.title}</h4>
                     </div>
 
                     <div className="text-right shrink-0">
                       <span
-                        className={`text-[11px] sm:text-xs font-black px-2.5 py-1 rounded-xl border ${
+                        className={`text-xs sm:text-sm font-black px-3 py-1 rounded-xl border ${
                           evt.dDay === 0
                             ? 'bg-rose-500 text-white border-rose-600'
                             : evt.dDay <= 14
@@ -405,74 +421,61 @@ export default function HomeDashboard({
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-black/[0.04]">
             <button
               onClick={() => onNavigate('schedule')}
-              className="w-full py-2.5 rounded-xl sm:rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-1 cursor-pointer"
+              className="w-full py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-800 text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer border border-black/[0.03]"
             >
               <span>연간 공식 학사일정 전체보기</span>
-              <ArrowRight className="w-3.5 h-3.5" />
+              <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Bento 4: 학교 공식 기본 정보 */}
+        {/* Bento 4: 학생 게시판 바로가기 */}
         <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between">
           <div>
             <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-black/[0.04]">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
-                  <Building className="w-4 h-4" />
+                  <MessageSquare className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm sm:text-base">서대전고등학교</h3>
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">공식 학교 현황 및 연락처</span>
-                </div>
-              </div>
-
-              <span className="text-[10px] sm:text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                {OFFICIAL_SCHOOL_INFO.schoolCode}
-              </span>
-            </div>
-
-            <div className="mt-4 sm:mt-5 space-y-2 text-xs">
-              <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#F5F5F7] space-y-0.5">
-                <span className="text-[9px] sm:text-[10px] text-slate-400 font-bold">소재지</span>
-                <p className="font-semibold text-slate-900 text-[11px] sm:text-xs">{OFFICIAL_SCHOOL_INFO.address}</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#F5F5F7]">
-                  <span className="text-[9px] sm:text-[10px] text-slate-400 font-bold block">교무실 전화</span>
-                  <a
-                    href={`tel:${OFFICIAL_SCHOOL_INFO.tel}`}
-                    className="font-bold font-mono text-indigo-600 hover:underline text-[11px] sm:text-xs block"
-                  >
-                    {OFFICIAL_SCHOOL_INFO.tel}
-                  </a>
-                </div>
-                <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#F5F5F7]">
-                  <span className="text-[9px] sm:text-[10px] text-slate-400 font-bold block">행정실 팩스</span>
-                  <span className="font-bold font-mono text-slate-900 text-[11px] sm:text-xs block">
-                    {OFFICIAL_SCHOOL_INFO.fax}
+                  <h3 className="font-bold text-slate-900 text-sm sm:text-base">학생 소통 게시판</h3>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
+                    서대전고 재학생 의견 나눔
                   </span>
                 </div>
               </div>
 
-              <div className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#F5F5F7] flex items-center justify-between text-[11px] sm:text-xs">
-                <span className="text-slate-500 font-medium">교훈</span>
-                <span className="font-bold text-slate-900">{OFFICIAL_SCHOOL_INFO.motto}</span>
+              <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200/60">
+                게시판
+              </span>
+            </div>
+
+            <div className="mt-4 sm:mt-5 space-y-3">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                급식, 시설 개선, 학사일정, 동아리 활동 등 학교 생활에 관한 생각과 제안을 자유롭게 나누어보세요.
+              </p>
+
+              <div className="flex flex-wrap gap-1.5">
+                {['급식 제안', '시설/환경', '학사/수업', '동아리/자치', '자유의견'].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-2.5 py-1 rounded-lg bg-[#F5F5F7] text-slate-700 text-xs font-semibold border border-black/[0.02]"
+                  >
+                    #{tag}
+                  </span>
+                ))}
               </div>
             </div>
           </div>
 
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-black/[0.04]">
-            <a
-              href={OFFICIAL_SCHOOL_INFO.homepage}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-2.5 rounded-xl sm:rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-700 text-xs font-bold transition flex items-center justify-center gap-1.5"
+            <button
+              onClick={() => onNavigate('board')}
+              className="w-full py-3.5 rounded-2xl bg-black hover:bg-slate-800 active:scale-98 text-white text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
-              <span>공식 학교 홈페이지 방문</span>
-              <ExternalLink className="w-3.5 h-3.5" />
-            </a>
+              <span>학생 게시판 바로가기</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </div>

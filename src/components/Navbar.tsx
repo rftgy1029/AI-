@@ -80,8 +80,7 @@ export default function Navbar({
     { id: 'meal', label: '급식', fullLabel: '급식표 (NEIS)', icon: Utensils },
     { id: 'timetable', label: '시간표', fullLabel: '시간표 (NEIS)', icon: CalendarDays },
     { id: 'schedule', label: '일정', fullLabel: '학사일정 · D-Day', icon: Calendar },
-    { id: 'board', label: '건의함', fullLabel: '실명제 건의함', icon: MessageSquare },
-    { id: 'school', label: '학교', fullLabel: '학교 안내', icon: Building },
+    { id: 'board', label: '게시판', fullLabel: '게시판', icon: MessageSquare },
   ];
 
   return (
@@ -156,13 +155,13 @@ export default function Navbar({
                 <button
                   key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`relative px-3.5 py-2 rounded-full text-xs font-semibold transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
+                  className={`relative px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 ${
                     isActive
                       ? 'text-black bg-white shadow-2xs'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-black/[0.04]'
                   }`}
                 >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                  <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
                   <span>{item.fullLabel}</span>
 
                   {isActive && (

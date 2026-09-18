@@ -118,10 +118,10 @@ export default function CreateSuggestionModal({
             </div>
             <div>
               <h3 className="font-bold text-slate-900 text-base sm:text-lg">
-                실명제 건의사항 작성
+                학생 게시글 작성
               </h3>
-              <p className="text-[11px] text-slate-400 font-medium">
-                서대전고등학교 학생 및 교직원 실명 소통 게시판
+              <p className="text-xs text-slate-400 font-medium">
+                서대전고등학교 학생 및 교직원 소통 게시판
               </p>
             </div>
           </div>
@@ -129,9 +129,9 @@ export default function CreateSuggestionModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-[#F5F5F7] hover:bg-slate-200 text-slate-500 flex items-center justify-center transition cursor-pointer"
+            className="w-9 h-9 rounded-full bg-[#F5F5F7] hover:bg-slate-200 text-slate-600 flex items-center justify-center transition cursor-pointer"
           >
-            <X className="w-4 h-4" />
+            <X className="w-5 h-5" />
           </button>
         </div>
 
@@ -308,21 +308,21 @@ export default function CreateSuggestionModal({
           </div>
 
           {/* Footer CTA */}
-          <div className="pt-2 flex items-center justify-end gap-2 border-t border-black/[0.04]">
+          <div className="pt-3 flex items-center justify-end gap-3 border-t border-black/[0.04]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              className="px-5 py-3 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
             >
               취소
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition cursor-pointer shadow-sm flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50"
+              className="px-6 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition cursor-pointer shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
             >
-              <Send className="w-3.5 h-3.5" />
-              <span>{isSubmitting ? '등록 중...' : '실명 건의사항 등록'}</span>
+              <Send className="w-4 h-4" />
+              <span>{isSubmitting ? '등록 중...' : '게시글 등록'}</span>
             </button>
           </div>
         </form>

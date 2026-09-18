@@ -37,9 +37,13 @@ export interface MealItem {
 export interface TimetablePeriod {
   period: number;
   subject: string;
-  timeRange: string; // e.g. "09:00 ~ 09:50"
+  timeRange: string; // e.g. "08:20 ~ 09:10"
+  teacher?: string; // 담당 선생님 (예: 박조, 정영, 이규)
   room?: string;
   isCurrent?: boolean;
+  isChanged?: boolean; // 시간표 변경 여부 (컴시간 노란색 박스)
+  originalSubject?: string; // 변경 전 원래 과목 (예: 진로)
+  changeNote?: string;
 }
 
 export interface TimetableDay {

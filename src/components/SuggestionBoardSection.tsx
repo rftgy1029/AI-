@@ -131,20 +131,20 @@ export default function SuggestionBoardSection({
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] sm:text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200/60 flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                서대전고 전교생 실명제 운영
+              <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-200/60 flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                서대전고 학생 소통 게시판
               </span>
-              <span className="text-[10px] sm:text-xs font-bold text-slate-500 bg-[#F5F5F7] px-2.5 py-0.5 rounded-full border border-black/[0.03]">
-                책임감 있는 학생 소통 공간
+              <span className="text-xs font-bold text-slate-500 bg-[#F5F5F7] px-3 py-1 rounded-full border border-black/[0.03]">
+                자유로운 학생 참여 공간
               </span>
             </div>
 
-            <h2 className="text-xl sm:text-3xl font-bold text-slate-900 tracking-tight">
-              서대전고등학교 실명제 건의게시판
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+              서대전고등학교 학생 게시판
             </h2>
-            <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-              급식, 학교 시설, 학사 일정, 동아리 등 학교 발전을 위한 건의사항을 실명으로 자유롭게 제안하세요.
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+              학사, 수업, 급식, 학교 시설, 동아리 등 자유롭게 의견을 나누고 건의하는 공식 게시판입니다.
             </p>
           </div>
 
@@ -152,18 +152,18 @@ export default function SuggestionBoardSection({
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
-              className="w-full md:w-auto px-5 py-3 rounded-2xl bg-black text-white hover:bg-slate-800 transition flex items-center justify-center gap-2 text-xs sm:text-sm font-bold shadow-sm cursor-pointer active:scale-95"
+              className="w-full md:w-auto px-6 py-3.5 rounded-2xl bg-black text-white hover:bg-slate-800 transition flex items-center justify-center gap-2 text-sm sm:text-base font-bold shadow-sm cursor-pointer active:scale-95"
             >
-              <MessageSquarePlus className="w-4 h-4" />
-              <span>건의사항 작성하기</span>
+              <MessageSquarePlus className="w-5 h-5" />
+              <span>게시글 작성하기</span>
             </button>
           </div>
         </div>
 
         {/* Status Counters Tab Bar */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mt-5 pt-5 border-t border-black/[0.04]">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 mt-5 pt-5 border-t border-black/[0.04]">
           {[
-            { key: 'all', label: '전체 건의', count: statusCounts.all, color: 'text-slate-900' },
+            { key: 'all', label: '전체 게시글', count: statusCounts.all, color: 'text-slate-900' },
             { key: '답변완료', label: '답변완료', count: statusCounts.resolved, color: 'text-emerald-600' },
             { key: '검토중', label: '검토 진행중', count: statusCounts.reviewing, color: 'text-amber-600' },
             { key: '접수대기', label: '접수대기', count: statusCounts.pending, color: 'text-indigo-600' },
@@ -174,16 +174,16 @@ export default function SuggestionBoardSection({
                 key={tab.key}
                 type="button"
                 onClick={() => setSelectedStatus(tab.key as any)}
-                className={`p-3 rounded-2xl border text-left transition cursor-pointer active:scale-95 ${
+                className={`p-3.5 sm:p-4 rounded-2xl border text-left transition cursor-pointer active:scale-95 ${
                   isSelected
-                    ? 'bg-[#F5F5F7] border-black/10 shadow-2xs'
-                    : 'bg-white hover:bg-slate-50 border-black/[0.03]'
+                    ? 'bg-[#F5F5F7] border-black/15 shadow-2xs'
+                    : 'bg-white hover:bg-slate-50 border-black/[0.04]'
                 }`}
               >
-                <span className="text-[11px] font-semibold text-slate-400 block">
+                <span className="text-xs sm:text-sm font-bold text-slate-500 block">
                   {tab.label}
                 </span>
-                <span className={`text-lg sm:text-xl font-black ${tab.color}`}>
+                <span className={`text-xl sm:text-2xl font-black mt-1 block ${tab.color}`}>
                   {tab.count}건
                 </span>
               </button>
@@ -193,18 +193,18 @@ export default function SuggestionBoardSection({
       </motion.div>
 
       {/* Filter and Search Controls */}
-      <div className="bg-white rounded-2xl p-3 sm:p-4 border border-black/[0.04] shadow-2xs space-y-3">
+      <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-black/[0.04] shadow-2xs space-y-3.5">
         {/* Category horizontal pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => setSelectedCategory(cat)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer active:scale-95 shrink-0 ${
+              className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer active:scale-95 shrink-0 border ${
                 selectedCategory === cat
-                  ? 'bg-black text-white shadow-2xs'
-                  : 'bg-[#F5F5F7] text-slate-600 hover:bg-slate-200/80'
+                  ? 'bg-black text-white border-black shadow-2xs'
+                  : 'bg-[#F5F5F7] text-slate-700 hover:bg-slate-200/80 border-black/[0.02]'
               }`}
             >
               {cat}
@@ -213,21 +213,21 @@ export default function SuggestionBoardSection({
         </div>
 
         {/* Search & Sort Row */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-2.5 pt-2 border-t border-black/[0.04]">
-          <div className="relative w-full sm:w-72">
-            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-black/[0.04]">
+          <div className="relative w-full sm:w-80">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="건의사항 제목, 내용, 작성자 검색..."
+              placeholder="게시글 제목, 내용, 작성자 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-3 py-1.5 text-xs bg-[#F5F5F7] rounded-xl border border-transparent focus:border-indigo-400 focus:bg-white focus:outline-none transition"
+              className="w-full pl-10 pr-3.5 py-2.5 text-sm bg-[#F5F5F7] rounded-xl border border-transparent focus:border-indigo-400 focus:bg-white focus:outline-none transition font-medium"
             />
           </div>
 
-          <div className="flex items-center gap-1.5 w-full sm:w-auto justify-end">
-            <span className="text-[11px] text-slate-400 font-semibold flex items-center gap-1">
-              <ArrowUpDown className="w-3 h-3" />
+          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+            <span className="text-xs text-slate-400 font-bold flex items-center gap-1">
+              <ArrowUpDown className="w-3.5 h-3.5" />
               정렬:
             </span>
             {[
@@ -239,10 +239,10 @@ export default function SuggestionBoardSection({
                 key={sort.key}
                 type="button"
                 onClick={() => setSortBy(sort.key as any)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium transition cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
                   sortBy === sort.key
-                    ? 'bg-indigo-600 text-white font-bold'
-                    : 'text-slate-600 hover:bg-slate-100'
+                    ? 'bg-indigo-600 text-white shadow-2xs'
+                    : 'text-slate-600 hover:bg-slate-100 bg-[#F5F5F7]'
                 }`}
               >
                 {sort.label}
@@ -258,18 +258,18 @@ export default function SuggestionBoardSection({
           <div className="bg-white rounded-[24px] sm:rounded-[28px] p-12 text-center border border-black/[0.04] space-y-3">
             <MessageSquare className="w-10 h-10 mx-auto text-slate-300" />
             <div>
-              <h4 className="text-sm font-bold text-slate-700">등록된 건의사항이 없습니다</h4>
-              <p className="text-xs text-slate-400 mt-1">
-                학교 생활에서 느꼈던 개선 아이디어를 실명으로 첫 건의해 보세요!
+              <h4 className="text-base font-bold text-slate-800">등록된 게시글이 없습니다</h4>
+              <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                학교 생활의 의견이나 아이디어를 자유롭게 첫 게시글로 남겨보세요!
               </p>
             </div>
             <button
               type="button"
               onClick={() => setIsCreateOpen(true)}
-              className="px-4 py-2 rounded-xl bg-black text-white text-xs font-bold hover:bg-slate-800 transition cursor-pointer active:scale-95 shadow-sm inline-flex items-center gap-1.5"
+              className="px-5 py-2.5 rounded-xl bg-black text-white text-sm font-bold hover:bg-slate-800 transition cursor-pointer active:scale-95 shadow-sm inline-flex items-center gap-2"
             >
-              <MessageSquarePlus className="w-3.5 h-3.5" />
-              <span>새 건의사항 작성</span>
+              <MessageSquarePlus className="w-4 h-4" />
+              <span>새 게시글 작성</span>
             </button>
           </div>
         ) : (

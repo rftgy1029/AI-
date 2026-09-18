@@ -5,7 +5,6 @@ import HomeDashboard from './components/HomeDashboard';
 import MealSection from './components/MealSection';
 import TimetableSection from './components/TimetableSection';
 import ScheduleSection from './components/ScheduleSection';
-import SchoolSection from './components/SchoolSection';
 import SuggestionBoardSection from './components/SuggestionBoardSection';
 import { ClassChangeModal } from './components/ClassChangeModal';
 import PasskeyAuthModal from './components/PasskeyAuthModal';
@@ -51,10 +50,10 @@ const DEFAULT_USER: UserProfile = {
   name: '서대전고 학생',
   role: 'student',
   grade: 2,
-  classNum: 3,
-  studentNumber: 14,
+  classNum: 1,
+  studentNumber: 1,
   badge: '서대전고 학생',
-  department: '서대전고등학교 2학년 3반',
+  department: '서대전고등학교 2학년 1반',
 };
 
 export default function App() {
@@ -63,7 +62,13 @@ export default function App() {
     const saved = localStorage.getItem('seodaejeon_portal_user');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        // 이전 기본값이 2학년 3반이었던 경우 사용자의 컴시간 2학년 1반으로 기본 전환
+        if (parsed.grade === 2 && parsed.classNum === 3) {
+          parsed.classNum = 1;
+          parsed.department = '서대전고등학교 2학년 1반';
+        }
+        return parsed;
       } catch (e) {
         console.error('Failed to parse saved user:', e);
       }
@@ -85,7 +90,7 @@ export default function App() {
   const [lastNeisSync, setLastNeisSync] = useState<string>('');
   const [meals, setMeals] = useState<MealItem[]>([]);
   const [timetable, setTimetable] = useState<Record<string, TimetableDay[]>>(() =>
-    getOfficialSeodaejeonTimetable(currentUser.grade || 2, currentUser.classNum || 3)
+    getOfficialSeodaejeonTimetable(currentUser.grade || 2, currentUser.classNum || 1)
   );
   const [events, setEvents] = useState<AcademicEvent[]>(() => mergeWithCustomEvents([]));
 
@@ -333,18 +338,6 @@ export default function App() {
                 onAddComment={handleAddComment}
                 onPostReply={handlePostReply}
               />
-            </motion.div>
-          )}
-
-          {activeTab === 'school' && (
-            <motion.div
-              key="school"
-              initial={{ opacity: 0, y: 8 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              transition={{ duration: 0.2 }}
-            >
-              <SchoolSection />
             </motion.div>
           )}
         </AnimatePresence>

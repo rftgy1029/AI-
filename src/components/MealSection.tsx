@@ -1,22 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Utensils,
   AlertCircle,
   RefreshCw,
   Flame,
-  Check,
-  Clock,
-  ChevronRight,
-  Info,
-  Calendar,
+  Moon,
+  Sun,
   Sparkles,
+  Info,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion } from 'motion/react';
 import { MealItem, UserProfile } from '../types';
 import {
-  getKSTDate,
   getKSTDateString,
-  getKSTDayOfWeek,
   getMealStatusInfo,
   MealStatusInfo,
 } from '../utils/datetime';
@@ -39,6 +35,7 @@ export default function MealSection({
 }: MealSectionProps) {
   const [mealStatus, setMealStatus] = useState<MealStatusInfo>(() => getMealStatusInfo());
   const [showAllergyTable, setShowAllergyTable] = useState(false);
+  const [mealType, setMealType] = useState<'lunch' | 'dinner'>('lunch');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -49,20 +46,40 @@ export default function MealSection({
 
   const todayKst = getKSTDateString();
 
-  const getInitialIndex = () => {
-    const idx = meals.findIndex((m) => m.date === todayKst);
-    return idx >= 0 ? idx : 0;
-  };
+  // 고유한 월~금 날짜 목록 추출
+  const uniqueDates = useMemo(() => {
+    const list: { date: string; dayOfWeek: string }[] = [];
+    meals.forEach((m) => {
+      if (!list.some((item) => item.date === m.date)) {
+        list.push({ date: m.date, dayOfWeek: m.dayOfWeek });
+      }
+    });
+    return list;
+  }, [meals]);
 
-  const [selectedMealIndex, setSelectedMealIndex] = useState<number>(getInitialIndex);
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const hasToday = meals.some((m) => m.date === todayKst);
+    if (hasToday) return todayKst;
+    return meals[0]?.date || todayKst;
+  });
 
-  // Sync index when meals array updates
+  // meals 업데이트 시 오늘 또는 첫 번째 날짜로 동기화
   useEffect(() => {
-    const idx = meals.findIndex((m) => m.date === todayKst);
-    if (idx >= 0) setSelectedMealIndex(idx);
-  }, [meals, todayKst]);
+    if (uniqueDates.length > 0 && !uniqueDates.some((d) => d.date === selectedDate)) {
+      const hasToday = uniqueDates.some((d) => d.date === todayKst);
+      setSelectedDate(hasToday ? todayKst : uniqueDates[0].date);
+    }
+  }, [uniqueDates, todayKst, selectedDate]);
 
-  const activeMeal = meals[selectedMealIndex] || meals[0];
+  // 선택된 날짜와 식사 구분(중식/석식)에 맞는 식단 산출
+  const activeMeal = useMemo(() => {
+    const exact = meals.find((m) => m.date === selectedDate && m.type === mealType);
+    if (exact) return exact;
+    // fallback: 해당 일자의 첫 식단
+    const sameDate = meals.find((m) => m.date === selectedDate);
+    if (sameDate) return sameDate;
+    return meals[0] || null;
+  }, [meals, selectedDate, mealType]);
 
   return (
     <div className="space-y-6">
@@ -75,22 +92,22 @@ export default function MealSection({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-orange-700 bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200/60">
+              <span className="text-xs font-semibold text-orange-700 bg-orange-50 px-3 py-1 rounded-full border border-orange-200/60">
                 NEIS 공공데이터 실시간 연동
               </span>
 
               {mealStatus.isLunchActive ? (
-                <span className="text-xs font-bold text-white bg-orange-500 px-2.5 py-0.5 rounded-full shadow-2xs animate-pulse flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
-                  현재 급식 배식 중
+                <span className="text-xs font-bold text-white bg-orange-500 px-3 py-1 rounded-full shadow-2xs animate-pulse flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                  현재 점심 배식 진행 중
                 </span>
               ) : mealStatus.isBeforeLunch ? (
-                <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200/60">
-                  {mealStatus.timeUntilLunch} 후 배식 시작
+                <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200/60">
+                  {mealStatus.timeUntilLunch} 후 점심 배식 시작
                 </span>
               ) : (
-                <span className="text-xs font-semibold text-slate-600 bg-[#F5F5F7] px-2.5 py-0.5 rounded-full border border-black/[0.03]">
-                  오늘 중식 배식 종료
+                <span className="text-xs font-semibold text-slate-600 bg-[#F5F5F7] px-3 py-1 rounded-full border border-black/[0.03]">
+                  오늘 중식 종료 (석식 이용 가능)
                 </span>
               )}
             </div>
@@ -98,14 +115,14 @@ export default function MealSection({
             <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
               서대전고등학교 공식 급식 식단표
             </h2>
-            <p className="text-xs text-slate-500 font-medium">
-              교육부 NEIS에서 실시간 전송받은 영양 식단, 열량(Kcal), 원산지 및 알레르기 유발 식품 정보입니다.
+            <p className="text-xs sm:text-sm text-slate-500 font-medium">
+              중식 및 석식 영양 식단, 열량(Kcal), 식재료 원산지 및 알레르기 유발 식품 정보를 실시간으로 안내합니다.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             {lastSyncTime && (
-              <span className="text-[11px] text-slate-400 font-medium hidden sm:inline">
+              <span className="text-xs text-slate-400 font-medium hidden sm:inline">
                 최근 동기화: {lastSyncTime}
               </span>
             )}
@@ -115,43 +132,87 @@ export default function MealSection({
                 type="button"
                 onClick={onRefreshNeis}
                 disabled={isNeisSyncing}
-                className="px-4 py-2 rounded-full text-xs font-semibold bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700 transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                className="px-5 py-2.5 rounded-full text-sm font-bold bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-95 text-slate-800 transition flex items-center gap-2 cursor-pointer disabled:opacity-50 border border-black/[0.04]"
               >
-                <RefreshCw className={`w-3.5 h-3.5 ${isNeisSyncing ? 'animate-spin' : ''}`} />
+                <RefreshCw className={`w-4 h-4 ${isNeisSyncing ? 'animate-spin' : ''}`} />
                 <span>{isNeisSyncing ? '동기화 중...' : '식단 새로고침'}</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Weekly Day Selector Tabs - horizontal scrollable on mobile, comfortable touch targets */}
-        {meals.length > 0 && (
-          <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-black/[0.04]">
-            <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
-              {meals.map((m, idx) => {
-                const isSelected = idx === selectedMealIndex;
-                const isToday = m.date === todayKst;
+        {/* Meal Type Toggle (중식 vs 석식) - Bold, High-Visibility Buttons */}
+        <div className="mt-6 pt-5 border-t border-black/[0.04]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3">
+            <span className="text-xs sm:text-sm font-bold text-slate-500">
+              식사 종류 선택
+            </span>
+            <span className="text-xs text-slate-400 font-medium hidden sm:inline">
+              석식 버튼을 누르면 서대전고 야간 자율학습 석식 식단표가 표시됩니다.
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 max-w-md">
+            <button
+              type="button"
+              onClick={() => setMealType('lunch')}
+              className={`py-3 px-5 rounded-2xl text-sm sm:text-base font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer active:scale-95 border ${
+                mealType === 'lunch'
+                  ? 'bg-orange-500 text-white border-orange-600 shadow-sm ring-2 ring-orange-500/20'
+                  : 'bg-[#F5F5F7] hover:bg-slate-200 text-slate-700 border-black/[0.03]'
+              }`}
+            >
+              <Sun className="w-5 h-5" />
+              <span>중식 (점심)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setMealType('dinner')}
+              className={`py-3 px-5 rounded-2xl text-sm sm:text-base font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer active:scale-95 border ${
+                mealType === 'dinner'
+                  ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-600/20'
+                  : 'bg-[#F5F5F7] hover:bg-slate-200 text-slate-700 border-black/[0.03]'
+              }`}
+            >
+              <Moon className="w-5 h-5" />
+              <span>석식 (저녁)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Weekly Day Selector Tabs - larger, high readability buttons */}
+        {uniqueDates.length > 0 && (
+          <div className="mt-5 pt-5 border-t border-black/[0.04]">
+            <div className="grid grid-cols-5 gap-2 sm:gap-3">
+              {uniqueDates.map((item) => {
+                const isSelected = item.date === selectedDate;
+                const isToday = item.date === todayKst;
 
                 return (
                   <button
-                    key={m.id || idx}
+                    key={item.date}
                     type="button"
-                    onClick={() => setSelectedMealIndex(idx)}
-                    className={`py-2 px-1 sm:p-3 rounded-xl sm:rounded-2xl text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 sm:gap-1 border select-none active:scale-95 ${
+                    onClick={() => setSelectedDate(item.date)}
+                    className={`py-3 px-2 sm:py-3.5 sm:px-4 rounded-2xl text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 border select-none active:scale-95 ${
                       isSelected
                         ? 'bg-black text-white border-black shadow-sm'
-                        : 'bg-[#F5F5F7] hover:bg-slate-200/70 border-black/[0.02] text-slate-700'
+                        : 'bg-[#F5F5F7] hover:bg-slate-200/80 border-black/[0.02] text-slate-800'
                     }`}
                   >
-                    <span className="text-[11px] sm:text-xs font-bold">
-                      {m.dayOfWeek}
+                    <span className="text-sm sm:text-base font-bold">
+                      {item.dayOfWeek}요일
                     </span>
-                    <span className={`text-[10px] sm:text-[11px] font-medium ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
-                      {m.date.slice(5)}
+                    <span
+                      className={`text-xs sm:text-sm font-medium ${
+                        isSelected ? 'text-slate-300' : 'text-slate-500'
+                      }`}
+                    >
+                      {item.date.slice(5)}
                     </span>
                     {isToday && (
                       <span
-                        className={`text-[8px] sm:text-[9px] px-1 sm:px-1.5 py-0.2 rounded-full font-bold mt-0.5 ${
+                        className={`text-xs px-2 py-0.5 rounded-full font-black mt-0.5 ${
                           isSelected ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700'
                         }`}
                       >
@@ -180,21 +241,27 @@ export default function MealSection({
               <div className="flex flex-wrap items-center justify-between gap-3 pb-4 sm:pb-5 border-b border-black/[0.04]">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] sm:text-xs font-bold text-orange-700 bg-orange-50 px-2 sm:px-2.5 py-0.5 rounded-full">
-                      {activeMeal.type === 'dinner' ? '석식' : '중식'}
+                    <span
+                      className={`text-xs font-bold px-3 py-1 rounded-full border ${
+                        activeMeal.type === 'dinner'
+                          ? 'text-indigo-800 bg-indigo-50 border-indigo-200'
+                          : 'text-orange-800 bg-orange-50 border-orange-200'
+                      }`}
+                    >
+                      {activeMeal.type === 'dinner' ? '석식 (저녁)' : '중식 (점심)'}
                     </span>
-                    <span className="text-[11px] sm:text-xs text-slate-400 font-medium">
+                    <span className="text-xs sm:text-sm text-slate-500 font-medium">
                       {activeMeal.date === todayKst ? '오늘의 식단' : `${activeMeal.dayOfWeek}요일`}
                     </span>
                   </div>
-                  <h3 className="text-lg sm:text-xl font-bold text-slate-900 mt-1 tracking-tight">
-                    {activeMeal.date} ({activeMeal.dayOfWeek}요일) 식단
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900 mt-1.5 tracking-tight">
+                    {activeMeal.date} ({activeMeal.dayOfWeek}요일) {activeMeal.type === 'dinner' ? '석식' : '중식'} 식단
                   </h3>
                 </div>
 
                 <div className="flex items-center gap-2 sm:gap-3">
-                  <div className="flex items-center gap-1.5 text-[11px] sm:text-xs text-slate-700 bg-[#F5F5F7] px-3 py-1.5 rounded-full border border-black/[0.03]">
-                    <Flame className="w-3.5 h-3.5 text-rose-500" />
+                  <div className="flex items-center gap-2 text-sm text-slate-700 bg-[#F5F5F7] px-4 py-2 rounded-full border border-black/[0.04]">
+                    <Flame className="w-4 h-4 text-rose-500" />
                     <span className="font-bold text-slate-900">{activeMeal.calories}</span> kcal
                   </div>
                 </div>
@@ -202,16 +269,16 @@ export default function MealSection({
 
               {/* Menu Dishes Grid */}
               <div>
-                <h4 className="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide mb-2.5 sm:mb-3">
-                  제공 메뉴 목록
+                <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">
+                  제공 메뉴 목록 ({activeMeal.type === 'dinner' ? '석식' : '중식'})
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                   {activeMeal.menu.map((dish, i) => (
                     <div
                       key={i}
-                      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F5F5F7] border border-black/[0.02] flex items-center gap-2.5 sm:gap-3 text-xs font-semibold text-slate-900 hover:bg-orange-50/50 transition"
+                      className="p-3.5 sm:p-4 rounded-2xl bg-[#F5F5F7] border border-black/[0.02] flex items-center gap-3 text-sm sm:text-base font-semibold text-slate-900 hover:bg-orange-50/40 transition"
                     >
-                      <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-lg sm:rounded-xl bg-white border border-black/[0.06] text-slate-500 flex items-center justify-center font-bold text-[10px] sm:text-[11px] shrink-0 shadow-2xs">
+                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-white border border-black/[0.06] text-slate-500 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                         {i + 1}
                       </span>
                       <span className="truncate">{dish}</span>
@@ -223,14 +290,14 @@ export default function MealSection({
               {/* Origin of Ingredients */}
               {activeMeal.originInfo && activeMeal.originInfo.length > 0 && (
                 <div className="pt-4 sm:pt-5 border-t border-black/[0.04]">
-                  <h4 className="text-[11px] sm:text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 sm:mb-3">
+                  <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-2 sm:mb-3">
                     식재료 원산지 표기
                   </h4>
-                  <div className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F5F5F7] text-[11px] sm:text-xs text-slate-600 leading-relaxed border border-black/[0.02] grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2">
+                  <div className="p-3.5 sm:p-4 rounded-2xl bg-[#F5F5F7] text-xs sm:text-sm text-slate-700 leading-relaxed border border-black/[0.02] grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {activeMeal.originInfo.map((orig, i) => (
-                      <div key={i} className="flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-slate-300 shrink-0" />
-                        <span className="truncate">{orig}</span>
+                      <div key={i} className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 shrink-0" />
+                        <span className="truncate font-medium">{orig}</span>
                       </div>
                     ))}
                   </div>
@@ -239,18 +306,19 @@ export default function MealSection({
 
               {/* Allergy Warning */}
               <div className="pt-4 sm:pt-5 border-t border-black/[0.04]">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] sm:text-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
                   <div className="flex items-center gap-2 text-slate-700">
                     <AlertCircle className="w-4 h-4 text-amber-500 shrink-0" />
                     <span className="font-semibold truncate">
-                      알레르기: {activeMeal.allergies.length > 0 ? activeMeal.allergies.join(', ') : '해당 없음'}
+                      알레르기 정보: {activeMeal.allergies.length > 0 ? activeMeal.allergies.join(', ') : '해당 없음'}
                     </span>
                   </div>
                   <button
+                    type="button"
                     onClick={() => setShowAllergyTable(!showAllergyTable)}
-                    className="text-indigo-600 hover:underline font-semibold cursor-pointer text-left sm:text-right shrink-0"
+                    className="text-indigo-600 hover:text-indigo-800 font-bold cursor-pointer text-left sm:text-right shrink-0"
                   >
-                    {showAllergyTable ? '번호 기준표 닫기' : '19대 알레르기 번호 기준표'}
+                    {showAllergyTable ? '기준표 닫기' : '19대 알레르기 번호 기준표'}
                   </button>
                 </div>
 

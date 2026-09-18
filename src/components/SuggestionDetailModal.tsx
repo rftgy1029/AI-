@@ -247,19 +247,19 @@ export default function SuggestionDetailModal({
 
             {/* Like/Agree button */}
             <div className="mt-5 pt-4 border-t border-black/[0.04] flex items-center justify-between">
-              <span className="text-[11px] text-slate-500 font-medium">
-                이 건의사항에 공감하신다면 추천해 주세요.
+              <span className="text-xs text-slate-500 font-medium">
+                이 게시글에 공감하신다면 추천해 주세요.
               </span>
               <button
                 type="button"
                 onClick={handleLike}
-                className={`px-4 py-2 rounded-full text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95 shadow-2xs ${
+                className={`px-5 py-2.5 rounded-full text-sm font-bold transition flex items-center gap-2 cursor-pointer active:scale-95 shadow-2xs ${
                   suggestion.likedByMe
                     ? 'bg-rose-500 text-white'
                     : 'bg-white hover:bg-slate-50 text-slate-700 border border-black/[0.06]'
                 }`}
               >
-                <ThumbsUp className={`w-3.5 h-3.5 ${suggestion.likedByMe ? 'fill-current' : ''}`} />
+                <ThumbsUp className={`w-4 h-4 ${suggestion.likedByMe ? 'fill-current' : ''}`} />
                 <span>공감 {suggestion.likeCount}</span>
               </button>
             </div>
@@ -466,17 +466,17 @@ export default function SuggestionDetailModal({
                 <input
                   type="text"
                   required
-                  placeholder="건의사항에 대한 의견이나 추가 건의를 실명으로 작성해 주세요"
+                  placeholder="게시글에 대한 의견을 실명으로 작성해 주세요"
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
-                  className="flex-1 px-3 py-2 text-xs bg-[#F5F5F7] rounded-xl border border-transparent focus:bg-white focus:border-indigo-500 focus:outline-none transition"
+                  className="flex-1 px-3.5 py-2.5 text-sm bg-[#F5F5F7] rounded-xl border border-transparent focus:bg-white focus:border-indigo-500 focus:outline-none transition font-medium"
                 />
                 <button
                   type="submit"
                   disabled={isSubmittingComment}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-black text-white hover:bg-slate-800 transition cursor-pointer shrink-0 disabled:opacity-50 active:scale-95"
+                  className="px-4 py-2.5 rounded-xl text-sm font-bold bg-black text-white hover:bg-slate-800 transition cursor-pointer shrink-0 disabled:opacity-50 active:scale-95"
                 >
-                  <Send className="w-3 h-3" />
+                  <Send className="w-4 h-4" />
                 </button>
               </div>
             </form>
@@ -488,19 +488,19 @@ export default function SuggestionDetailModal({
           <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4 z-10">
             <div className="bg-white rounded-2xl max-w-xs w-full p-5 shadow-xl border border-black/[0.06] space-y-4">
               <div className="flex items-center gap-2.5 text-slate-900">
-                <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                  <Lock className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                  <Lock className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold">건의사항 삭제 확인</h4>
-                  <p className="text-[10px] text-slate-400">
+                  <h4 className="text-sm font-bold">게시글 삭제 확인</h4>
+                  <p className="text-xs text-slate-400">
                     작성 시 등록한 4자리 비밀번호를 입력해 주세요.
                   </p>
                 </div>
               </div>
 
               {deleteError && (
-                <div className="p-2 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-[11px]">
+                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
                   {deleteError}
                 </div>
               )}
@@ -509,20 +509,20 @@ export default function SuggestionDetailModal({
                 type="password"
                 maxLength={4}
                 autoFocus
-                placeholder="PIN 4자리 (예: 1234)"
+                placeholder="PIN 4자리"
                 value={deletePin}
                 onChange={(e) => setDeletePin(e.target.value)}
-                className="w-full text-center tracking-widest text-sm font-mono py-2 rounded-xl bg-[#F5F5F7] border border-transparent focus:border-rose-400 focus:bg-white focus:outline-none font-bold"
+                className="w-full text-center tracking-widest text-base font-mono py-2.5 rounded-xl bg-[#F5F5F7] border border-transparent focus:border-rose-400 focus:bg-white focus:outline-none font-bold"
               />
 
-              <div className="flex items-center justify-end gap-2">
+              <div className="flex items-center justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => {
                     setShowDeletePrompt(false);
                     setDeleteError('');
                   }}
-                  className="px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-100 rounded-lg"
+                  className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl"
                 >
                   취소
                 </button>
@@ -530,7 +530,7 @@ export default function SuggestionDetailModal({
                   type="button"
                   onClick={handleDeleteSubmit}
                   disabled={isDeleting || deletePin.length < 4}
-                  className="px-3.5 py-1.5 text-xs font-bold bg-rose-600 text-white rounded-lg hover:bg-rose-700 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-bold bg-rose-600 text-white rounded-xl hover:bg-rose-700 disabled:opacity-50"
                 >
                   {isDeleting ? '삭제 중...' : '삭제'}
                 </button>

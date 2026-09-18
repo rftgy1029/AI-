@@ -11,7 +11,7 @@ export interface PasskeyCredentialRecord {
 
 const STORAGE_CREDENTIAL_KEY = 'sdjh_admin_passkey_credential';
 const STORAGE_ADMIN_SESSION_KEY = 'sdjh_admin_session_active';
-export const MASTER_PASSKEY_CODE = 'sdjh1972'; // Seodaejeon High School foundation year 1972
+export const MASTER_PASSKEY_CODE = 'sdjhsadminlogin'; // Administrator master password
 
 export function isWebAuthnAvailable(): boolean {
   if (typeof window === 'undefined') return false;
@@ -194,13 +194,28 @@ export async function authenticateWithPasskey(): Promise<{ success: boolean; mes
 }
 
 /**
- * Fallback master passkey verification (e.g. for restricted iframes or PCs without biometrics)
+ * Master key login verification (when passkey is not available or registered)
  */
 export function verifyMasterPasskey(code: string): { success: boolean; message: string } {
-  const normalized = code.trim().toLowerCase();
-  if (normalized === MASTER_PASSKEY_CODE || normalized === 'admin2026' || normalized === 'sdjh2026') {
+  const normalized = code.trim();
+  if (normalized === MASTER_PASSKEY_CODE) {
     setAdminSession(true);
-    return { success: true, message: '관리자 마스터 패스키가 확인되었습니다. 관리자 권한이 활성화되었습니다.' };
+    return { success: true, message: '관리자 마스터키가 확인되었습니다. 관리자 권한이 활성화되었습니다.' };
   }
-  return { success: false, message: '올바르지 않은 관리자 패스키입니다. 다시 확인해주세요.' };
+  return { success: false, message: '올바르지 않은 관리자 마스터키 비밀번호입니다. 다시 확인해주세요.' };
+}
+
+/**
+ * Verify initial admin master password prior to registering a new passkey
+ */
+export function verifyAdminPassword(password: string): boolean {
+  return password.trim() === MASTER_PASSKEY_CODE;
+}
+
+export function removeStoredPasskey(): void {
+  try {
+    localStorage.removeItem(STORAGE_CREDENTIAL_KEY);
+  } catch (e) {
+    console.error('Failed to remove passkey', e);
+  }
 }

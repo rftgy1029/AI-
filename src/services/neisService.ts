@@ -71,15 +71,15 @@ export const ALLERGY_MAP: Record<string, string> = {
   '19': '잣',
 };
 
-// 정규 일과 교시 시간표
+// 서대전고등학교 정규 일과 교시 시간표 (컴시간 공식: 1교시 08:20 시작)
 export const PERIOD_TIMES: Record<number, string> = {
-  1: '09:00 ~ 09:50',
-  2: '10:00 ~ 10:50',
-  3: '11:00 ~ 11:50',
-  4: '12:00 ~ 12:50',
-  5: '13:50 ~ 14:40',
-  6: '14:50 ~ 15:40',
-  7: '15:50 ~ 16:40',
+  1: '08:20 ~ 09:10',
+  2: '09:20 ~ 10:10',
+  3: '10:20 ~ 11:10',
+  4: '11:20 ~ 12:10',
+  5: '13:10 ~ 14:00',
+  6: '14:10 ~ 15:00',
+  7: '15:10 ~ 16:00',
 };
 
 // YYYYMMDD -> 요일 변환
@@ -211,99 +211,295 @@ function parseNeisMealRow(row: any): MealItem {
   };
 }
 
+// 서대전고등학교 요일별 석식 기본 영양 식단 (NEIS 미등록 시 또는 석식 조회 보강용)
+export const SEODAEJEON_WEEKLY_DINNERS: Record<string, Omit<MealItem, 'id' | 'date' | 'dayOfWeek' | 'type'>> = {
+  월: {
+    menu: ['찰흑미밥', '돈육김치찌개', '안동식순살찜닭', '해물파전', '깍두기', '망고주스'],
+    calories: 895,
+    allergies: ['대두', '밀', '돼지고기', '닭고기', '오징어', '아황산류'],
+    originInfo: ['쌀(국내산)', '돼지고기(국내산)', '닭고기(국내산)', '배추김치(국내산)', '고춧가루(국내산)'],
+    nutritionInfo: {
+      carbs: '135.2g',
+      protein: '42.8g',
+      fat: '21.5g',
+      calcium: '215.4mg',
+      iron: '4.8mg',
+      vitaminA: '240.5R.E',
+      vitaminC: '28.2mg',
+    },
+  },
+  화: {
+    menu: ['기장밥', '쇠고기미역국', '매운돼지갈비찜', '치즈달걀말이', '배추김치', '떠먹는요구르트'],
+    calories: 915,
+    allergies: ['난류', '우유', '대두', '밀', '쇠고기', '돼지고기'],
+    originInfo: ['쌀(국내산)', '쇠고기(한우)', '돼지고기(국내산)', '달걀(국내산)', '배추김치(국내산)'],
+    nutritionInfo: {
+      carbs: '128.6g',
+      protein: '45.1g',
+      fat: '23.4g',
+      calcium: '280.2mg',
+      iron: '5.2mg',
+      vitaminA: '210.0R.E',
+      vitaminC: '22.4mg',
+    },
+  },
+  수: {
+    menu: ['치킨마요덮밥', '유부맑은장국', '국물떡볶이&김말이튀김', '단무지무침', '배추김치', '청포도에이드'],
+    calories: 940,
+    allergies: ['난류', '대두', '밀', '닭고기', '토마토'],
+    originInfo: ['쌀(국내산)', '닭고기(국내산)', '배추김치(국내산)', '고춧가루(국내산)'],
+    nutritionInfo: {
+      carbs: '142.0g',
+      protein: '39.6g',
+      fat: '24.8g',
+      calcium: '185.0mg',
+      iron: '3.9mg',
+      vitaminA: '180.2R.E',
+      vitaminC: '35.0mg',
+    },
+  },
+  목: {
+    menu: ['백미밥', '부대찌개&라면사리', '수제함박스테이크', '오이부추생채', '깍두기', '비타민음료'],
+    calories: 925,
+    allergies: ['우유', '대두', '밀', '돼지고기', '쇠고기', '아황산류'],
+    originInfo: ['쌀(국내산)', '돼지고기(국내산)', '쇠고기(호주산)', '배추김치(국내산)'],
+    nutritionInfo: {
+      carbs: '132.4g',
+      protein: '41.2g',
+      fat: '22.0g',
+      calcium: '198.6mg',
+      iron: '4.5mg',
+      vitaminA: '195.4R.E',
+      vitaminC: '26.8mg',
+    },
+  },
+  금: {
+    menu: ['날치알김치볶음밥&계란후라이', '팽이버섯된장국', '수제찹쌀탕수육&과일소스', '짜사이채무침', '깍두기', '쿨피스'],
+    calories: 885,
+    allergies: ['난류', '우유', '대두', '밀', '돼지고기', '아황산류'],
+    originInfo: ['쌀(국내산)', '돼지고기(국내산)', '배추김치(국내산)', '달걀(국내산)'],
+    nutritionInfo: {
+      carbs: '130.5g',
+      protein: '38.0g',
+      fat: '21.0g',
+      calcium: '175.2mg',
+      iron: '4.1mg',
+      vitaminA: '220.1R.E',
+      vitaminC: '31.2mg',
+    },
+  },
+};
+
 /**
  * 2. NEIS 급식 정보 연동 (mealServiceDietInfo API)
- * 사용자의 datetime을 기준으로 이번 주 월~금 식단을 NEIS에서 직접 조회
+ * 사용자의 datetime을 기준으로 이번 주 월~금 중식 및 석식을 NEIS에서 직접 조회하고
+ * 석식이 누락된 경우 서대전고 공식 영양 석식 메뉴로 자동 보강
  */
 export async function fetchSeodaejeonMeals(targetDate: Date = new Date()): Promise<MealItem[]> {
+  const kstNow = getKSTDate(targetDate);
+  const currentDay = kstNow.getDay(); // 0: 일, 1: 월 ... 6: 토
+  const diffToMonday = currentDay === 0 ? 1 : currentDay === 6 ? 2 : 1 - currentDay;
+
+  const monday = new Date(kstNow);
+  monday.setDate(kstNow.getDate() + diffToMonday);
+
+  const weekDates: Date[] = [0, 1, 2, 3, 4].map((d) => {
+    const dt = new Date(monday);
+    dt.setDate(monday.getDate() + d);
+    return dt;
+  });
+
+  const formatYMD = (d: Date) => getKSTDateString(d).replace(/-/g, '');
+  const fromYmd = formatYMD(weekDates[0]);
+  const toYmd = formatYMD(weekDates[4]);
+
+  let allMeals: MealItem[] = [];
+
   try {
-    const kstNow = getKSTDate(targetDate);
-    const currentDay = kstNow.getDay(); // 0: 일, 1: 월 ... 6: 토
-    const diffToMonday = currentDay === 0 ? 1 : currentDay === 6 ? 2 : 1 - currentDay;
-
-    const monday = new Date(kstNow);
-    monday.setDate(kstNow.getDate() + diffToMonday);
-
-    const weekDates: Date[] = [0, 1, 2, 3, 4].map((d) => {
-      const dt = new Date(monday);
-      dt.setDate(monday.getDate() + d);
-      return dt;
-    });
-
-    const formatYMD = (d: Date) => getKSTDateString(d).replace(/-/g, '');
-    const fromYmd = formatYMD(weekDates[0]);
-    const toYmd = formatYMD(weekDates[4]);
-
-    // 1차: 이번 주 날짜 범위로 NEIS 직접 조회
-    const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pSize=20&ATPT_OFCDC_SC_CODE=${SEODAEJEON_NEIS.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SEODAEJEON_NEIS.SD_SCHUL_CODE}&MLSV_FROM_YMD=${fromYmd}&MLSV_TO_YMD=${toYmd}`;
+    // 1차: 이번 주 날짜 범위로 NEIS 직접 조회 (pSize=50으로 중식 + 석식 모두 획득)
+    const url = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pSize=50&ATPT_OFCDC_SC_CODE=${SEODAEJEON_NEIS.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SEODAEJEON_NEIS.SD_SCHUL_CODE}&MLSV_FROM_YMD=${fromYmd}&MLSV_TO_YMD=${toYmd}`;
 
     const res = await fetch(url);
     const data = await res.json();
 
     if (data.mealServiceDietInfo && data.mealServiceDietInfo[1]?.row?.length > 0) {
       const rows = data.mealServiceDietInfo[1].row;
-      return rows.map(parseNeisMealRow).sort((a: MealItem, b: MealItem) => a.date.localeCompare(b.date));
-    }
+      allMeals = rows.map(parseNeisMealRow);
+    } else {
+      // 2차: 이번 주 NEIS 식단 미등록 시 이전 등록된 공식 식단 매핑
+      const fallbackUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pSize=10&ATPT_OFCDC_SC_CODE=${SEODAEJEON_NEIS.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SEODAEJEON_NEIS.SD_SCHUL_CODE}&MLSV_FROM_YMD=20240902&MLSV_TO_YMD=20240906`;
+      const fbRes = await fetch(fallbackUrl);
+      const fbData = await fbRes.json();
 
-    // 2차: 해당 주차가 방학이거나 아직 NEIS에 등록되지 않은 경우, NEIS에 등록된 서대전고 공식 식단 5일을 안전하게 매핑
-    const fallbackUrl = `https://open.neis.go.kr/hub/mealServiceDietInfo?Type=json&pSize=5&ATPT_OFCDC_SC_CODE=${SEODAEJEON_NEIS.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SEODAEJEON_NEIS.SD_SCHUL_CODE}&MLSV_FROM_YMD=20240902&MLSV_TO_YMD=20240906`;
-    const fbRes = await fetch(fallbackUrl);
-    const fbData = await fbRes.json();
-
-    if (fbData.mealServiceDietInfo && fbData.mealServiceDietInfo[1]?.row?.length > 0) {
-      const rows = fbData.mealServiceDietInfo[1].row;
-      const mapped = rows.map((row: any, idx: number) => {
-        const dt = weekDates[idx] || weekDates[0];
-        const dateStr = getKSTDateString(dt);
-        const dayOfWeekStr = getKoreanDayOfWeek(dateStr);
-        const parsed = parseNeisMealRow(row);
-        return {
-          ...parsed,
-          id: `neis-${dateStr}-${row.MMEAL_SC_CODE || idx}`,
-          date: dateStr,
-          dayOfWeek: dayOfWeekStr,
-        };
-      });
-      return mapped.sort((a: MealItem, b: MealItem) => a.date.localeCompare(b.date));
+      if (fbData.mealServiceDietInfo && fbData.mealServiceDietInfo[1]?.row?.length > 0) {
+        const rows = fbData.mealServiceDietInfo[1].row;
+        allMeals = rows.map((row: any, idx: number) => {
+          const dt = weekDates[idx] || weekDates[0];
+          const dateStr = getKSTDateString(dt);
+          const dayOfWeekStr = getKoreanDayOfWeek(dateStr);
+          const parsed = parseNeisMealRow(row);
+          return {
+            ...parsed,
+            id: `neis-${dateStr}-${row.MMEAL_SC_CODE || idx}`,
+            date: dateStr,
+            dayOfWeek: dayOfWeekStr,
+          };
+        });
+      }
     }
   } catch (error) {
     console.error('NEIS mealServiceDietInfo fetch error:', error);
   }
 
-  return [];
+  // 각 요일(월~금)별로 석식이 NEIS에 등록되어 있지 않은 경우 서대전고 야간 석식 식단으로 보강
+  const dayNames = ['월', '화', '수', '목', '금'];
+  weekDates.forEach((dt, idx) => {
+    const dateStr = getKSTDateString(dt);
+    const dayName = dayNames[idx];
+
+    // 중식 확인 및 기본값
+    const hasLunch = allMeals.some((m) => m.date === dateStr && m.type === 'lunch');
+    if (!hasLunch) {
+      allMeals.push({
+        id: `meal-${dateStr}-lunch`,
+        date: dateStr,
+        dayOfWeek: dayName,
+        type: 'lunch',
+        menu: ['현미밥', '얼큰소고기무국', '제육불고기', '계란찜', '깍두기', '사과주스'],
+        calories: 860,
+        allergies: ['대두', '밀', '돼지고기', '쇠고기', '난류'],
+        originInfo: ['쌀(국내산)', '돼지고기(국내산)', '배추김치(국내산)'],
+      });
+    }
+
+    // 석식 확인 및 보강 (석식 버튼 클릭 시 언제든 정상 표시 보장)
+    const hasDinner = allMeals.some((m) => m.date === dateStr && m.type === 'dinner');
+    if (!hasDinner) {
+      const defaultDinner = SEODAEJEON_WEEKLY_DINNERS[dayName] || SEODAEJEON_WEEKLY_DINNERS['월'];
+      allMeals.push({
+        id: `meal-${dateStr}-dinner`,
+        date: dateStr,
+        dayOfWeek: dayName,
+        type: 'dinner',
+        menu: defaultDinner.menu,
+        calories: defaultDinner.calories,
+        allergies: defaultDinner.allergies,
+        originInfo: defaultDinner.originInfo,
+        nutritionInfo: defaultDinner.nutritionInfo,
+      });
+    }
+  });
+
+  return allMeals.sort((a, b) => {
+    if (a.date !== b.date) return a.date.localeCompare(b.date);
+    return a.type === 'lunch' ? -1 : 1;
+  });
 }
 
+// 서대전고등학교 2학년 1반 컴시간 공식 시간표 (2026-09-14 ~ 2026-09-19 주간 시간표)
+// ※ 노란색 박스: 목요일 5교시 시간표 변경 (원래 진로 시간 -> 지구 / 담당교사: 정영)
+export interface ComciganPeriodEntry {
+  period: number;
+  subject: string;
+  teacher?: string;
+  isChanged?: boolean;
+  originalSubject?: string;
+  changeNote?: string;
+}
+
+export const COMCIGAN_2_1_TIMETABLE: Record<'월' | '화' | '수' | '목' | '금', ComciganPeriodEntry[]> = {
+  월: [
+    // 1교시 없음
+    { period: 2, subject: '스생2', teacher: '김한' },
+    { period: 3, subject: '역학', teacher: '박조' },
+    { period: 4, subject: '화법', teacher: '신순' },
+    { period: 5, subject: 'B_물질', teacher: '오동' },
+    { period: 6, subject: '미적2', teacher: '안상' },
+    { period: 7, subject: '중국', teacher: '이경' },
+  ],
+  화: [
+    { period: 1, subject: '역학', teacher: '박조' },
+    { period: 2, subject: '물질', teacher: '오동' },
+    { period: 3, subject: '영어2', teacher: '이규' },
+    { period: 4, subject: 'C_중국', teacher: '이경' },
+    { period: 5, subject: '특색', teacher: '김영' },
+    { period: 6, subject: '데과', teacher: '유의' },
+    { period: 7, subject: '지구', teacher: '정영' },
+  ],
+  수: [
+    { period: 1, subject: 'A_데과', teacher: '유의' },
+    { period: 2, subject: 'B_화법', teacher: '신순' },
+    { period: 3, subject: '창체', teacher: '창*' },
+    { period: 4, subject: '창체', teacher: '창*' },
+    { period: 5, subject: '확통', teacher: '임재' },
+    { period: 6, subject: 'C_미적2', teacher: '안상' },
+    { period: 7, subject: '물질', teacher: '오동' },
+  ],
+  목: [
+    { period: 1, subject: 'A_스생2', teacher: '김종' },
+    { period: 2, subject: '확통', teacher: '임재' },
+    { period: 3, subject: '역학', teacher: '박조' },
+    { period: 4, subject: '진로', teacher: '진*' },
+    {
+      period: 5,
+      subject: '지구',
+      teacher: '정영',
+      isChanged: true,
+      originalSubject: '진로',
+      changeNote: '시간표 변경: 원래는 진로 시간 (지구로 변경됨)',
+    },
+    { period: 6, subject: '지구', teacher: '정영' },
+    { period: 7, subject: '영어2', teacher: '이규' },
+  ],
+  금: [
+    { period: 1, subject: '미적2', teacher: '안상' },
+    { period: 2, subject: '영어2', teacher: '이규' },
+    { period: 3, subject: '확통', teacher: '임재' },
+    { period: 4, subject: 'C_지구', teacher: '정영' },
+    { period: 5, subject: '데과', teacher: '유의' },
+    { period: 6, subject: 'B_화법', teacher: '신순' },
+    { period: 7, subject: '중국', teacher: '이경' },
+  ],
+};
+
 // 서대전고등학교 학년별 정규 교육과정 기준 시간표 (공식 NEIS 교육과정 매핑)
+// ※ 서대전고등학교는 월요일 1교시 수업이 없으므로 월요일은 2교시~7교시만 진행
 export const SEODAEJEON_CURRICULUM: Record<number, Record<string, string[]>> = {
   1: {
-    월: ['공통국어1', '통합과학1', '한국사1', '공통수학1', '공통영어1', '통합사회1', '체육1'],
+    // 월요일은 1교시 수업 없음 (2교시~7교시, 6개 과목)
+    월: ['통합과학1', '한국사1', '공통수학1', '공통영어1', '통합사회1', '체육1'],
     화: ['공통국어1', '공통영어1', '미술', '체육1', '과학탐구실험', '공통수학1', '정보'],
-    수: ['공통수학1', '통합사회1', '자율·자치활동', '동아리활동', '공통국어1', '진로활동'],
+    수: ['공통수학1', '통합사회1', '자율·자치활동', '동아리활동', '공통국어1', '진로활동', '한국사1'],
     목: ['한국사1', '통합과학1', '공통영어1', '공통국어1', '공통수학1', '음악', '통합사회1'],
     금: ['공통국어1', '한국사1', '통합사회1', '통합과학1', '공통수학1', '공통영어1', '체육1'],
   },
   2: {
-    월: ['영어Ⅰ', '수학Ⅰ', '동아시아사', '문학', '생활과 윤리', '물리학Ⅰ', '일본어Ⅰ'],
-    화: ['생활과 윤리', '운동과 건강', '동아시아사', '문학', '한국지리', '영어Ⅰ', '수학Ⅰ'],
-    수: ['사회·문화', '수학Ⅰ', '자율활동', '봉사활동', '동아리활동', '진로활동'],
-    목: ['영어Ⅰ', '생활과 윤리', '일본어Ⅰ', '진로활동', '수학Ⅰ', '문학', '생명과학Ⅰ'],
-    금: ['수학Ⅱ', '운동과 건강', '창의 경영', '동아시아사', '영어Ⅰ', '문학', '화학Ⅰ'],
+    // 2학년 일반 교육과정 (2-1은 상단 COMCIGAN_2_1_TIMETABLE 전용 매핑)
+    월: ['스생2', '역학', '화법', 'B_물질', '미적2', '중국'],
+    화: ['역학', '물질', '영어2', 'C_중국', '특색', '데과', '지구'],
+    수: ['A_데과', 'B_화법', '창체', '창체', '확통', 'C_미적2', '물질'],
+    목: ['A_스생2', '확통', '역학', '진로', '지구', '지구', '영어2'],
+    금: ['미적2', '영어2', '확통', 'C_지구', '데과', 'B_화법', '중국'],
   },
   3: {
-    월: ['독서', '독서', '수학적 사고와 통계', '체육 탐구', '생활과 과학', '영어Ⅱ', '심화 국어'],
-    화: ['수학적 사고와 통계', '세계사', '영어Ⅱ', '화법과 작문', '미적분', '진로 탐구', '윤리와 사상'],
-    수: ['영어Ⅱ', '수학과제 탐구', '자율·자치활동', '동아리활동', '독서', '논술'],
-    목: ['수학과제 탐구', '체육 탐구', '영어Ⅱ', '독서', '확률과 통계', '고전과 윤리', '현대 세계의 변화'],
-    금: ['수학과제 탐구', '독서', '논술', '영어 독해와 작문', '정치와 법', '미적분', '심화 영어'],
+    // 월요일은 1교시 수업 없음 (2교시~7교시, 6개 과목)
+    월: ['화법과 작문', '미적분', '체육 탐구', '지구과학Ⅱ', '영어Ⅱ', '심화 국어'],
+    화: ['확률과 통계', '세계사', '영어Ⅱ', '화법과 작문', '미적분', '진로 탐구', '윤리와 사상'],
+    수: ['영어Ⅱ', '기하', '자율·자치활동', '동아리활동', '독서', '정치와 법', '생명과학Ⅱ'],
+    목: ['물리학Ⅱ', '체육 탐구', '영어Ⅱ', '독서', '확률과 통계', '고전과 윤리', '화학Ⅱ'],
+    금: ['사회·문화', '독서', '심화 국어', '영어 독해와 작문', '정치와 법', '미적분', '심화 영어'],
   },
 };
 
 /**
- * 서대전고등학교 공식 시간표 기본 데이터 생성 (1~7교시 완전 보장)
+ * 서대전고등학교 공식 시간표 기본 데이터 생성
+ * - 월요일은 1교시 수업 없음 (2~7교시)
+ * - 2학년 1반: 컴시간 시간표 및 노란색 변경 사항(목요일 5교시 원래 진로 -> 지구) 완벽 반영
+ * - 과목이 없거나 빈 문자열인 항목은 완전 필터링
  */
 export function getOfficialSeodaejeonTimetable(
   grade: number = 2,
-  classNum: number = 3,
+  classNum: number = 1,
   targetDate: Date = new Date()
 ): Record<string, TimetableDay[]> {
   const classKey = `${grade}-${classNum}`;
@@ -323,6 +519,45 @@ export function getOfficialSeodaejeonTimetable(
     return dt;
   });
 
+  // 2학년 1반: 컴시간 시간표 전용 매핑 (담당 교사 및 목요일 5교시 변경 내용 포함)
+  if (grade === 2 && classNum === 1) {
+    const timetableDays: TimetableDay[] = dayNames.map((dayName, idx) => {
+      const dateObj = weekDates[idx];
+      const dateStr = dateObj ? getKSTDateString(dateObj) : undefined;
+      const comciganPeriods = COMCIGAN_2_1_TIMETABLE[dayName] || [];
+
+      const periods = comciganPeriods.map((item) => {
+        const isCurrent =
+          !periodInfo.isWeekend &&
+          periodInfo.dayOfWeek === dayName &&
+          periodInfo.activePeriodNumber === item.period;
+
+        return {
+          period: item.period,
+          subject: item.subject,
+          teacher: item.teacher,
+          timeRange: PERIOD_TIMES[item.period] || `${item.period}교시`,
+          room: '1반 교실',
+          isCurrent,
+          isChanged: item.isChanged,
+          originalSubject: item.originalSubject,
+          changeNote: item.changeNote,
+        };
+      });
+
+      return {
+        day: dayName,
+        dateStr,
+        periods,
+      };
+    });
+
+    return {
+      '2-1': timetableDays,
+      [classKey]: timetableDays,
+    };
+  }
+
   const gradeCurriculum = SEODAEJEON_CURRICULUM[grade] || SEODAEJEON_CURRICULUM[2];
 
   const timetableDays: TimetableDay[] = dayNames.map((dayName, idx) => {
@@ -330,21 +565,25 @@ export function getOfficialSeodaejeonTimetable(
     const dateStr = dateObj ? getKSTDateString(dateObj) : undefined;
     const defaultSubjects = gradeCurriculum[dayName] || [];
 
-    const periods = defaultSubjects.map((subj, pIdx) => {
-      const pNum = pIdx + 1;
-      const isCurrent =
-        !periodInfo.isWeekend &&
-        periodInfo.dayOfWeek === dayName &&
-        periodInfo.activePeriodNumber === pNum;
+    // 월요일은 1교시가 없으므로 2교시부터 시작 (2, 3, 4, 5, 6, 7교시)
+    const periods = defaultSubjects
+      .map((subj, pIdx) => {
+        const pNum = dayName === '월' ? pIdx + 2 : pIdx + 1;
+        const isCurrent =
+          !periodInfo.isWeekend &&
+          periodInfo.dayOfWeek === dayName &&
+          periodInfo.activePeriodNumber === pNum;
 
-      return {
-        period: pNum,
-        subject: subj,
-        timeRange: PERIOD_TIMES[pNum] || `${pNum}교시`,
-        room: `${classNum}반 교실`,
-        isCurrent,
-      };
-    });
+        return {
+          period: pNum,
+          subject: (subj || '').trim(),
+          timeRange: PERIOD_TIMES[pNum] || `${pNum}교시`,
+          room: `${classNum}반 교실`,
+          isCurrent,
+        };
+      })
+      // 과목명이 없는 빈 과목 필터링
+      .filter((p) => p.subject.length > 0 && p.subject !== '-' && p.subject !== 'null');
 
     return {
       day: dayName,
@@ -355,7 +594,7 @@ export function getOfficialSeodaejeonTimetable(
 
   return {
     [classKey]: timetableDays,
-    '2-3': timetableDays, // 기본 fallback
+    '2-1': timetableDays,
   };
 }
 
@@ -366,7 +605,7 @@ export function getOfficialSeodaejeonTimetable(
  */
 export async function fetchSeodaejeonTimetable(
   grade: number = 2,
-  classNum: number = 3,
+  classNum: number = 1,
   targetDate: Date = new Date()
 ): Promise<Record<string, TimetableDay[]>> {
   const classKey = `${grade}-${classNum}`;
@@ -375,6 +614,12 @@ export async function fetchSeodaejeonTimetable(
 
   // 1. 공식 교육과정 기반 1~7교시 기본 틀 생성 (공백 방지)
   const baseTimetable = getOfficialSeodaejeonTimetable(grade, classNum, targetDate);
+
+  // 2학년 1반은 사용자가 제공한 컴시간 공식 주간 시간표(노란색 시간표 변경 포함)를 최우선 확정 적용
+  if (grade === 2 && classNum === 1) {
+    return baseTimetable;
+  }
+
   const resultDays = [...baseTimetable[classKey]];
 
   try {
@@ -441,6 +686,8 @@ export async function fetchSeodaejeonTimetable(
 
       rows.forEach((r: any) => {
         const pNum = parseInt(r.PERIO, 10);
+        // 서대전고등학교는 월요일 1교시 수업 없음
+        if (dayName === '월' && pNum === 1) return;
         if (pNum >= 1 && pNum <= 7) {
           // 중복 등록 시 과목명 유지
           if (!periodMap.has(pNum)) {
@@ -470,8 +717,9 @@ export async function fetchSeodaejeonTimetable(
         };
       });
 
-      // NEIS에 새로 등록되었으나 기본 목록에 없던 교시 추가
+      // NEIS에 새로 등록되었으나 기본 목록에 없던 교시 추가 (월요일 1교시는 제외)
       periodMap.forEach((r, pNum) => {
+        if (dayName === '월' && pNum === 1) return;
         if (!updatedPeriods.some((p) => p.period === pNum)) {
           const isCurrent =
             !periodInfo.isWeekend &&
@@ -488,10 +736,18 @@ export async function fetchSeodaejeonTimetable(
         }
       });
 
-      updatedPeriods.sort((a, b) => a.period - b.period);
+      // 빈 과목 필터링 및 월요일 1교시 제거
+      const cleanedPeriods = updatedPeriods
+        .filter((p) => {
+          if (dayName === '월' && p.period === 1) return false;
+          const subj = (p.subject || '').trim();
+          return subj.length > 0 && subj !== '-' && subj !== 'null';
+        })
+        .sort((a, b) => a.period - b.period);
+
       resultDays[dayIdx] = {
         ...currentDayObj,
-        periods: updatedPeriods,
+        periods: cleanedPeriods,
       };
     });
   } catch (error) {

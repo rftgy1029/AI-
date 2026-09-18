@@ -83,7 +83,10 @@ export default function HomeDashboard({
     return () => clearInterval(timer);
   }, []);
 
-  const upcomingEvents = events.filter((e) => e.dDay >= 0).slice(0, 3);
+  const upcomingEvents = events
+    .filter((e) => e.dDay >= 0)
+    .sort((a, b) => a.dDay - b.dDay)
+    .slice(0, 3);
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -152,8 +155,8 @@ export default function HomeDashboard({
                   🍱 점심 배식 진행 중
                 </span>
               ) : mealStatus.isBeforeLunch ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200/60">
-                  🍱 점심시간까지 {mealStatus.timeUntilLunch}
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-amber-50 text-amber-700 border border-amber-200/60">
+                  🍱 점심시간까지 {mealStatus.timeUntilLunch} 남음 (12:10)
                 </span>
               ) : null}
             </div>

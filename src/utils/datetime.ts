@@ -42,6 +42,7 @@ export interface CurrentPeriodInfo {
   subLabel: string;
   timeRange: string;
   remainingMinutes: number;
+  timeRemainingMinutes?: number;
   remainingSeconds: number;
   progressPercent: number;
   nextPeriodName: string | null;
@@ -51,7 +52,9 @@ export interface CurrentPeriodInfo {
 }
 
 export interface MealStatusInfo {
-  isLunchActive: boolean; // 12:50 ~ 13:50
+  isLunchActive: boolean;
+  isBeforeLunch: boolean;
+  timeUntilLunch: string;
   statusLabel: string;
   subLabel: string;
   badgeColor: 'emerald' | 'amber' | 'blue' | 'indigo' | 'slate';
@@ -283,6 +286,8 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
   if (isWeekend) {
     return {
       isLunchActive: false,
+      isBeforeLunch: false,
+      timeUntilLunch: '',
       statusLabel: '주말 휴일 식단',
       subLabel: '다가오는 월요일 식단을 미리 확인하세요',
       badgeColor: 'slate',
@@ -297,6 +302,8 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
     const remaining = 13 * 60 + 10 - totalMinutes;
     return {
       isLunchActive: true,
+      isBeforeLunch: false,
+      timeUntilLunch: '',
       statusLabel: '맛있는 점심 배식 중 🍱',
       subLabel: `배식 마감까지 ${remaining}분 남았습니다`,
       badgeColor: 'emerald',
@@ -311,10 +318,12 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
     const diff = 12 * 60 + 10 - totalMinutes;
     const diffH = Math.floor(diff / 60);
     const diffM = diff % 60;
-    const timeText = diffH > 0 ? `${diffH}시간 ${diffM}분 후` : `${diffM}분 후`;
+    const timeText = diffH > 0 ? `${diffH}시간 ${diffM}분` : `${diffM}분`;
     return {
       isLunchActive: false,
-      statusLabel: `점심시간까지 ${timeText} (12:10)`,
+      isBeforeLunch: true,
+      timeUntilLunch: timeText,
+      statusLabel: `점심시간까지 ${timeText} 남음 (12:10)`,
       subLabel: '오늘의 메뉴를 미리 확인해보세요',
       badgeColor: 'amber',
       recommendedMealType: 'lunch',
@@ -327,6 +336,8 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
   if (totalMinutes < 18 * 60) {
     return {
       isLunchActive: false,
+      isBeforeLunch: false,
+      timeUntilLunch: '',
       statusLabel: '오늘 점심 배식 완료',
       subLabel: '오늘 점심 식단 평가와 한줄평을 남겨보세요!',
       badgeColor: 'blue',
@@ -339,6 +350,8 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
   // 저녁 이후 (18:00 ~ 24:00)
   return {
     isLunchActive: false,
+    isBeforeLunch: false,
+    timeUntilLunch: '',
     statusLabel: '내일의 급식 준비 중',
     subLabel: '내일 제공될 영양 가득한 메뉴를 확인하세요',
     badgeColor: 'indigo',

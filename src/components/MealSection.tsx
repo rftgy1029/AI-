@@ -103,7 +103,7 @@ export default function MealSection({
                 </span>
               ) : mealStatus.isBeforeLunch ? (
                 <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-3 py-1 rounded-full border border-amber-200/60">
-                  {mealStatus.timeUntilLunch} 후 점심 배식 시작
+                  점심시간까지 {mealStatus.timeUntilLunch} 남음 (12:10)
                 </span>
               ) : (
                 <span className="text-xs font-semibold text-slate-600 bg-[#F5F5F7] px-3 py-1 rounded-full border border-black/[0.03]">

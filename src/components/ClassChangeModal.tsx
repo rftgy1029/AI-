@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   X,
   GraduationCap,
@@ -21,8 +21,16 @@ export const ClassChangeModal: React.FC<ClassChangeModalProps> = ({
   onChangeClass,
 }) => {
   const [selectedGrade, setSelectedGrade] = useState<number>(currentUser.grade || 2);
-  const [selectedClass, setSelectedClass] = useState<number>(currentUser.classNum || 3);
-  const [selectedNumber, setSelectedNumber] = useState<number>(currentUser.studentNumber || 14);
+  const [selectedClass, setSelectedClass] = useState<number>(currentUser.classNum || 1);
+  const [selectedNumber, setSelectedNumber] = useState<number>(currentUser.studentNumber || 1);
+
+  useEffect(() => {
+    if (isOpen) {
+      setSelectedGrade(currentUser.grade || 2);
+      setSelectedClass(currentUser.classNum || 1);
+      setSelectedNumber(currentUser.studentNumber || 1);
+    }
+  }, [isOpen, currentUser]);
 
   if (!isOpen) return null;
 

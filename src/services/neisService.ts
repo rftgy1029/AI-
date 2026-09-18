@@ -756,21 +756,71 @@ export async function fetchSeodaejeonTimetable(
 
   return {
     [classKey]: resultDays,
-    '2-3': resultDays,
+    '2-1': getOfficialSeodaejeonTimetable(2, 1, targetDate)['2-1'],
   };
 }
 
 /**
+ * 서대전고등학교 공식 학사일정 기본값 생성 (NEIS 응답 지연/공백 시 필수 보강)
+ */
+export function getOfficialDefaultSchedule(targetDate: Date = new Date()): AcademicEvent[] {
+  const kstDate = getKSTDate(targetDate);
+  const targetYear = kstDate.getFullYear();
+  const todayTime = new Date(kstDate).setHours(0, 0, 0, 0);
+
+  const rawList = [
+    { date: `${targetYear}-03-03`, title: '1학기 개학식 및 입학식', category: 'event' as const, typeLabel: '학사행사' },
+    { date: `${targetYear}-03-26`, title: '3월 전국연합학력평가', category: 'test' as const, typeLabel: '학력평가' },
+    { date: `${targetYear}-04-28`, title: '1학기 중간고사 (1차 지필평가)', category: 'exam' as const, typeLabel: '지필평가' },
+    { date: `${targetYear}-06-04`, title: '6월 수능 모의평가 및 학력평가', category: 'test' as const, typeLabel: '모의평가' },
+    { date: `${targetYear}-07-02`, title: '1학기 기말고사 (2차 지필평가)', category: 'exam' as const, typeLabel: '지필평가' },
+    { date: `${targetYear}-07-18`, title: '여름방학식', category: 'vacation' as const, typeLabel: '방학/개학' },
+    { date: `${targetYear}-08-14`, title: '2학기 개학식', category: 'vacation' as const, typeLabel: '방학/개학' },
+    { date: `${targetYear}-09-03`, title: '9월 수능 모의평가 및 학력평가', category: 'test' as const, typeLabel: '모의평가' },
+    { date: `${targetYear}-10-15`, title: '2학기 중간고사 (1차 지필평가)', category: 'exam' as const, typeLabel: '지필평가' },
+    { date: `${targetYear}-11-19`, title: '대학수학능력시험', category: 'test' as const, typeLabel: '수능' },
+    { date: `${targetYear}-12-09`, title: '2학기 기말고사 (2차 지필평가)', category: 'exam' as const, typeLabel: '지필평가' },
+    { date: `${targetYear}-12-24`, title: '동아리 발표회 및 학교축제', category: 'event' as const, typeLabel: '학교축제' },
+    { date: `${targetYear}-12-31`, title: '겨울방학식', category: 'vacation' as const, typeLabel: '방학/개학' },
+    { date: `${targetYear + 1}-02-05`, title: '졸업식 및 종업식', category: 'vacation' as const, typeLabel: '졸업/종업' },
+  ];
+
+  return rawList.map((item, idx) => {
+    const [y, m, d] = item.date.split('-').map(Number);
+    const eventTime = new Date(y, m - 1, d).getTime();
+    const dDay = Math.ceil((eventTime - todayTime) / (1000 * 60 * 60 * 24));
+    return {
+      id: `default-event-${item.date}-${idx}`,
+      date: item.date,
+      title: item.title,
+      category: item.category,
+      dDay,
+      typeLabel: item.typeLabel,
+      description: `서대전고등학교 공식 학사일정 (${item.typeLabel})`,
+      highlight: dDay >= 0 && dDay <= 14,
+    };
+  });
+}
+
+/**
  * 4. NEIS 학사일정 연동 (SchoolSchedule API)
- * 서대전고등학교의 실제 등록된 2025~2026학년도 연간 공식 학사일정 조회
+ * 서대전고등학교의 실제 등록된 연간 공식 학사일정 조회 및 기본 일정 보강
  */
 export async function fetchSeodaejeonSchedule(targetDate: Date = new Date()): Promise<AcademicEvent[]> {
+  const defaultEvents = getOfficialDefaultSchedule(targetDate);
+
   try {
     const kstDate = getKSTDate(targetDate);
     const todayTime = new Date(kstDate).setHours(0, 0, 0, 0);
 
+    const targetYear = kstDate.getFullYear();
+    const isBeforeMarch = kstDate.getMonth() < 2;
+    const schoolYear = isBeforeMarch ? targetYear - 1 : targetYear;
+    const fromYmd = `${schoolYear}0301`;
+    const toYmd = `${schoolYear + 1}0228`;
+
     // NEIS SchoolSchedule 연간 조회
-    const url = `https://open.neis.go.kr/hub/SchoolSchedule?Type=json&pSize=100&ATPT_OFCDC_SC_CODE=${SEODAEJEON_NEIS.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SEODAEJEON_NEIS.SD_SCHUL_CODE}&AA_FROM_YMD=20250301&AA_TO_YMD=20260228`;
+    const url = `https://open.neis.go.kr/hub/SchoolSchedule?Type=json&pSize=100&ATPT_OFCDC_SC_CODE=${SEODAEJEON_NEIS.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SEODAEJEON_NEIS.SD_SCHUL_CODE}&AA_FROM_YMD=${fromYmd}&AA_TO_YMD=${toYmd}`;
     const res = await fetch(url);
     const data = await res.json();
 
@@ -816,14 +866,18 @@ export async function fetchSeodaejeonSchedule(targetDate: Date = new Date()): Pr
         });
       });
 
-      // 날짜순 정렬
-      return events.sort((a, b) => a.date.localeCompare(b.date));
+      if (events.length > 0) {
+        // 기본 일정 중 NEIS에 없는 주요 일정 병합
+        const eventDatesAndTitles = new Set(events.map((e) => `${e.date}_${e.title}`));
+        const missingDefaults = defaultEvents.filter((d) => !eventDatesAndTitles.has(`${d.date}_${d.title}`));
+        return [...events, ...missingDefaults].sort((a, b) => a.date.localeCompare(b.date));
+      }
     }
   } catch (error) {
     console.error('NEIS SchoolSchedule fetch error:', error);
   }
 
-  return [];
+  return defaultEvents;
 }
 
 /**

@@ -55,8 +55,11 @@ export default function ScheduleSection({
     return true;
   });
 
-  // 다가오는 주요 D-Day 3개
-  const upcomingEvents = events.filter((e) => e.dDay >= 0).slice(0, 3);
+  // 다가오는 주요 D-Day 3개 (가장 가까운 D-Day 순 정렬)
+  const upcomingEvents = events
+    .filter((e) => e.dDay >= 0)
+    .sort((a, b) => a.dDay - b.dDay)
+    .slice(0, 3);
 
   const getCategoryBadge = (cat: AcademicEvent['category']) => {
     switch (cat) {

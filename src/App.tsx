@@ -126,22 +126,45 @@ export default function App() {
   }, []);
 
   const handleCreateSuggestion = async (data: Omit<SuggestionItem, 'id'>) => {
-    await createSuggestion(data);
+    const newItem = await createSuggestion(data);
+    setSuggestions((prev) => {
+      const exists = prev.some((s) => s.id === newItem.id);
+      if (exists) return prev;
+      return [newItem, ...prev];
+    });
   };
 
   const handleToggleLike = async (id: string, currentlyLiked: boolean) => {
-    await toggleSuggestionLike(id, currentlyLiked);
+    const newCount = await toggleSuggestionLike(id, currentlyLiked);
+    setSuggestions((prev) =>
+      prev.map((s) =>
+        s.id === id
+          ? { ...s, likeCount: newCount, likedByMe: !currentlyLiked }
+          : s
+      )
+    );
   };
 
   const handleDeleteSuggestion = async (id: string, pin: string) => {
-    return await deleteSuggestion(id, pin);
+    const res = await deleteSuggestion(id, pin);
+    if (res.success) {
+      setSuggestions((prev) => prev.filter((s) => s.id !== id));
+    }
+    return res;
   };
 
   const handleAddComment = async (
     suggestionId: string,
     comment: { authorName: string; grade: number; classNum: number; content: string }
   ) => {
-    await addCommentToSuggestion(suggestionId, comment);
+    const newComment = await addCommentToSuggestion(suggestionId, comment);
+    setSuggestions((prev) =>
+      prev.map((s) =>
+        s.id === suggestionId
+          ? { ...s, comments: [...(s.comments || []), newComment] }
+          : s
+      )
+    );
   };
 
   const handlePostReply = async (
@@ -150,6 +173,13 @@ export default function App() {
     status: '검토중' | '답변완료'
   ) => {
     await postOfficialReply(suggestionId, reply, status);
+    setSuggestions((prev) =>
+      prev.map((s) =>
+        s.id === suggestionId
+          ? { ...s, status, reply }
+          : s
+      )
+    );
   };
 
   // Cleanup any old mock storage keys from previous sessions

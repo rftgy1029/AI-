@@ -8,6 +8,8 @@ import {
   GraduationCap,
   Sparkles,
   AlertCircle,
+  CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 import { UserProfile, SuggestionItem, SuggestionCategory } from '../types';
 
@@ -45,12 +47,14 @@ export default function CreateSuggestionModal({
   const [content, setContent] = useState('');
   const [pin, setPin] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isSubmitting || isSuccess) return;
     setErrorMsg('');
 
     if (!authorName.trim()) {
@@ -88,16 +92,23 @@ export default function CreateSuggestionModal({
         viewCount: 1,
         comments: [],
       });
-      // reset
-      setTitle('');
-      setContent('');
-      setPin('');
-      onClose();
+
+      // Show success feedback
+      setIsSubmitting(false);
+      setIsSuccess(true);
+
+      // Automatically close modal after brief confirmation
+      setTimeout(() => {
+        setTitle('');
+        setContent('');
+        setPin('');
+        setIsSuccess(false);
+        onClose();
+      }, 900);
     } catch (err) {
       console.error(err);
-      setErrorMsg('건의사항 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
-    } finally {
       setIsSubmitting(false);
+      setErrorMsg('건의사항 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
     }
   };
 
@@ -154,6 +165,16 @@ export default function CreateSuggestionModal({
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {isSuccess && (
+            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2.5 font-bold animate-in fade-in zoom-in-95 duration-200 shadow-xs">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <div>
+                <span className="block text-emerald-950 font-extrabold text-sm">등록이 완료되었습니다!</span>
+                <span className="text-[11px] text-emerald-700 font-medium">창이 곧 자동으로 닫힙니다...</span>
+              </div>
             </div>
           )}
 
@@ -312,17 +333,36 @@ export default function CreateSuggestionModal({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-3 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+              disabled={isSubmitting || isSuccess}
+              className="px-5 py-3 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer disabled:opacity-40"
             >
               취소
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-3 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white transition cursor-pointer shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              disabled={isSubmitting || isSuccess}
+              className={`px-6 py-3 rounded-xl text-sm font-bold transition cursor-pointer shadow-sm flex items-center justify-center gap-2 active:scale-95 disabled:cursor-not-allowed ${
+                isSuccess
+                  ? 'bg-emerald-600 text-white shadow-emerald-200'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-75'
+              }`}
             >
-              <Send className="w-4 h-4" />
-              <span>{isSubmitting ? '등록 중...' : '게시글 등록'}</span>
+              {isSuccess ? (
+                <>
+                  <CheckCircle2 className="w-4 h-4 animate-in zoom-in-50 duration-200" />
+                  <span>등록 완료!</span>
+                </>
+              ) : isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>등록 중...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4" />
+                  <span>게시글 등록</span>
+                </>
+              )}
             </button>
           </div>
         </form>

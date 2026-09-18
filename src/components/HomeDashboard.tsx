@@ -123,9 +123,19 @@ export default function HomeDashboard({
               </button>
 
               {periodInfo.isSchoolHours && !periodInfo.isWeekend && periodInfo.activePeriodNumber ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
-                  현재 {periodInfo.activePeriodNumber}교시 ({periodInfo.timeRemainingMinutes}분 남음)
+                  현재 {periodInfo.activePeriodNumber}교시 ({periodInfo.remainingMinutes}분 남음)
+                </span>
+              ) : periodInfo.isBreakTime && !periodInfo.isWeekend ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-sky-50 text-sky-700 border border-sky-200/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse" />
+                  쉬는 시간 ({periodInfo.nextPeriodName || '다음 교시'}까지 {periodInfo.remainingMinutes}분 남음)
+                </span>
+              ) : periodInfo.isLunchTime && !periodInfo.isWeekend ? (
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-orange-50 text-orange-700 border border-orange-200/60">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+                  점심시간 (5교시까지 {periodInfo.remainingMinutes}분 남음)
                 </span>
               ) : periodInfo.isWeekend ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-medium bg-slate-100 text-slate-600">
@@ -325,11 +335,12 @@ export default function HomeDashboard({
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 text-xs shrink-0 text-slate-400">
-                        <span className="hidden xs:inline">{p.timeRange || PERIOD_TIMES[p.period]}</span>
+                      <div className="flex items-center gap-1.5 sm:gap-2 text-xs shrink-0 text-slate-500 font-medium">
+                        <span className="hidden xs:inline text-slate-400">{p.timeRange || PERIOD_TIMES[p.period]}</span>
                         {isCurrent && (
-                          <span className="text-[10px] sm:text-xs font-bold text-indigo-600 bg-indigo-100 px-2 py-0.5 rounded-full">
-                            진행 중
+                          <span className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-bold text-indigo-700 bg-indigo-100/90 border border-indigo-200 px-2.5 py-0.5 rounded-full animate-pulse shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping" />
+                            <span>진행 중 ({periodInfo.remainingMinutes}분 남음)</span>
                           </span>
                         )}
                       </div>

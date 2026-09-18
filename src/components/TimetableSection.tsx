@@ -94,9 +94,19 @@ export default function TimetableSection({
               </span>
 
               {periodInfo.isSchoolHours && !periodInfo.isWeekend && periodInfo.activePeriodNumber ? (
-                <span className="text-[10px] sm:text-xs font-bold text-white bg-indigo-600 px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1">
+                <span className="text-[10px] sm:text-xs font-bold text-white bg-indigo-600 px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-                  현재 {periodInfo.activePeriodNumber}교시 진행 중
+                  현재 {periodInfo.activePeriodNumber}교시 진행 중 ({periodInfo.remainingMinutes}분 남음)
+                </span>
+              ) : periodInfo.isBreakTime && !periodInfo.isWeekend ? (
+                <span className="text-[10px] sm:text-xs font-bold text-white bg-sky-600 px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  쉬는 시간 ({periodInfo.nextPeriodName || '다음 교시'}까지 {periodInfo.remainingMinutes}분 남음)
+                </span>
+              ) : periodInfo.isLunchTime && !periodInfo.isWeekend ? (
+                <span className="text-[10px] sm:text-xs font-bold text-white bg-orange-600 px-2.5 py-0.5 rounded-full shadow-2xs flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                  점심시간 (5교시까지 {periodInfo.remainingMinutes}분 남음)
                 </span>
               ) : periodInfo.isWeekend ? (
                 <span className="text-[10px] sm:text-xs font-semibold text-slate-500 bg-[#F5F5F7] px-2.5 py-0.5 rounded-full border border-black/[0.03]">
@@ -347,9 +357,9 @@ export default function TimetableSection({
 
                         <div className="flex items-center gap-2 shrink-0">
                           {isCurrent && (
-                            <span className="text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1">
+                            <span className="text-[10px] sm:text-xs font-bold text-indigo-700 bg-indigo-100 border border-indigo-200/80 px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1.5 shadow-2xs">
                               <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping" />
-                              진행 중
+                              <span>진행 중 ({periodInfo.remainingMinutes}분 남음)</span>
                             </span>
                           )}
                           <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-xl border border-black/[0.04]">
@@ -548,10 +558,13 @@ export default function TimetableSection({
                                     </span>
                                   </div>
                                 )}
-                                {isCurrent && !isChanged && (
-                                  <span className="inline-block text-[10px] font-bold text-indigo-700 bg-indigo-100 px-2 py-0.5 rounded-full">
-                                    진행 중
-                                  </span>
+                                {isCurrent && (
+                                  <div className="pt-0.5">
+                                    <span className="inline-flex items-center gap-1 text-[9px] font-bold text-indigo-700 bg-indigo-100 border border-indigo-200/80 px-2 py-0.5 rounded-full shadow-2xs">
+                                      <span className="w-1 h-1 rounded-full bg-indigo-600 animate-ping" />
+                                      <span>{periodInfo.remainingMinutes}분 남음</span>
+                                    </span>
+                                  </div>
                                 )}
                               </div>
                             ) : (

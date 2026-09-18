@@ -18,7 +18,8 @@ import { SuggestionItem, SuggestionComment } from '../types';
 
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
-export const db = getFirestore(app);
+const dbId = (firebaseConfig as { firestoreDatabaseId?: string }).firestoreDatabaseId;
+export const db = dbId ? getFirestore(app, dbId) : getFirestore(app);
 export const auth = getAuth(app);
 
 // Error Handling according to Firebase Skill standard
@@ -112,7 +113,7 @@ export function saveLocalSuggestions(items: SuggestionItem[]) {
   }
 }
 
-// Subscribe to suggestions from Firestore with local fallback
+// Subscribe to suggestions from Firestore with local fallback and robust merge
 export function subscribeToSuggestions(
   onUpdate: (items: SuggestionItem[]) => void
 ): () => void {
@@ -123,22 +124,38 @@ export function subscribeToSuggestions(
     const unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        const local = getLocalSuggestions();
         if (snapshot.empty) {
-          saveLocalSuggestions([]);
-          onUpdate([]);
+          // If Firestore is currently empty, preserve existing local user-created posts
+          if (local.length > 0) {
+            onUpdate(local);
+          } else {
+            saveLocalSuggestions([]);
+            onUpdate([]);
+          }
         } else {
-          const items: SuggestionItem[] = [];
+          const firestoreItems: SuggestionItem[] = [];
           snapshot.forEach((docSnap) => {
             const data = docSnap.data() as SuggestionItem;
-            // Purge any pre-generated dummy seed suggestions if they exist in Firestore
+            // Purge any legacy dummy seed suggestions
             if (['sug-1', 'sug-2', 'sug-3', 'sug-4', 'sug-5'].includes(data.id)) {
               deleteDoc(doc(db, collectionPath, data.id)).catch(() => {});
             } else {
-              items.push(data);
+              firestoreItems.push(data);
             }
           });
-          saveLocalSuggestions(items);
-          onUpdate(items);
+
+          // Merge: keep local posts that haven't appeared in Firestore snapshot yet
+          const firestoreIds = new Set(firestoreItems.map((item) => item.id));
+          const pendingLocal = local.filter((item) => !firestoreIds.has(item.id));
+
+          // Combine and sort by createdAt descending
+          const merged = [...pendingLocal, ...firestoreItems].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+
+          saveLocalSuggestions(merged);
+          onUpdate(merged);
         }
       },
       (error) => {
@@ -165,12 +182,14 @@ export async function createSuggestion(newSuggestion: Omit<SuggestionItem, 'id'>
 
   // 1. Update local storage immediately for responsive UX
   const current = getLocalSuggestions();
-  const updated = [item, ...current];
+  const updated = [item, ...current.filter((i) => i.id !== id)];
   saveLocalSuggestions(updated);
 
-  // 2. Sync to Firestore
+  // 2. Sync to Firestore with a timeout safety net so UI never hangs on '등록 중...'
   try {
-    await setDoc(doc(db, 'suggestions', id), item);
+    const firestorePromise = setDoc(doc(db, 'suggestions', id), item);
+    const timeoutPromise = new Promise((resolve) => setTimeout(resolve, 2000));
+    await Promise.race([firestorePromise, timeoutPromise]);
   } catch (err) {
     handleFirestoreError(err, OperationType.CREATE, `suggestions/${id}`);
   }

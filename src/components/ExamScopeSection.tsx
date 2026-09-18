@@ -325,10 +325,10 @@ export default function ExamScopeSection({
                   <div className="text-[11px] font-bold text-slate-400 mb-1">
                     {isAnnounced ? '📖 교과서 및 출제 범위' : '⏳ 공지 상태 안내'}
                   </div>
-                  <div className="font-bold text-slate-900 text-sm sm:text-base leading-snug">
-                    {scope.scope}
+                  <div className={`font-bold text-sm sm:text-base leading-snug ${isAnnounced ? 'text-slate-900' : 'text-slate-500'}`}>
+                    {scope.scope || '(9월 22일 월요일 1교시 교무실 전체 공지 예정)'}
                   </div>
-                  {scope.textbookPages && scope.textbookPages !== '공지 대기 중' && (
+                  {scope.textbookPages && (
                     <div className="text-xs text-indigo-700 font-semibold mt-1">
                       페이지: {scope.textbookPages}
                     </div>
@@ -355,7 +355,7 @@ export default function ExamScopeSection({
               {/* Updated At */}
               <div className="mt-4 pt-3 border-t border-black/[0.04] flex items-center justify-between text-[11px] text-slate-400">
                 <span>서대전고 교무실 안내 공간</span>
-                <span>{scope.updatedAt || '9/18 확보'}</span>
+                <span>{scope.updatedAt || '9/22 공지 대기'}</span>
               </div>
             </motion.div>
           );

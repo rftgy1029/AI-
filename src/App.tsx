@@ -77,7 +77,9 @@ export default function App() {
   });
 
   // 2. Active Tab
-  const [activeTab, setActiveTab] = useState<string>('home');
+  const [activeTab, setActiveTab] = useState<string>(
+    () => new URLSearchParams(window.location.search).get('tab') || 'home'
+  );
 
   // 3. Modals & Admin State
   const [isClassChangeOpen, setIsClassChangeOpen] = useState(false);

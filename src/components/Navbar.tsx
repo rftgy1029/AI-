@@ -78,7 +78,7 @@ export default function Navbar({
   const navItems = [
     { id: 'home', label: '홈', fullLabel: '홈 (대시보드)', icon: Home },
     { id: 'meal', label: '급식', fullLabel: '급식표 (NEIS)', icon: Utensils },
-    { id: 'timetable', label: '시간표', fullLabel: '시간표 (NEIS)', icon: CalendarDays },
+    { id: 'timetable', label: '시간표', fullLabel: '시간표 (컴시간)', icon: CalendarDays },
     { id: 'schedule', label: '일정', fullLabel: '학사일정 · D-Day', icon: Calendar },
     { id: 'board', label: '게시판', fullLabel: '게시판', icon: MessageSquare },
   ];

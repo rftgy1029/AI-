@@ -38,7 +38,9 @@ export default function TimetableSection({
   lastSyncTime,
 }: TimetableSectionProps) {
   const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo>(() => getCurrentPeriodInfo());
-  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>(
+    () => (new URLSearchParams(window.location.search).get('view') as 'daily' | 'weekly') || 'daily'
+  );
 
   useEffect(() => {
     const timer = setInterval(() => {

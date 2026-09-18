@@ -13,6 +13,10 @@ import {
   X,
   Camera,
   Layers,
+  Lock,
+  ShieldCheck,
+  Eye,
+  KeyRound,
 } from 'lucide-react';
 import {
   ExamScopeItem,
@@ -25,15 +29,22 @@ import ExamScopeOcrModal from './ExamScopeOcrModal';
 interface ExamScopeSectionProps {
   grade: number;
   classNum?: number;
+  isAdmin?: boolean;
+  onOpenPasskeyModal?: () => void;
 }
 
-export default function ExamScopeSection({ grade, classNum }: ExamScopeSectionProps) {
+export default function ExamScopeSection({
+  grade,
+  classNum,
+  isAdmin = false,
+  onOpenPasskeyModal,
+}: ExamScopeSectionProps) {
   const [scopes, setScopes] = useState<ExamScopeItem[]>(() => getExamScopes(grade));
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'announced' | 'pending'>('all');
   const [editingItem, setEditingItem] = useState<ExamScopeItem | null>(null);
   const [isOcrOpen, setIsOcrOpen] = useState(
-    () => new URLSearchParams(window.location.search).get('openOcr') === 'true'
+    () => isAdmin && new URLSearchParams(window.location.search).get('openOcr') === 'true'
   );
 
   // Fix bug: immediately sync when grade changes without needing to exit & re-enter
@@ -52,14 +63,30 @@ export default function ExamScopeSection({ grade, classNum }: ExamScopeSectionPr
   const pendingCount = scopes.filter((s) => s.status === 'pending').length;
 
   const handleSaveEdit = (updated: ExamScopeItem) => {
+    if (!isAdmin) {
+      onOpenPasskeyModal?.();
+      return;
+    }
     saveExamScope(updated);
     setScopes(getExamScopes(grade));
     setEditingItem(null);
   };
 
   const handleSaveMultipleScopes = (newScopes: ExamScopeItem[]) => {
+    if (!isAdmin) {
+      onOpenPasskeyModal?.();
+      return;
+    }
     saveMultipleExamScopes(newScopes);
     setScopes(getExamScopes(grade));
+  };
+
+  const handleOcrButtonClick = () => {
+    if (!isAdmin) {
+      onOpenPasskeyModal?.();
+      return;
+    }
+    setIsOcrOpen(true);
   };
 
   return (
@@ -78,6 +105,17 @@ export default function ExamScopeSection({ grade, classNum }: ExamScopeSectionPr
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               9월 22일(월) 전체 공지 예정
             </span>
+            {isAdmin ? (
+              <span className="text-xs font-bold text-emerald-300 bg-emerald-500/20 px-3 py-1 rounded-full border border-emerald-400/30 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                교직원 관리자 모드 (수정 가능)
+              </span>
+            ) : (
+              <span className="text-xs font-bold text-slate-300 bg-white/10 px-3 py-1 rounded-full border border-white/10 flex items-center gap-1.5">
+                <Eye className="w-3.5 h-3.5 text-slate-300" />
+                학생 조회 전용 (Only View)
+              </span>
+            )}
           </div>
 
           <h2 className="text-xl sm:text-3xl font-black tracking-tight">
@@ -118,6 +156,31 @@ export default function ExamScopeSection({ grade, classNum }: ExamScopeSectionPr
         </div>
       </div>
 
+      {/* Read-Only Mode Banner for unauthenticated users */}
+      {!isAdmin && (
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs sm:text-sm text-slate-700">
+          <div className="flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-slate-200/80 text-slate-600">
+              <Lock className="w-4 h-4 shrink-0" />
+            </div>
+            <div>
+              <span className="font-bold text-slate-900">학생 조회 전용 (Only View) 모드</span>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">
+                시험범위 일괄 등록 및 개별 과목 수정은 교직원 패스키(생체인증/마스터키) 로그인이 필요합니다.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onOpenPasskeyModal?.()}
+            className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-xs font-bold text-slate-800 hover:bg-slate-100 hover:border-slate-400 transition cursor-pointer shrink-0 shadow-2xs flex items-center gap-1.5"
+          >
+            <KeyRound className="w-3.5 h-3.5 text-indigo-600" />
+            <span>교직원 패스키 로그인</span>
+          </button>
+        </div>
+      )}
+
       {/* Filter & Search Bar + OCR Button */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div className="flex flex-1 items-center gap-2.5 max-w-lg">
@@ -136,11 +199,25 @@ export default function ExamScopeSection({ grade, classNum }: ExamScopeSectionPr
           {/* AI OCR Button */}
           <button
             type="button"
-            onClick={() => setIsOcrOpen(true)}
-            className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 text-white shadow-xs flex items-center gap-2 cursor-pointer transition shrink-0 active:scale-95"
+            onClick={handleOcrButtonClick}
+            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer transition shrink-0 active:scale-95 ${
+              isAdmin
+                ? 'bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 text-white shadow-xs'
+                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-2xs'
+            }`}
+            title={isAdmin ? 'AI 전과목 시험범위표 일괄 OCR' : '시험범위 일괄 등록 (교직원 패스키 로그인 필요)'}
           >
-            <Camera className="w-4 h-4" />
-            <span>📸 AI 전과목 시험범위표 일괄 OCR</span>
+            {isAdmin ? (
+              <>
+                <Camera className="w-4 h-4" />
+                <span>📸 AI 전과목 시험범위표 일괄 OCR</span>
+              </>
+            ) : (
+              <>
+                <Lock className="w-4 h-4 text-slate-400" />
+                <span>시험범위 등록·수정 (패스키 로그인)</span>
+              </>
+            )}
           </button>
         </div>
 
@@ -225,15 +302,17 @@ export default function ExamScopeSection({ grade, classNum }: ExamScopeSectionPr
                       </span>
                     )}
 
-                    {/* Quick Edit button for demo/teacher */}
-                    <button
-                      type="button"
-                      onClick={() => setEditingItem(scope)}
-                      title="시험범위 등록/수정"
-                      className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition cursor-pointer"
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                    </button>
+                    {/* Quick Edit button for demo/teacher (Admin only) */}
+                    {isAdmin && (
+                      <button
+                        type="button"
+                        onClick={() => setEditingItem(scope)}
+                        title="시험범위 등록/수정"
+                        className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-700 transition cursor-pointer"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
                   </div>
                 </div>
 

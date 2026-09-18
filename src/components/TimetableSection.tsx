@@ -35,6 +35,8 @@ interface TimetableSectionProps {
   isNeisSyncing?: boolean;
   onRefreshNeis?: () => void;
   lastSyncTime?: string;
+  isAdmin?: boolean;
+  onOpenPasskeyModal?: () => void;
 }
 
 export default function TimetableSection({
@@ -44,6 +46,8 @@ export default function TimetableSection({
   isNeisSyncing,
   onRefreshNeis,
   lastSyncTime,
+  isAdmin,
+  onOpenPasskeyModal,
 }: TimetableSectionProps) {
   const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo>(() => getCurrentPeriodInfo());
   const [viewMode, setViewMode] = useState<'daily' | 'weekly' | 'exam'>(
@@ -326,7 +330,12 @@ export default function TimetableSection({
 
       {/* Main Timetable Content */}
       {viewMode === 'exam' ? (
-        <ExamScopeSection grade={selectedGrade} classNum={selectedClass} />
+        <ExamScopeSection
+          grade={selectedGrade}
+          classNum={selectedClass}
+          isAdmin={isAdmin}
+          onOpenPasskeyModal={onOpenPasskeyModal}
+        />
       ) : viewMode === 'daily' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left 2 Cols: Periods for the selected day */}

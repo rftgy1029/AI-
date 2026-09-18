@@ -15,6 +15,7 @@ import {
   AlertCircle,
   Building,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { SuggestionItem, UserProfile } from '../types';
 
 interface SuggestionDetailModalProps {
@@ -77,14 +78,14 @@ export default function SuggestionDetailModal({
   const [replyStatus, setReplyStatus] = useState<'검토중' | '답변완료'>('답변완료');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
-  if (!suggestion) return null;
-
   const handleLike = async () => {
+    if (!suggestion) return;
     await onToggleLike(suggestion.id, !!suggestion.likedByMe);
   };
 
   const handleCommentSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!suggestion) return;
     if (!commentName.trim() || !commentText.trim()) return;
 
     setIsSubmittingComment(true);
@@ -105,6 +106,7 @@ export default function SuggestionDetailModal({
 
   const handleDeleteSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!suggestion) return;
     setDeleteError('');
     setIsDeleting(true);
 
@@ -124,7 +126,7 @@ export default function SuggestionDetailModal({
 
   const handleReplySubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!isAdmin) return;
+    if (!suggestion || !isAdmin) return;
     if (!replyContent.trim()) return;
 
     const finalAuthor =
@@ -176,21 +178,38 @@ export default function SuggestionDetailModal({
     }
   };
 
-  const statusBadge = getStatusBadge(suggestion.status);
-  const StatusIcon = statusBadge.icon;
+  const statusBadge = suggestion ? getStatusBadge(suggestion.status) : null;
+  const StatusIcon = statusBadge?.icon || Clock;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div
-        className="bg-white rounded-t-[28px] sm:rounded-[28px] max-w-2xl w-full max-h-[92vh] shadow-2xl border border-black/[0.06] overflow-hidden flex flex-col pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Mobile handle indicator */}
-        <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mt-3 sm:hidden" />
+    <AnimatePresence>
+      {suggestion && statusBadge && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+          />
 
-        {/* Modal Top Nav Header */}
-        <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-black/[0.04] flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 flex-wrap min-w-0">
+          {/* Dialog Sheet / Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 16 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+            className="relative bg-white rounded-t-[28px] sm:rounded-[28px] max-w-2xl w-full max-h-[92vh] shadow-2xl border border-black/[0.06] overflow-hidden flex flex-col pb-safe z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Mobile handle indicator */}
+            <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mt-3 sm:hidden" />
+
+            {/* Modal Top Nav Header */}
+            <div className="p-4 sm:p-6 pb-3 sm:pb-4 border-b border-black/[0.04] flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 flex-wrap min-w-0">
             <span
               className={`text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 shrink-0 ${statusBadge.bg}`}
             >
@@ -270,10 +289,11 @@ export default function SuggestionDetailModal({
               <span className="text-xs text-slate-500 font-medium">
                 이 게시글에 공감하신다면 추천해 주세요.
               </span>
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 1.15 }}
                 onClick={handleLike}
-                className={`px-5 py-2.5 rounded-full text-sm font-bold transition flex items-center gap-2 cursor-pointer active:scale-95 shadow-2xs ${
+                className={`px-5 py-2.5 rounded-full text-sm font-bold transition flex items-center gap-2 cursor-pointer shadow-2xs ${
                   suggestion.likedByMe
                     ? 'bg-rose-500 text-white'
                     : 'bg-white hover:bg-slate-50 text-slate-700 border border-black/[0.06]'
@@ -281,7 +301,7 @@ export default function SuggestionDetailModal({
               >
                 <ThumbsUp className={`w-4 h-4 ${suggestion.likedByMe ? 'fill-current' : ''}`} />
                 <span>공감 {suggestion.likeCount}</span>
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -590,7 +610,9 @@ export default function SuggestionDetailModal({
             </div>
           </div>
         )}
-      </div>
+      </motion.div>
     </div>
+  )}
+</AnimatePresence>
   );
 }

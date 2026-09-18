@@ -11,7 +11,7 @@ import {
   LayoutGrid,
   List,
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { TimetableDay, UserProfile } from '../types';
 import {
   getCurrentPeriodInfo,
@@ -133,39 +133,54 @@ export default function TimetableSection({
               <button
                 type="button"
                 onClick={() => setViewMode('daily')}
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 ${
+                className={`relative px-4 py-2 rounded-xl text-sm font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'daily'
-                    ? 'bg-white text-slate-900 shadow-2xs'
+                    ? 'text-slate-900'
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <List className="w-4 h-4" />
-                <span>일간 상세</span>
+                {viewMode === 'daily' && (
+                  <motion.div
+                    layoutId="timetableViewModePill"
+                    className="absolute inset-0 bg-white rounded-xl shadow-2xs"
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  />
+                )}
+                <List className="w-4 h-4 relative z-10" />
+                <span className="relative z-10">일간 상세</span>
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('weekly')}
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95 ${
+                className={`relative px-4 py-2 rounded-xl text-sm font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
                   viewMode === 'weekly'
-                    ? 'bg-white text-slate-900 shadow-2xs'
+                    ? 'text-slate-900'
                     : 'text-slate-500 hover:text-slate-800'
                 }`}
               >
-                <LayoutGrid className="w-4 h-4" />
-                <span>주간 전체</span>
+                {viewMode === 'weekly' && (
+                  <motion.div
+                    layoutId="timetableViewModePill"
+                    className="absolute inset-0 bg-white rounded-xl shadow-2xs"
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  />
+                )}
+                <LayoutGrid className="w-4 h-4 relative z-10" />
+                <span className="relative z-10">주간 전체</span>
               </button>
             </div>
 
             {onRefreshNeis && (
-              <button
+              <motion.button
                 type="button"
+                whileTap={{ scale: 0.95 }}
                 onClick={onRefreshNeis}
                 disabled={isNeisSyncing}
-                className="px-4 py-2 rounded-xl text-sm font-bold bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-95 text-slate-700 transition flex items-center gap-2 cursor-pointer disabled:opacity-50 border border-black/[0.04]"
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700 transition flex items-center gap-2 cursor-pointer disabled:opacity-50 border border-black/[0.04]"
               >
                 <RefreshCw className={`w-4 h-4 ${isNeisSyncing ? 'animate-spin' : ''}`} />
                 <span className="hidden xs:inline">{isNeisSyncing ? '조회 중...' : '시간표 새로고침'}</span>
-              </button>
+              </motion.button>
             )}
           </div>
         </div>
@@ -176,17 +191,18 @@ export default function TimetableSection({
             <span className="text-xs sm:text-sm font-bold text-slate-500 w-16 shrink-0">학년 선택</span>
             <div className="flex items-center gap-2">
               {[1, 2, 3].map((g) => (
-                <button
+                <motion.button
                   key={g}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleGradeChange(g)}
-                  className={`px-4 py-2 rounded-xl text-sm sm:text-base font-bold transition cursor-pointer active:scale-95 border ${
+                  className={`px-4 py-2 rounded-xl text-sm sm:text-base font-bold transition cursor-pointer border ${
                     selectedGrade === g
                       ? 'bg-black text-white border-black shadow-2xs'
                       : 'bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700 border-black/[0.02]'
                   }`}
                 >
                   {g}학년
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -195,17 +211,18 @@ export default function TimetableSection({
             <span className="text-xs sm:text-sm font-bold text-slate-500 w-16 shrink-0 pt-1.5">학급 선택</span>
             <div className="flex flex-wrap items-center gap-2">
               {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((c) => (
-                <button
+                <motion.button
                   key={c}
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => handleClassChange(c)}
-                  className={`px-3.5 py-1.5 rounded-xl text-sm sm:text-base font-bold transition cursor-pointer active:scale-95 border ${
+                  className={`px-3.5 py-1.5 rounded-xl text-sm sm:text-base font-bold transition cursor-pointer border ${
                     selectedClass === c
                       ? 'bg-indigo-600 text-white border-indigo-700 shadow-2xs'
                       : 'bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700 border-black/[0.02]'
                   }`}
                 >
                   {c}반
-                </button>
+                </motion.button>
               ))}
             </div>
           </div>
@@ -219,32 +236,40 @@ export default function TimetableSection({
               const isToday = !periodInfo.isWeekend && dayItem.day === periodInfo.dayOfWeek;
 
               return (
-                <button
+                <motion.button
                   key={dayItem.day}
                   type="button"
+                  whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveDayIndex(idx)}
-                  className={`py-3 px-2 sm:py-3.5 sm:px-4 rounded-2xl text-center transition-all cursor-pointer border select-none active:scale-95 ${
+                  className={`relative py-3 px-2 sm:py-3.5 sm:px-4 rounded-2xl text-center transition-colors cursor-pointer border select-none ${
                     isSelected
-                      ? 'bg-black text-white border-black shadow-sm'
+                      ? 'text-white border-black shadow-sm'
                       : 'bg-[#F5F5F7] hover:bg-slate-200/70 border-black/[0.02] text-slate-800'
                   }`}
                 >
-                  <span className="text-sm sm:text-base font-bold block">{dayItem.day}요일</span>
+                  {isSelected && (
+                    <motion.div
+                      layoutId="timetableDayPill"
+                      className="absolute inset-0 bg-black rounded-2xl"
+                      transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                    />
+                  )}
+                  <span className="text-sm sm:text-base font-bold block relative z-10">{dayItem.day}요일</span>
                   {dayItem.dateStr && (
-                    <span className={`text-xs sm:text-sm block ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
+                    <span className={`text-xs sm:text-sm block relative z-10 ${isSelected ? 'text-slate-300' : 'text-slate-400'}`}>
                       {dayItem.dateStr.slice(5)}
                     </span>
                   )}
                   {isToday && (
                     <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-black inline-block mt-0.5 ${
+                      className={`text-xs px-2 py-0.5 rounded-full font-black inline-block mt-0.5 relative z-10 ${
                         isSelected ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700'
                       }`}
                     >
                       오늘
                     </span>
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -287,95 +312,107 @@ export default function TimetableSection({
                 <div className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-amber-100 border border-amber-300 text-xs sm:text-sm text-amber-950 font-medium">
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0 animate-pulse" />
                   <span>
-                    <strong>시간표 변경 안내:</strong> 노란색 박스는 변경된 수업입니다 (원래 진로 시간에서 변경됨).
+                    <strong>시간표 변경 안내:</strong> 노란색 카드는 컴시간 알리미에서 실시간 변경된 수업입니다.
                   </span>
                 </div>
               )}
 
-              {currentDayData?.periods?.length ? (
-                <div className="space-y-2.5">
-                  {currentDayData.periods.map((p) => {
-                    const isCurrent =
-                      !periodInfo.isWeekend &&
-                      currentDayData.day === periodInfo.dayOfWeek &&
-                      periodInfo.activePeriodNumber === p.period;
+              <AnimatePresence mode="wait">
+                {currentDayData?.periods?.length ? (
+                  <motion.div
+                    key={`${selectedGrade}-${selectedClass}-${activeDayIndex}`}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                    className="space-y-2.5"
+                  >
+                    {currentDayData.periods.map((p, i) => {
+                      const isCurrent =
+                        !periodInfo.isWeekend &&
+                        currentDayData.day === periodInfo.dayOfWeek &&
+                        periodInfo.activePeriodNumber === p.period;
 
-                    return (
-                      <motion.div
-                        key={p.period}
-                        whileHover={{ scale: 1.005 }}
-                        className={`p-4 rounded-2xl border transition flex items-center justify-between gap-4 ${
-                          p.isChanged
-                            ? 'bg-amber-50/90 border-2 border-amber-400 shadow-xs'
-                            : isCurrent
-                            ? 'bg-indigo-50/80 border-indigo-200 font-semibold shadow-2xs'
-                            : 'bg-[#F5F5F7] border-black/[0.02] hover:bg-slate-100/80'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3.5 min-w-0">
-                          <span
-                            className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shrink-0 shadow-2xs ${
-                              p.isChanged
-                                ? 'bg-amber-400 text-amber-950 border border-amber-500/30'
-                                : isCurrent
-                                ? 'bg-indigo-600 text-white'
-                                : 'bg-white text-slate-700 border border-black/[0.06]'
-                            }`}
-                          >
-                            {p.period}
-                          </span>
+                      return (
+                        <motion.div
+                          key={p.period}
+                          initial={{ opacity: 0, scale: 0.98 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          transition={{ delay: i * 0.025, duration: 0.2 }}
+                          whileHover={{ scale: 1.005 }}
+                          className={`p-4 rounded-2xl border transition flex items-center justify-between gap-4 ${
+                            p.isChanged
+                              ? 'bg-amber-50/90 border-2 border-amber-400 shadow-xs'
+                              : isCurrent
+                              ? 'bg-indigo-50/80 border-indigo-200 font-semibold shadow-2xs'
+                              : 'bg-[#F5F5F7] border-black/[0.02] hover:bg-slate-100/80'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <span
+                              className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm shrink-0 shadow-2xs ${
+                                p.isChanged
+                                  ? 'bg-amber-400 text-amber-950 border border-amber-500/30'
+                                  : isCurrent
+                                  ? 'bg-indigo-600 text-white'
+                                  : 'bg-white text-slate-700 border border-black/[0.06]'
+                              }`}
+                            >
+                              {p.period}
+                            </span>
 
-                          <div className="min-w-0 space-y-0.5">
-                            <div className="flex items-center gap-2">
-                              <h4
-                                className={`text-sm font-bold truncate ${
-                                  p.isChanged
-                                    ? 'text-amber-950 font-black'
-                                    : isCurrent
-                                    ? 'text-indigo-950'
-                                    : 'text-slate-900'
-                                }`}
-                              >
-                                {p.subject}
-                              </h4>
-                              {p.teacher && (
-                                <span className="text-xs text-slate-500 font-medium bg-white/80 px-2 py-0.5 rounded-md border border-black/[0.04]">
-                                  {p.teacher} 선생님
-                                </span>
-                              )}
-                              {p.isChanged && (
-                                <span className="text-[11px] font-extrabold text-amber-950 bg-amber-200 px-2 py-0.5 rounded-md border border-amber-300">
-                                  시간표 변경 (원래: {p.originalSubject || '진로'})
-                                </span>
-                              )}
+                            <div className="min-w-0 space-y-0.5">
+                              <div className="flex items-center gap-2">
+                                <h4
+                                  className={`text-sm font-bold truncate ${
+                                    p.isChanged
+                                      ? 'text-amber-950 font-black'
+                                      : isCurrent
+                                      ? 'text-indigo-950'
+                                      : 'text-slate-900'
+                                  }`}
+                                >
+                                  {p.subject}
+                                </h4>
+                                {p.teacher && (
+                                  <span className="text-xs text-slate-500 font-medium bg-white/80 px-2 py-0.5 rounded-md border border-black/[0.04]">
+                                    {p.teacher} 선생님
+                                  </span>
+                                )}
+                                {p.isChanged && (
+                                  <span className="text-[11px] font-extrabold text-amber-950 bg-amber-200 px-2 py-0.5 rounded-md border border-amber-300">
+                                    시간표 변경{p.originalSubject ? ` (원래: ${p.originalSubject})` : ''}
+                                  </span>
+                                )}
+                              </div>
+                              <span className="text-[11px] text-slate-400 font-medium block">
+                                {p.timeRange || PERIOD_TIMES[p.period]}
+                              </span>
                             </div>
-                            <span className="text-[11px] text-slate-400 font-medium block">
-                              {p.timeRange || PERIOD_TIMES[p.period]}
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            {isCurrent && (
+                              <span className="text-[10px] sm:text-xs font-bold text-indigo-700 bg-indigo-100 border border-indigo-200/80 px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1.5 shadow-2xs">
+                                <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping" />
+                                <span>진행 중 ({periodInfo.remainingMinutes}분 남음)</span>
+                              </span>
+                            )}
+                            <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-xl border border-black/[0.04]">
+                              {selectedClass}반 교실
                             </span>
                           </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 shrink-0">
-                          {isCurrent && (
-                            <span className="text-[10px] sm:text-xs font-bold text-indigo-700 bg-indigo-100 border border-indigo-200/80 px-2.5 py-1 rounded-full animate-pulse flex items-center gap-1.5 shadow-2xs">
-                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-ping" />
-                              <span>진행 중 ({periodInfo.remainingMinutes}분 남음)</span>
-                            </span>
-                          )}
-                          <span className="text-xs text-slate-500 font-medium bg-white px-2.5 py-1 rounded-xl border border-black/[0.04]">
-                            {selectedClass}반 교실
-                          </span>
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="py-12 text-center text-slate-400 text-xs font-medium space-y-2">
-                  <CalendarDays className="w-8 h-8 mx-auto text-slate-300" />
-                  <p>등록된 시간표 정보가 없습니다.</p>
-                </div>
-              )}
+                        </motion.div>
+                      );
+                    })}
+                  </motion.div>
+                ) : (
+                  <div className="py-12 text-center text-slate-400 text-xs font-medium space-y-2">
+                    <CalendarDays className="w-8 h-8 mx-auto text-slate-300" />
+                    <p>등록된 시간표 정보가 없습니다.</p>
+                  </div>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -455,7 +492,7 @@ export default function TimetableSection({
             <div className="flex items-center gap-2">
               <span className="text-xs font-semibold text-amber-900 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                노란색: 시간표 변경 (원래 진로)
+                노란색: 시간표 변경
               </span>
               <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
                 {selectedGrade}학년 {selectedClass}반
@@ -554,7 +591,7 @@ export default function TimetableSection({
                                 {isChanged && (
                                   <div className="pt-0.5">
                                     <span className="inline-block text-[9px] font-extrabold text-amber-950 bg-amber-300 px-1.5 py-0.5 rounded border border-amber-400">
-                                      원래: {periodData.originalSubject || '진로'}
+                                      {periodData.originalSubject ? `원래: ${periodData.originalSubject}` : '시간표 변경'}
                                     </span>
                                   </div>
                                 )}

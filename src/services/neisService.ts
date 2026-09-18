@@ -397,7 +397,7 @@ export async function fetchSeodaejeonMeals(targetDate: Date = new Date()): Promi
 }
 
 // 서대전고등학교 2학년 1반 컴시간 공식 시간표 (2026-09-14 ~ 2026-09-19 주간 시간표)
-// ※ 노란색 박스: 목요일 5교시 시간표 변경 (원래 진로 시간 -> 지구 / 담당교사: 정영)
+// ※ 노란색 박스: 목요일 5교시 시간표 변경 (원래 특색 시간 -> 지구)
 export interface ComciganPeriodEntry {
   period: number;
   subject: string;
@@ -410,55 +410,54 @@ export interface ComciganPeriodEntry {
 export const COMCIGAN_2_1_TIMETABLE: Record<'월' | '화' | '수' | '목' | '금', ComciganPeriodEntry[]> = {
   월: [
     // 1교시 없음
-    { period: 2, subject: '스생2', teacher: '김한' },
-    { period: 3, subject: '역학', teacher: '박조' },
-    { period: 4, subject: '화법', teacher: '신순' },
-    { period: 5, subject: 'B_물질', teacher: '오동' },
-    { period: 6, subject: '미적2', teacher: '안상' },
-    { period: 7, subject: '중국', teacher: '이경' },
+    { period: 2, subject: '스생2' },
+    { period: 3, subject: '역학' },
+    { period: 4, subject: '화법' },
+    { period: 5, subject: 'B_물질' },
+    { period: 6, subject: '미적2' },
+    { period: 7, subject: '중국' },
   ],
   화: [
-    { period: 1, subject: '역학', teacher: '박조' },
-    { period: 2, subject: '물질', teacher: '오동' },
-    { period: 3, subject: '영어2', teacher: '이규' },
-    { period: 4, subject: 'C_중국', teacher: '이경' },
-    { period: 5, subject: '특색', teacher: '김영' },
-    { period: 6, subject: '데과', teacher: '유의' },
-    { period: 7, subject: '지구', teacher: '정영' },
+    { period: 1, subject: '역학' },
+    { period: 2, subject: '물질' },
+    { period: 3, subject: '영어2' },
+    { period: 4, subject: 'C_중국' },
+    { period: 5, subject: '특색' },
+    { period: 6, subject: '데과' },
+    { period: 7, subject: '지구' },
   ],
   수: [
-    { period: 1, subject: 'A_데과', teacher: '유의' },
-    { period: 2, subject: 'B_화법', teacher: '신순' },
-    { period: 3, subject: '창체', teacher: '창*' },
-    { period: 4, subject: '창체', teacher: '창*' },
-    { period: 5, subject: '확통', teacher: '임재' },
-    { period: 6, subject: 'C_미적2', teacher: '안상' },
-    { period: 7, subject: '물질', teacher: '오동' },
+    { period: 1, subject: 'A_데과' },
+    { period: 2, subject: 'B_화법' },
+    { period: 3, subject: '창체' },
+    { period: 4, subject: '창체' },
+    { period: 5, subject: '확통' },
+    { period: 6, subject: 'C_미적2' },
+    { period: 7, subject: '물질' },
   ],
   목: [
-    { period: 1, subject: 'A_스생2', teacher: '김종' },
-    { period: 2, subject: '확통', teacher: '임재' },
-    { period: 3, subject: '역학', teacher: '박조' },
-    { period: 4, subject: '진로', teacher: '진*' },
+    { period: 1, subject: 'A_스생2' },
+    { period: 2, subject: '확통' },
+    { period: 3, subject: '역학' },
+    { period: 4, subject: '진로' },
     {
       period: 5,
       subject: '지구',
-      teacher: '정영',
       isChanged: true,
-      originalSubject: '진로',
-      changeNote: '시간표 변경: 원래는 진로 시간 (지구로 변경됨)',
+      originalSubject: '특색',
+      changeNote: '시간표 변경: 원래는 특색 시간 (지구로 변경됨)',
     },
-    { period: 6, subject: '지구', teacher: '정영' },
-    { period: 7, subject: '영어2', teacher: '이규' },
+    { period: 6, subject: '지구' },
+    { period: 7, subject: '영어2' },
   ],
   금: [
-    { period: 1, subject: '미적2', teacher: '안상' },
-    { period: 2, subject: '영어2', teacher: '이규' },
-    { period: 3, subject: '확통', teacher: '임재' },
-    { period: 4, subject: 'C_지구', teacher: '정영' },
-    { period: 5, subject: '데과', teacher: '유의' },
-    { period: 6, subject: 'B_화법', teacher: '신순' },
-    { period: 7, subject: '중국', teacher: '이경' },
+    { period: 1, subject: '미적2' },
+    { period: 2, subject: '영어2' },
+    { period: 3, subject: '확통' },
+    { period: 4, subject: 'C_지구' },
+    { period: 5, subject: '데과' },
+    { period: 6, subject: 'B_화법' },
+    { period: 7, subject: '중국' },
   ],
 };
 
@@ -519,7 +518,7 @@ export function getOfficialSeodaejeonTimetable(
     return dt;
   });
 
-  // 2학년 1반: 컴시간 시간표 전용 매핑 (담당 교사 및 목요일 5교시 변경 내용 포함)
+  // 2학년 1반: 컴시간 시간표 전용 매핑 (목요일 5교시 변경 내용 포함, 반별 상이한 교사명 제외)
   if (grade === 2 && classNum === 1) {
     const timetableDays: TimetableDay[] = dayNames.map((dayName, idx) => {
       const dateObj = weekDates[idx];
@@ -535,7 +534,6 @@ export function getOfficialSeodaejeonTimetable(
         return {
           period: item.period,
           subject: item.subject,
-          teacher: item.teacher,
           timeRange: PERIOD_TIMES[item.period] || `${item.period}교시`,
           room: '1반 교실',
           isCurrent,
@@ -599,9 +597,9 @@ export function getOfficialSeodaejeonTimetable(
 }
 
 /**
- * 3. NEIS 고등학교 시간표 연동 (hisTimetable API)
- * 서대전고등학교 학년(1~3), 반(1~10)의 실제 NEIS 등록 시간표를 일자별 병렬 쿼리로 조회하고
- * 미제공 교시는 서대전고 공식 교육과정으로 안전하게 결합
+ * 3. 컴시간 알리미(Comcigan) 실시간 시간표 연동 (방법 1)
+ * 서대전고등학교 학년(1~3), 반(1~10)의 컴시간 알리미 실시간 시간표를 API로 조회하여 반영.
+ * 컴시간 서버나 네트워크 오류 시 서대전고 공식 교육과정 시간표로 안전하게 Fallback.
  */
 export async function fetchSeodaejeonTimetable(
   grade: number = 2,
@@ -612,152 +610,86 @@ export async function fetchSeodaejeonTimetable(
   const dayNames: ('월' | '화' | '수' | '목' | '금')[] = ['월', '화', '수', '목', '금'];
   const periodInfo = getCurrentPeriodInfo(targetDate);
 
-  // 1. 공식 교육과정 기반 1~7교시 기본 틀 생성 (공백 방지)
-  const baseTimetable = getOfficialSeodaejeonTimetable(grade, classNum, targetDate);
+  const kstNow = getKSTDate(targetDate);
+  const currentDay = kstNow.getDay();
+  const diffToMonday = currentDay === 0 ? 1 : currentDay === 6 ? 2 : 1 - currentDay;
 
-  // 2학년 1반은 사용자가 제공한 컴시간 공식 주간 시간표(노란색 시간표 변경 포함)를 최우선 확정 적용
-  if (grade === 2 && classNum === 1) {
-    return baseTimetable;
-  }
+  const monday = new Date(kstNow);
+  monday.setDate(kstNow.getDate() + diffToMonday);
 
-  const resultDays = [...baseTimetable[classKey]];
+  const weekDates = [0, 1, 2, 3, 4].map((d) => {
+    const dt = new Date(monday);
+    dt.setDate(monday.getDate() + d);
+    return dt;
+  });
 
+  // 1. 컴시간 알리미 실시간 API 우선 호출
   try {
-    const kstNow = getKSTDate(targetDate);
-    const currentDay = kstNow.getDay();
-    const diffToMonday = currentDay === 0 ? 1 : currentDay === 6 ? 2 : 1 - currentDay;
+    const apiUrl = `/api/timetable?grade=${grade}&class=${classNum}`;
+    const res = await fetch(apiUrl);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.success && Array.isArray(json.timetable) && json.timetable.length >= 5) {
+        const timetableDays: TimetableDay[] = dayNames.map((dayName, idx) => {
+          const dateObj = weekDates[idx];
+          const dateStr = dateObj ? getKSTDateString(dateObj) : undefined;
+          const dayData = json.timetable[idx] || [];
 
-    const monday = new Date(kstNow);
-    monday.setDate(kstNow.getDate() + diffToMonday);
+          const periods = dayData
+            .map((item: any) => {
+              const pNum = Number(item.classTime);
+              // 서대전고등학교는 월요일 1교시 수업 없음
+              if (dayName === '월' && pNum === 1) return null;
 
-    const weekDates = [0, 1, 2, 3, 4].map((d) => {
-      const dt = new Date(monday);
-      dt.setDate(monday.getDate() + d);
-      return dt;
-    });
+              const subject = (item.subject || '').trim();
+              if (!subject || subject === '-' || subject === 'null') return null;
 
-    const formatYMD = (d: Date) => getKSTDateString(d).replace(/-/g, '');
-    const currentYMDs = weekDates.map(formatYMD);
-    const fallbackYMDs = ['20250310', '20250311', '20250312', '20250313', '20250314'];
+              const isCurrent =
+                !periodInfo.isWeekend &&
+                periodInfo.dayOfWeek === dayName &&
+                periodInfo.activePeriodNumber === pNum;
 
-    // 2. 월~금 5일치 데이터를 일자별로 병렬 요청 (NEIS 비인증 5건 제한 극복)
-    const dayFetchPromises = dayNames.map(async (dayName, idx) => {
-      const targetYmd = currentYMDs[idx];
-      const fallbackYmd = fallbackYMDs[idx];
+              // 컴시간 알리미에서 실시간 감지된 변경 여부 및 원래 과목
+              const isChanged = Boolean(item.isChanged);
+              const originalSubject = item.originalSubject ? item.originalSubject.trim() : undefined;
+              const changeNote = isChanged
+                ? `시간표 변경${originalSubject ? ` (원래: ${originalSubject})` : ''}`
+                : undefined;
 
-      // 1차: 이번 주 실제 날짜로 조회
-      try {
-        const liveUrl = `https://open.neis.go.kr/hub/hisTimetable?Type=json&ATPT_OFCDC_SC_CODE=${SEODAEJEON_NEIS.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SEODAEJEON_NEIS.SD_SCHUL_CODE}&ALL_TI_YMD=${targetYmd}&GRADE=${grade}&CLASS_NM=${classNum}`;
-        const res = await fetch(liveUrl);
-        const data = await res.json();
-        if (data.hisTimetable && data.hisTimetable[1]?.row?.length > 0) {
-          return { dayName, rows: data.hisTimetable[1].row };
-        }
-      } catch (e) {
-        // live fetch failed, fallback below
-      }
+              return {
+                period: pNum,
+                subject,
+                teacher: item.teacher && item.teacher.trim() ? item.teacher.trim() : undefined,
+                timeRange: PERIOD_TIMES[pNum] || `${pNum}교시`,
+                room: `${classNum}반 교실`,
+                isCurrent,
+                isChanged,
+                originalSubject,
+                changeNote,
+              };
+            })
+            .filter((p: any) => p !== null)
+            .sort((a: any, b: any) => a.period - b.period);
 
-      // 2차: 학기 중 공식 등록된 NEIS 시간표 일자로 보강 조회
-      try {
-        const fbUrl = `https://open.neis.go.kr/hub/hisTimetable?Type=json&ATPT_OFCDC_SC_CODE=${SEODAEJEON_NEIS.ATPT_OFCDC_SC_CODE}&SD_SCHUL_CODE=${SEODAEJEON_NEIS.SD_SCHUL_CODE}&ALL_TI_YMD=${fallbackYmd}&GRADE=${grade}&CLASS_NM=${classNum}`;
-        const fbRes = await fetch(fbUrl);
-        const fbData = await fbRes.json();
-        if (fbData.hisTimetable && fbData.hisTimetable[1]?.row?.length > 0) {
-          return { dayName, rows: fbData.hisTimetable[1].row };
-        }
-      } catch (e) {
-        // fallback fetch failed
-      }
-
-      return { dayName, rows: [] };
-    });
-
-    const weeklyResults = await Promise.all(dayFetchPromises);
-
-    // 3. NEIS에서 받아온 실제 교과목으로 해당 요일의 교시 갱신
-    weeklyResults.forEach(({ dayName, rows }) => {
-      if (!rows || rows.length === 0) return;
-
-      const dayIdx = dayNames.indexOf(dayName);
-      if (dayIdx === -1) return;
-
-      const currentDayObj = resultDays[dayIdx];
-      const periodMap = new Map<number, any>();
-
-      rows.forEach((r: any) => {
-        const pNum = parseInt(r.PERIO, 10);
-        // 서대전고등학교는 월요일 1교시 수업 없음
-        if (dayName === '월' && pNum === 1) return;
-        if (pNum >= 1 && pNum <= 7) {
-          // 중복 등록 시 과목명 유지
-          if (!periodMap.has(pNum)) {
-            periodMap.set(pNum, r);
-          }
-        }
-      });
-
-      // 기존 교시 목록에 NEIS 실시간 데이터 반영
-      const updatedPeriods = currentDayObj.periods.map((existingPeriod) => {
-        const neisRow = periodMap.get(existingPeriod.period);
-        const isCurrent =
-          !periodInfo.isWeekend &&
-          periodInfo.dayOfWeek === dayName &&
-          periodInfo.activePeriodNumber === existingPeriod.period;
-
-        if (neisRow && neisRow.ITRT_CNTNT) {
           return {
-            ...existingPeriod,
-            subject: neisRow.ITRT_CNTNT,
-            isCurrent,
+            day: dayName,
+            dateStr,
+            periods,
           };
-        }
+        });
+
         return {
-          ...existingPeriod,
-          isCurrent,
+          [classKey]: timetableDays,
+          '2-1': timetableDays,
         };
-      });
-
-      // NEIS에 새로 등록되었으나 기본 목록에 없던 교시 추가 (월요일 1교시는 제외)
-      periodMap.forEach((r, pNum) => {
-        if (dayName === '월' && pNum === 1) return;
-        if (!updatedPeriods.some((p) => p.period === pNum)) {
-          const isCurrent =
-            !periodInfo.isWeekend &&
-            periodInfo.dayOfWeek === dayName &&
-            periodInfo.activePeriodNumber === pNum;
-
-          updatedPeriods.push({
-            period: pNum,
-            subject: r.ITRT_CNTNT || '교과',
-            timeRange: PERIOD_TIMES[pNum] || `${pNum}교시`,
-            room: `${classNum}반 교실`,
-            isCurrent,
-          });
-        }
-      });
-
-      // 빈 과목 필터링 및 월요일 1교시 제거
-      const cleanedPeriods = updatedPeriods
-        .filter((p) => {
-          if (dayName === '월' && p.period === 1) return false;
-          const subj = (p.subject || '').trim();
-          return subj.length > 0 && subj !== '-' && subj !== 'null';
-        })
-        .sort((a, b) => a.period - b.period);
-
-      resultDays[dayIdx] = {
-        ...currentDayObj,
-        periods: cleanedPeriods,
-      };
-    });
+      }
+    }
   } catch (error) {
-    console.error('NEIS hisTimetable fetch error:', error);
+    console.warn('컴시간 알리미 API 호출 실패, 공식 백업 시간표로 전환합니다:', error);
   }
 
-  return {
-    [classKey]: resultDays,
-    '2-1': getOfficialSeodaejeonTimetable(2, 1, targetDate)['2-1'],
-  };
+  // 2. 컴시간 통신 실패 시 공식 기본 시간표로 안전하게 Fallback
+  return getOfficialSeodaejeonTimetable(grade, classNum, targetDate);
 }
 
 /**

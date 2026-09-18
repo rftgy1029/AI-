@@ -151,14 +151,16 @@ export default function SuggestionBoardSection({
           </div>
 
           <div className="flex items-center gap-2.5 shrink-0 pt-1 md:pt-0">
-            <button
+            <motion.button
               type="button"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => setIsCreateOpen(true)}
-              className="w-full md:w-auto px-6 py-3.5 rounded-2xl bg-black text-white hover:bg-slate-800 transition flex items-center justify-center gap-2 text-sm sm:text-base font-bold shadow-sm cursor-pointer active:scale-95"
+              className="w-full md:w-auto px-6 py-3.5 rounded-2xl bg-black text-white hover:bg-slate-800 transition flex items-center justify-center gap-2 text-sm sm:text-base font-bold shadow-sm cursor-pointer"
             >
               <MessageSquarePlus className="w-5 h-5" />
               <span>게시글 작성하기</span>
-            </button>
+            </motion.button>
           </div>
         </div>
 
@@ -172,11 +174,13 @@ export default function SuggestionBoardSection({
           ].map((tab) => {
             const isSelected = selectedStatus === tab.key;
             return (
-              <button
+              <motion.button
                 key={tab.key}
                 type="button"
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={() => setSelectedStatus(tab.key as any)}
-                className={`p-3.5 sm:p-4 rounded-2xl border text-left transition cursor-pointer active:scale-95 ${
+                className={`p-3.5 sm:p-4 rounded-2xl border text-left transition cursor-pointer ${
                   isSelected
                     ? 'bg-[#F5F5F7] border-black/15 shadow-2xs'
                     : 'bg-white hover:bg-slate-50 border-black/[0.04]'
@@ -188,7 +192,7 @@ export default function SuggestionBoardSection({
                 <span className={`text-xl sm:text-2xl font-black mt-1 block ${tab.color}`}>
                   {tab.count}건
                 </span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -199,18 +203,26 @@ export default function SuggestionBoardSection({
         {/* Category horizontal pills */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
           {CATEGORIES.map((cat) => (
-            <button
+            <motion.button
               key={cat}
               type="button"
+              whileTap={{ scale: 0.95 }}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition cursor-pointer active:scale-95 shrink-0 border ${
+              className={`relative px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-colors cursor-pointer shrink-0 border select-none ${
                 selectedCategory === cat
-                  ? 'bg-black text-white border-black shadow-2xs'
+                  ? 'text-white border-black shadow-2xs'
                   : 'bg-[#F5F5F7] text-slate-700 hover:bg-slate-200/80 border-black/[0.02]'
               }`}
             >
-              {cat}
-            </button>
+              {selectedCategory === cat && (
+                <motion.div
+                  layoutId="boardCategoryPill"
+                  className="absolute inset-0 bg-black rounded-xl"
+                  transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                />
+              )}
+              <span className="relative z-10">{cat}</span>
+            </motion.button>
           ))}
         </div>
 
@@ -237,18 +249,26 @@ export default function SuggestionBoardSection({
               { key: 'likes', label: '공감순' },
               { key: 'resolved', label: '답변완료순' },
             ].map((sort) => (
-              <button
+              <motion.button
                 key={sort.key}
                 type="button"
+                whileTap={{ scale: 0.95 }}
                 onClick={() => setSortBy(sort.key as any)}
-                className={`px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                className={`relative px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-bold transition-colors cursor-pointer select-none ${
                   sortBy === sort.key
-                    ? 'bg-indigo-600 text-white shadow-2xs'
+                    ? 'text-white shadow-2xs'
                     : 'text-slate-600 hover:bg-slate-100 bg-[#F5F5F7]'
                 }`}
               >
-                {sort.label}
-              </button>
+                {sortBy === sort.key && (
+                  <motion.div
+                    layoutId="boardSortPill"
+                    className="absolute inset-0 bg-indigo-600 rounded-xl"
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  />
+                )}
+                <span className="relative z-10">{sort.label}</span>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -256,140 +276,159 @@ export default function SuggestionBoardSection({
 
       {/* Suggestion Cards Grid */}
       <div className="space-y-3">
-        {filteredSuggestions.length === 0 ? (
-          <div className="bg-white rounded-[24px] sm:rounded-[28px] p-12 text-center border border-black/[0.04] space-y-3">
-            <MessageSquare className="w-10 h-10 mx-auto text-slate-300" />
-            <div>
-              <h4 className="text-base font-bold text-slate-800">등록된 게시글이 없습니다</h4>
-              <p className="text-xs sm:text-sm text-slate-400 mt-1">
-                학교 생활의 의견이나 아이디어를 자유롭게 첫 게시글로 남겨보세요!
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsCreateOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-black text-white text-sm font-bold hover:bg-slate-800 transition cursor-pointer active:scale-95 shadow-sm inline-flex items-center gap-2"
+        <AnimatePresence mode="popLayout">
+          {filteredSuggestions.length === 0 ? (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-[24px] sm:rounded-[28px] p-12 text-center border border-black/[0.04] space-y-3"
             >
-              <MessageSquarePlus className="w-4 h-4" />
-              <span>새 게시글 작성</span>
-            </button>
-          </div>
-        ) : (
-          filteredSuggestions.map((item) => {
-            const isResolved = item.status === '답변완료';
-            const isReviewing = item.status === '검토중';
-
-            return (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={() => setSelectedSuggestion(item)}
-                className="bg-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 border border-black/[0.04] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-indigo-200 hover:shadow-md transition cursor-pointer group"
+              <MessageSquare className="w-10 h-10 mx-auto text-slate-300" />
+              <div>
+                <h4 className="text-base font-bold text-slate-800">등록된 게시글이 없습니다</h4>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1">
+                  학교 생활의 의견이나 아이디어를 자유롭게 첫 게시글로 남겨보세요!
+                </p>
+              </div>
+              <motion.button
+                type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsCreateOpen(true)}
+                className="px-5 py-2.5 rounded-xl bg-black text-white text-sm font-bold hover:bg-slate-800 transition cursor-pointer shadow-sm inline-flex items-center gap-2"
               >
-                <div className="space-y-3">
-                  {/* Top Badges & Real-name chip */}
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-1.5 flex-wrap">
-                      <span
-                        className={`text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
-                          isResolved
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
-                            : isReviewing
-                            ? 'bg-amber-50 text-amber-700 border-amber-200/80'
-                            : 'bg-slate-100 text-slate-600 border-slate-200'
-                        }`}
-                      >
-                        {isResolved ? (
-                          <CheckCircle2 className="w-3 h-3" />
-                        ) : (
-                          <Clock className="w-3 h-3" />
-                        )}
-                        {item.status}
-                      </span>
+                <MessageSquarePlus className="w-4 h-4" />
+                <span>새 게시글 작성</span>
+              </motion.button>
+            </motion.div>
+          ) : (
+            filteredSuggestions.map((item) => {
+              const isResolved = item.status === '답변완료';
+              const isReviewing = item.status === '검토중';
 
-                      <span className="text-[10px] sm:text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60">
-                        {item.category}
-                      </span>
-                    </div>
-
-                    {/* Verified Author Badge */}
-                    <div className="flex items-center gap-1.5 text-xs text-slate-600">
-                      <span className="inline-flex items-center gap-1 font-bold text-slate-900 bg-[#F5F5F7] px-2 py-0.5 rounded-full border border-black/[0.03]">
-                        <ShieldCheck className="w-3 h-3 text-emerald-600" />
-                        <span>{item.authorName}</span>
-                        <span className="text-slate-400 font-medium text-[11px]">
-                          ({item.grade}학년 {item.classNum}반)
+              return (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.98 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
+                  whileHover={{ y: -3 }}
+                  transition={{ duration: 0.2 }}
+                  onClick={() => setSelectedSuggestion(item)}
+                  className="bg-white rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 border border-black/[0.04] shadow-[0_2px_8px_rgba(0,0,0,0.02)] hover:border-indigo-200 hover:shadow-md transition cursor-pointer group"
+                >
+                  <div className="space-y-3">
+                    {/* Top Badges & Real-name chip */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={`text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full border flex items-center gap-1 ${
+                            isResolved
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200/80'
+                              : isReviewing
+                              ? 'bg-amber-50 text-amber-700 border-amber-200/80'
+                              : 'bg-slate-100 text-slate-600 border-slate-200'
+                          }`}
+                        >
+                          {isResolved ? (
+                            <CheckCircle2 className="w-3 h-3" />
+                          ) : (
+                            <Clock className="w-3 h-3" />
+                          )}
+                          {item.status}
                         </span>
-                      </span>
-                    </div>
-                  </div>
 
-                  {/* Title & Preview Content */}
-                  <div>
-                    <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-indigo-600 transition tracking-tight line-clamp-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 leading-relaxed">
-                      {item.content}
-                    </p>
-                  </div>
+                        <span className="text-[10px] sm:text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-200/60">
+                          {item.category}
+                        </span>
+                      </div>
 
-                  {/* Official Reply Highlight Banner (If answered) */}
-                  {item.reply && (
-                    <div className="p-2.5 sm:p-3 rounded-xl bg-indigo-50/70 border border-indigo-100/80 flex items-start gap-2 text-xs">
-                      <Building className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-indigo-900 text-[11px]">
-                            {item.reply.author}
+                      {/* Verified Author Badge */}
+                      <div className="flex items-center gap-1.5 text-xs text-slate-600">
+                        <span className="inline-flex items-center gap-1 font-bold text-slate-900 bg-[#F5F5F7] px-2 py-0.5 rounded-full border border-black/[0.03]">
+                          <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                          <span>{item.authorName}</span>
+                          <span className="text-slate-400 font-medium text-[11px]">
+                            ({item.grade}학년 {item.classNum}반)
                           </span>
-                          <span className="text-[10px] text-indigo-400 font-medium">
-                            {item.reply.date}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-indigo-950 font-medium truncate mt-0.5">
-                          {item.reply.content}
-                        </p>
+                        </span>
                       </div>
                     </div>
-                  )}
 
-                  {/* Card Footer: Date, Stats, Upvote button */}
-                  <div className="flex items-center justify-between pt-2 border-t border-black/[0.03] text-xs text-slate-400">
-                    <span className="text-[11px]">
-                      {item.createdAt.slice(0, 10)}
-                    </span>
+                    {/* Title & Preview Content */}
+                    <div>
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-indigo-600 transition tracking-tight line-clamp-1">
+                        {item.title}
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2 leading-relaxed">
+                        {item.content}
+                      </p>
+                    </div>
 
-                    <div className="flex items-center gap-3">
-                      <span className="flex items-center gap-1 text-[11px]">
-                        <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
-                        <span>{item.comments?.length || 0}</span>
+                    {/* Official Reply Highlight Banner (If answered) */}
+                    {item.reply && (
+                      <div className="p-2.5 sm:p-3 rounded-xl bg-indigo-50/70 border border-indigo-100/80 flex items-start gap-2 text-xs">
+                        <Building className="w-3.5 h-3.5 text-indigo-600 shrink-0 mt-0.5" />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-indigo-900 text-[11px]">
+                              {item.reply.author}
+                            </span>
+                            <span className="text-[10px] text-indigo-400 font-medium">
+                              {item.reply.date}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-indigo-950 font-medium truncate mt-0.5">
+                            {item.reply.content}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Card Footer: Date, Stats, Upvote button */}
+                    <div className="flex items-center justify-between pt-2 border-t border-black/[0.03] text-xs text-slate-400">
+                      <span className="text-[11px]">
+                        {item.createdAt.slice(0, 10)}
                       </span>
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onToggleLike(item.id, !!item.likedByMe);
-                        }}
-                        className={`px-2.5 py-1 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer active:scale-95 ${
-                          item.likedByMe
-                            ? 'bg-rose-50 text-rose-600 border border-rose-200'
-                            : 'bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700'
-                        }`}
-                      >
-                        <ThumbsUp className={`w-3 h-3 ${item.likedByMe ? 'fill-current' : ''}`} />
-                        <span>{item.likeCount}</span>
-                      </button>
+                      <div className="flex items-center gap-3">
+                        <span className="flex items-center gap-1 text-[11px]">
+                          <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{item.comments?.length || 0}</span>
+                        </span>
+
+                        <motion.button
+                          type="button"
+                          whileTap={{ scale: 1.25 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onToggleLike(item.id, !!item.likedByMe);
+                          }}
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold transition flex items-center gap-1 cursor-pointer ${
+                            item.likedByMe
+                              ? 'bg-rose-50 text-rose-600 border border-rose-200 shadow-2xs'
+                              : 'bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700'
+                          }`}
+                        >
+                          <motion.div
+                            animate={item.likedByMe ? { scale: [1, 1.4, 1] } : { scale: 1 }}
+                            transition={{ duration: 0.25 }}
+                          >
+                            <ThumbsUp className={`w-3 h-3 ${item.likedByMe ? 'fill-current' : ''}`} />
+                          </motion.div>
+                          <span>{item.likeCount}</span>
+                        </motion.button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
-            );
-          })
-        )}
+                </motion.div>
+              );
+            })
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Modal: Create Suggestion */}

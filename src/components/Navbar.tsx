@@ -152,26 +152,27 @@ export default function Navbar({
               const Icon = item.icon;
 
               return (
-                <button
+                <motion.button
                   key={item.id}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => setActiveTab(item.id)}
-                  className={`relative px-4 py-2 rounded-full text-sm font-bold transition-all duration-200 cursor-pointer flex items-center gap-2 ${
+                  className={`relative px-4 py-2 rounded-full text-sm font-bold transition-colors duration-200 cursor-pointer flex items-center gap-2 ${
                     isActive
-                      ? 'text-black bg-white shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-black/[0.04]'
+                      ? 'text-black'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-black/[0.03]'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
-                  <span>{item.fullLabel}</span>
-
                   {isActive && (
                     <motion.div
                       layoutId="activeTabBadge"
-                      className="absolute inset-0 rounded-full border border-black/[0.08] pointer-events-none"
-                      transition={{ type: 'spring', bounce: 0.2, duration: 0.4 }}
+                      className="absolute inset-0 rounded-full bg-white shadow-xs border border-black/[0.08]"
+                      transition={{ type: 'spring', damping: 26, stiffness: 350 }}
                     />
                   )}
-                </button>
+                  <Icon className={`w-4 h-4 relative z-10 transition-colors ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
+                  <span className="relative z-10">{item.fullLabel}</span>
+                </motion.button>
               );
             })}
           </nav>
@@ -193,33 +194,41 @@ export default function Navbar({
             const Icon = item.icon;
 
             return (
-              <button
+              <motion.button
                 key={item.id}
                 type="button"
+                whileTap={{ scale: 0.88 }}
                 onClick={() => {
                   setActiveTab(item.id);
                   if (typeof window !== 'undefined') {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }
                 }}
-                className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-2xl min-w-[56px] transition-all cursor-pointer select-none active:scale-90 ${
+                className={`relative flex flex-col items-center justify-center py-1 px-3 rounded-2xl min-w-[56px] transition-all cursor-pointer select-none ${
                   isActive
                     ? 'text-indigo-600 font-bold'
                     : 'text-slate-400 hover:text-slate-600 font-medium'
                 }`}
               >
-                <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${
-                    isActive ? 'bg-indigo-50 text-indigo-600 shadow-2xs' : 'text-slate-500'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center relative">
+                  {isActive && (
+                    <motion.div
+                      layoutId="mobileNavActivePill"
+                      className="absolute inset-0 bg-indigo-50 rounded-xl shadow-2xs border border-indigo-100/60"
+                      transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                    />
+                  )}
+                  <Icon className={`w-5 h-5 relative z-10 transition-transform ${isActive ? 'scale-105 text-indigo-600' : 'text-slate-500'}`} />
                 </div>
-                <span className="text-[11px] mt-0.5 tracking-tight">{item.label}</span>
+                <span className="text-[11px] mt-0.5 tracking-tight relative z-10">{item.label}</span>
                 {isActive && (
-                  <span className="w-1 h-1 rounded-full bg-indigo-600 mt-0.5" />
+                  <motion.span
+                    layoutId="mobileActiveDot"
+                    className="w-1.5 h-1.5 rounded-full bg-indigo-600 mt-0.5"
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  />
                 )}
-              </button>
+              </motion.button>
             );
           })}
         </div>

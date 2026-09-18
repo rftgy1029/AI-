@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   Loader2,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { UserProfile, SuggestionItem, SuggestionCategory } from '../types';
 
 interface CreateSuggestionModalProps {
@@ -49,8 +50,6 @@ export default function CreateSuggestionModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -113,13 +112,30 @@ export default function CreateSuggestionModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div
-        className="bg-white rounded-t-[28px] sm:rounded-[28px] max-w-xl w-full max-h-[92vh] shadow-2xl border border-black/[0.06] overflow-hidden flex flex-col pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Mobile handle indicator */}
-        <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mt-3 sm:hidden" />
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+          />
+
+          {/* Dialog Sheet / Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 16 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+            className="relative bg-white rounded-t-[28px] sm:rounded-[28px] max-w-xl w-full max-h-[92vh] shadow-2xl border border-black/[0.06] overflow-hidden flex flex-col pb-safe z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Mobile handle indicator */}
+            <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mt-3 sm:hidden" />
 
         {/* Modal Header */}
         <div className="p-5 sm:p-6 pb-3 sm:pb-4 border-b border-black/[0.04] flex items-center justify-between">
@@ -366,7 +382,9 @@ export default function CreateSuggestionModal({
             </button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
-  );
+  )}
+</AnimatePresence>
+);
 }

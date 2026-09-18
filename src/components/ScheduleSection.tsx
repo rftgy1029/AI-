@@ -16,7 +16,7 @@ import {
   ShieldCheck,
   Tag,
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { AcademicEvent } from '../types';
 
 interface ScheduleSectionProps {
@@ -142,9 +142,11 @@ export default function ScheduleSection({
               const badge = getCategoryBadge(evt.category);
               const Icon = badge.icon;
               return (
-                <div
+                <motion.div
                   key={evt.id}
-                  className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F5F5F7] border border-black/[0.03] flex items-center justify-between gap-3 hover:bg-slate-100/70 transition"
+                  whileHover={{ y: -3, scale: 1.01 }}
+                  transition={{ duration: 0.2 }}
+                  className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F5F5F7] border border-black/[0.03] flex items-center justify-between gap-3 hover:bg-slate-100/80 transition cursor-default shadow-2xs"
                 >
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 mb-1">
@@ -162,7 +164,7 @@ export default function ScheduleSection({
                       {evt.dDay === 0 ? 'D-Day' : `D-${evt.dDay}`}
                     </span>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -181,17 +183,26 @@ export default function ScheduleSection({
               { key: 'holiday', label: '공휴일' },
             ] as const
           ).map((filter) => (
-            <button
+            <motion.button
               key={filter.key}
+              type="button"
+              whileTap={{ scale: 0.95 }}
               onClick={() => setSelectedFilter(filter.key)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition cursor-pointer active:scale-95 shrink-0 ${
+              className={`relative px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer shrink-0 select-none ${
                 selectedFilter === filter.key
-                  ? 'bg-black text-white shadow-2xs'
+                  ? 'text-white'
                   : 'bg-[#F5F5F7] text-slate-600 hover:bg-slate-200/80'
               }`}
             >
-              {filter.label}
-            </button>
+              {selectedFilter === filter.key && (
+                <motion.div
+                  layoutId="scheduleCategoryPill"
+                  className="absolute inset-0 bg-black rounded-xl shadow-2xs"
+                  transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                />
+              )}
+              <span className="relative z-10">{filter.label}</span>
+            </motion.button>
           ))}
         </div>
 
@@ -216,24 +227,30 @@ export default function ScheduleSection({
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredEvents.map((evt) => {
-              const badge = getCategoryBadge(evt.category);
-              const Icon = badge.icon;
-              const isPast = evt.dDay < 0;
-              const isToday = evt.dDay === 0;
+            <AnimatePresence mode="popLayout">
+              {filteredEvents.map((evt) => {
+                const badge = getCategoryBadge(evt.category);
+                const Icon = badge.icon;
+                const isPast = evt.dDay < 0;
+                const isToday = evt.dDay === 0;
 
-              return (
-                <motion.div
-                  key={evt.id}
-                  whileHover={{ scale: 1.005 }}
-                  className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-                    isToday
-                      ? 'bg-indigo-50/50 border-indigo-200 shadow-2xs'
-                      : isPast
-                      ? 'bg-slate-50/50 border-slate-200/60 opacity-60'
-                      : 'bg-[#F5F5F7] border-black/[0.02] hover:bg-slate-100/80'
-                  }`}
-                >
+                return (
+                  <motion.div
+                    key={evt.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.98 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.98 }}
+                    transition={{ duration: 0.2 }}
+                    whileHover={{ scale: 1.005, y: -1 }}
+                    className={`p-4 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
+                      isToday
+                        ? 'bg-indigo-50/50 border-indigo-200 shadow-2xs'
+                        : isPast
+                        ? 'bg-slate-50/50 border-slate-200/60 opacity-60'
+                        : 'bg-[#F5F5F7] border-black/[0.02] hover:bg-slate-100/80'
+                    }`}
+                  >
                   <div className="flex items-center gap-3.5 min-w-0">
                     <div className="w-10 h-10 rounded-xl bg-white border border-black/[0.06] flex items-center justify-center shrink-0 shadow-2xs">
                       <Icon className="w-5 h-5 text-slate-700" />
@@ -292,7 +309,8 @@ export default function ScheduleSection({
                 </motion.div>
               );
             })}
-          </div>
+          </AnimatePresence>
+        </div>
         )}
       </div>
     </div>

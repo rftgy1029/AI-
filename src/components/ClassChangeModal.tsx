@@ -5,6 +5,7 @@ import {
   Check,
   Users,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { UserProfile } from '../types';
 
 interface ClassChangeModalProps {
@@ -32,8 +33,6 @@ export const ClassChangeModal: React.FC<ClassChangeModalProps> = ({
     }
   }, [isOpen, currentUser]);
 
-  if (!isOpen) return null;
-
   const grades = [
     { grade: 1, label: '1학년', desc: '1학년 정규 과정' },
     { grade: 2, label: '2학년', desc: '2학년 정규 과정' },
@@ -48,11 +47,28 @@ export const ClassChangeModal: React.FC<ClassChangeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50 backdrop-blur-xs animate-in fade-in duration-200">
-      <div
-        className="bg-white rounded-t-[28px] sm:rounded-[28px] max-w-md w-full max-h-[90vh] shadow-2xl border border-black/[0.06] overflow-hidden flex flex-col pb-safe"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/50 backdrop-blur-xs"
+          />
+
+          {/* Dialog Sheet / Modal */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 16 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+            className="relative bg-white rounded-t-[28px] sm:rounded-[28px] max-w-md w-full max-h-[90vh] shadow-2xl border border-black/[0.06] overflow-hidden flex flex-col pb-safe z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
         {/* Mobile handle indicator */}
         <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mt-3 sm:hidden" />
 
@@ -154,7 +170,9 @@ export const ClassChangeModal: React.FC<ClassChangeModalProps> = ({
             <span>시간표 적용하기</span>
           </button>
         </div>
+      </motion.div>
       </div>
-    </div>
+    )}
+  </AnimatePresence>
   );
 };

@@ -88,13 +88,39 @@ export default function HomeDashboard({
     .sort((a, b) => a.dDay - b.dDay)
     .slice(0, 3);
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.07,
+        delayChildren: 0.02,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 14 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.35,
+        ease: [0.22, 1, 0.36, 1],
+      },
+    },
+  };
+
   return (
-    <div className="space-y-4 sm:space-y-6">
+    <motion.div
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      className="space-y-4 sm:space-y-6"
+    >
       {/* 1. Real-time Status Top Card */}
       <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        variants={itemVariants}
         className="bg-white rounded-[24px] sm:rounded-[28px] p-4 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
       >
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6">
@@ -115,15 +141,17 @@ export default function HomeDashboard({
             </h1>
 
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-0.5">
-              <button
+              <motion.button
                 type="button"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.96 }}
                 onClick={onOpenClassChange}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F5F5F7] text-slate-800 hover:bg-slate-200/80 active:scale-95 transition cursor-pointer border border-black/[0.03]"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F5F5F7] text-slate-800 hover:bg-slate-200/80 transition cursor-pointer border border-black/[0.03]"
               >
                 <Users className="w-3.5 h-3.5 text-indigo-600" />
                 <span>{currentUser.grade}학년 {currentUser.classNum}반</span>
                 <span className="text-slate-400 font-normal underline ml-0.5 text-[11px]">변경</span>
-              </button>
+              </motion.button>
 
               {periodInfo.isSchoolHours && !periodInfo.isWeekend && periodInfo.activePeriodNumber ? (
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] sm:text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
@@ -164,27 +192,33 @@ export default function HomeDashboard({
 
           {/* Quick Action Buttons - Grid on mobile for easy thumb reach */}
           <div className="grid grid-cols-3 sm:flex sm:items-center gap-2.5 pt-1 sm:pt-0 shrink-0">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => onNavigate('meal')}
-              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-black text-white hover:bg-slate-800 active:scale-95 transition cursor-pointer shadow-sm flex items-center justify-center gap-2"
+              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-black text-white hover:bg-slate-800 transition cursor-pointer shadow-sm flex items-center justify-center gap-2"
             >
               <Utensils className="w-4 h-4" />
               <span>급식표</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => onNavigate('timetable')}
-              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-[#F5F5F7] text-slate-800 hover:bg-slate-200/80 active:scale-95 transition cursor-pointer border border-black/[0.04] flex items-center justify-center gap-2"
+              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-[#F5F5F7] text-slate-800 hover:bg-slate-200/80 transition cursor-pointer border border-black/[0.04] flex items-center justify-center gap-2"
             >
               <CalendarDays className="w-4 h-4" />
               <span>시간표</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => onNavigate('board')}
-              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 active:scale-95 transition cursor-pointer border border-indigo-200/60 flex items-center justify-center gap-2"
+              className="py-3 px-4 rounded-2xl sm:rounded-full text-sm font-bold bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition cursor-pointer border border-indigo-200/60 flex items-center justify-center gap-2"
             >
               <MessageSquare className="w-4 h-4 text-indigo-600" />
               <span>게시판</span>
-            </button>
+            </motion.button>
           </div>
         </div>
       </motion.div>
@@ -193,8 +227,8 @@ export default function HomeDashboard({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Bento 1: 오늘의 실제 급식 */}
         <motion.div
-          whileHover={{ y: -2 }}
-          transition={{ duration: 0.2 }}
+          variants={itemVariants}
+          whileHover={{ y: -4, transition: { duration: 0.25 } }}
           className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between"
         >
           <div>
@@ -251,20 +285,21 @@ export default function HomeDashboard({
           </div>
 
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-black/[0.04]">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.98 }}
               onClick={() => onNavigate('meal')}
-              className="w-full py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-800 text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer border border-black/[0.03]"
+              className="w-full py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-800 text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer border border-black/[0.03]"
             >
               <span>주간 급식표 및 석식 전체보기</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
+            </motion.button>
           </div>
         </motion.div>
 
         {/* Bento 2: 오늘의 실제 시간표 */}
         <motion.div
-          whileHover={{ y: -2 }}
-          transition={{ duration: 0.2 }}
+          variants={itemVariants}
+          whileHover={{ y: -4, transition: { duration: 0.25 } }}
           className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between"
         >
           <div>
@@ -332,7 +367,7 @@ export default function HomeDashboard({
                           )}
                           {p.isChanged && (
                             <span className="text-[10px] font-extrabold text-amber-950 bg-amber-300 px-1.5 py-0.5 rounded shrink-0">
-                              변경 (원래: {p.originalSubject || '진로'})
+                              시간표 변경{p.originalSubject ? ` (원래: ${p.originalSubject})` : ''}
                             </span>
                           )}
                         </div>
@@ -374,7 +409,11 @@ export default function HomeDashboard({
       {/* 3. Bottom 2-Column Bento Grid: Academic Schedule D-Day & Board */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Bento 3: 공식 학사일정 D-Day 레이더 */}
-        <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between">
+        <motion.div
+          variants={itemVariants}
+          whileHover={{ y: -4, transition: { duration: 0.25 } }}
+          className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between"
+        >
           <div>
             <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-black/[0.04]">
               <div className="flex items-center gap-2">
@@ -433,18 +472,23 @@ export default function HomeDashboard({
           </div>
 
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-black/[0.04]">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.98 }}
               onClick={() => onNavigate('schedule')}
-              className="w-full py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 active:scale-98 text-slate-800 text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer border border-black/[0.03]"
+              className="w-full py-3.5 rounded-2xl bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-800 text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer border border-black/[0.03]"
             >
               <span>연간 공식 학사일정 전체보기</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
 
         {/* Bento 4: 학생 게시판 바로가기 */}
-        <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between">
+        <motion.div
+          variants={itemVariants}
+          whileHover={{ y: -4, transition: { duration: 0.25 } }}
+          className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] flex flex-col justify-between"
+        >
           <div>
             <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-black/[0.04]">
               <div className="flex items-center gap-2">
@@ -483,16 +527,17 @@ export default function HomeDashboard({
           </div>
 
           <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-black/[0.04]">
-            <button
+            <motion.button
+              whileTap={{ scale: 0.98 }}
               onClick={() => onNavigate('board')}
-              className="w-full py-3.5 rounded-2xl bg-black hover:bg-slate-800 active:scale-98 text-white text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+              className="w-full py-3.5 rounded-2xl bg-black hover:bg-slate-800 text-white text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm"
             >
               <span>학생 게시판 바로가기</span>
               <ArrowRight className="w-4 h-4" />
-            </button>
+            </motion.button>
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

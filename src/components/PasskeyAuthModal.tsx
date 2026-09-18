@@ -60,8 +60,6 @@ export default function PasskeyAuthModal({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   // 1. Master Key Login Handler (for users without passkey)
   const handleMasterLoginSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -167,24 +165,26 @@ export default function PasskeyAuthModal({
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={onClose}
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm"
-        />
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.22 }}
+            onClick={onClose}
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm"
+          />
 
-        {/* Modal Window */}
-        <motion.div
-          initial={{ scale: 0.95, opacity: 0, y: 10 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ scale: 0.95, opacity: 0, y: 10 }}
-          transition={{ duration: 0.2 }}
-          className="relative w-full max-w-md bg-white rounded-[24px] shadow-2xl border border-black/[0.08] overflow-hidden z-10"
-        >
+          {/* Modal Window */}
+          <motion.div
+            initial={{ scale: 0.94, opacity: 0, y: 16 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.94, opacity: 0, y: 16 }}
+            transition={{ type: 'spring', damping: 28, stiffness: 350 }}
+            className="relative w-full max-w-md bg-white rounded-[24px] shadow-2xl border border-black/[0.08] overflow-hidden z-10"
+          >
           {/* Header */}
           <div className="px-6 pt-6 pb-4 border-b border-black/[0.05] flex items-center justify-between bg-[#F5F5F7]/60">
             <div className="flex items-center gap-2.5">
@@ -532,6 +532,7 @@ export default function PasskeyAuthModal({
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
+    )}
+  </AnimatePresence>
   );
 }

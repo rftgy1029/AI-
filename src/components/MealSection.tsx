@@ -9,7 +9,7 @@ import {
   Sparkles,
   Info,
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { MealItem, UserProfile } from '../types';
 import {
   getKSTDateString,
@@ -153,31 +153,47 @@ export default function MealSection({
           </div>
 
           <div className="grid grid-cols-2 gap-3 max-w-md">
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
               onClick={() => setMealType('lunch')}
-              className={`py-3 px-5 rounded-2xl text-sm sm:text-base font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer active:scale-95 border ${
+              className={`relative py-3 px-5 rounded-2xl text-sm sm:text-base font-bold transition-colors flex items-center justify-center gap-2.5 cursor-pointer border ${
                 mealType === 'lunch'
-                  ? 'bg-orange-500 text-white border-orange-600 shadow-sm ring-2 ring-orange-500/20'
+                  ? 'text-white border-orange-600 shadow-sm'
                   : 'bg-[#F5F5F7] hover:bg-slate-200 text-slate-700 border-black/[0.03]'
               }`}
             >
-              <Sun className="w-5 h-5" />
-              <span>중식 (점심)</span>
-            </button>
+              {mealType === 'lunch' && (
+                <motion.div
+                  layoutId="mealTypeActiveBg"
+                  className="absolute inset-0 bg-orange-500 rounded-2xl"
+                  transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                />
+              )}
+              <Sun className="w-5 h-5 relative z-10" />
+              <span className="relative z-10">중식 (점심)</span>
+            </motion.button>
 
-            <button
+            <motion.button
               type="button"
+              whileTap={{ scale: 0.96 }}
               onClick={() => setMealType('dinner')}
-              className={`py-3 px-5 rounded-2xl text-sm sm:text-base font-bold transition-all flex items-center justify-center gap-2.5 cursor-pointer active:scale-95 border ${
+              className={`relative py-3 px-5 rounded-2xl text-sm sm:text-base font-bold transition-colors flex items-center justify-center gap-2.5 cursor-pointer border ${
                 mealType === 'dinner'
-                  ? 'bg-indigo-600 text-white border-indigo-700 shadow-sm ring-2 ring-indigo-600/20'
+                  ? 'text-white border-indigo-700 shadow-sm'
                   : 'bg-[#F5F5F7] hover:bg-slate-200 text-slate-700 border-black/[0.03]'
               }`}
             >
-              <Moon className="w-5 h-5" />
-              <span>석식 (저녁)</span>
-            </button>
+              {mealType === 'dinner' && (
+                <motion.div
+                  layoutId="mealTypeActiveBg"
+                  className="absolute inset-0 bg-indigo-600 rounded-2xl"
+                  transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                />
+              )}
+              <Moon className="w-5 h-5 relative z-10" />
+              <span className="relative z-10">석식 (저녁)</span>
+            </motion.button>
           </div>
         </div>
 
@@ -190,21 +206,29 @@ export default function MealSection({
                 const isToday = item.date === todayKst;
 
                 return (
-                  <button
+                  <motion.button
                     key={item.date}
                     type="button"
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => setSelectedDate(item.date)}
-                    className={`py-3 px-2 sm:py-3.5 sm:px-4 rounded-2xl text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-1 border select-none active:scale-95 ${
+                    className={`relative py-3 px-2 sm:py-3.5 sm:px-4 rounded-2xl text-center transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 border select-none ${
                       isSelected
-                        ? 'bg-black text-white border-black shadow-sm'
+                        ? 'text-white border-black shadow-sm'
                         : 'bg-[#F5F5F7] hover:bg-slate-200/80 border-black/[0.02] text-slate-800'
                     }`}
                   >
-                    <span className="text-sm sm:text-base font-bold">
+                    {isSelected && (
+                      <motion.div
+                        layoutId="mealDateActiveBg"
+                        className="absolute inset-0 bg-black rounded-2xl"
+                        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                      />
+                    )}
+                    <span className="text-sm sm:text-base font-bold relative z-10">
                       {item.dayOfWeek}요일
                     </span>
                     <span
-                      className={`text-xs sm:text-sm font-medium ${
+                      className={`text-xs sm:text-sm font-medium relative z-10 ${
                         isSelected ? 'text-slate-300' : 'text-slate-500'
                       }`}
                     >
@@ -212,14 +236,14 @@ export default function MealSection({
                     </span>
                     {isToday && (
                       <span
-                        className={`text-xs px-2 py-0.5 rounded-full font-black mt-0.5 ${
+                        className={`text-xs px-2 py-0.5 rounded-full font-black mt-0.5 relative z-10 ${
                           isSelected ? 'bg-orange-500 text-white' : 'bg-orange-100 text-orange-700'
                         }`}
                       >
                         오늘
                       </span>
                     )}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -272,19 +296,32 @@ export default function MealSection({
                 <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-3">
                   제공 메뉴 목록 ({activeMeal.type === 'dinner' ? '석식' : '중식'})
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                  {activeMeal.menu.map((dish, i) => (
-                    <div
-                      key={i}
-                      className="p-3.5 sm:p-4 rounded-2xl bg-[#F5F5F7] border border-black/[0.02] flex items-center gap-3 text-sm sm:text-base font-semibold text-slate-900 hover:bg-orange-50/40 transition"
-                    >
-                      <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-white border border-black/[0.06] text-slate-500 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-                        {i + 1}
-                      </span>
-                      <span className="truncate">{dish}</span>
-                    </div>
-                  ))}
-                </div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={`${activeMeal.date}-${activeMeal.type}`}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -6 }}
+                    transition={{ duration: 0.2 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3"
+                  >
+                    {activeMeal.menu.map((dish, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.96 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: i * 0.025, duration: 0.2 }}
+                        whileHover={{ scale: 1.01 }}
+                        className="p-3.5 sm:p-4 rounded-2xl bg-[#F5F5F7] border border-black/[0.02] flex items-center gap-3 text-sm sm:text-base font-semibold text-slate-900 hover:bg-orange-50/40 transition-colors"
+                      >
+                        <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-white border border-black/[0.06] text-slate-500 flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+                          {i + 1}
+                        </span>
+                        <span className="truncate">{dish}</span>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </AnimatePresence>
               </div>
 
               {/* Origin of Ingredients */}
@@ -322,20 +359,24 @@ export default function MealSection({
                   </button>
                 </div>
 
-                {showAllergyTable && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="mt-3 p-3 sm:p-4 bg-[#F5F5F7] rounded-xl sm:rounded-2xl text-[10px] sm:text-[11px] text-slate-600 border border-black/[0.03] leading-relaxed grid grid-cols-2 sm:grid-cols-4 gap-2"
-                  >
-                    {Object.entries(ALLERGY_MAP).map(([num, name]) => (
-                      <div key={num} className="flex items-center gap-1">
-                        <span className="font-bold text-slate-900">{num}.</span>
-                        <span>{name}</span>
-                      </div>
-                    ))}
-                  </motion.div>
-                )}
+                <AnimatePresence>
+                  {showAllergyTable && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.25, ease: 'easeInOut' }}
+                      className="mt-3 p-3 sm:p-4 bg-[#F5F5F7] rounded-xl sm:rounded-2xl text-[10px] sm:text-[11px] text-slate-600 border border-black/[0.03] leading-relaxed grid grid-cols-2 sm:grid-cols-4 gap-2 overflow-hidden"
+                    >
+                      {Object.entries(ALLERGY_MAP).map(([num, name]) => (
+                        <div key={num} className="flex items-center gap-1">
+                          <span className="font-bold text-slate-900">{num}.</span>
+                          <span>{name}</span>
+                        </div>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             </motion.div>
           </div>

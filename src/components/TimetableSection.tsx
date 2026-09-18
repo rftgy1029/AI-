@@ -19,6 +19,14 @@ import {
   SEODAEJEON_BELL_SCHEDULE,
 } from '../utils/datetime';
 import { PERIOD_TIMES, getOfficialSeodaejeonTimetable } from '../services/neisService';
+import AssessmentDetailModal from './AssessmentDetailModal';
+import ExamScopeSection from './ExamScopeSection';
+import {
+  getAssessmentForPeriod,
+  getAssessments,
+  AssessmentInfo,
+} from '../services/assessmentService';
+import { FileText } from 'lucide-react';
 
 interface TimetableSectionProps {
   timetable: Record<string, TimetableDay[]>;
@@ -38,9 +46,17 @@ export default function TimetableSection({
   lastSyncTime,
 }: TimetableSectionProps) {
   const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo>(() => getCurrentPeriodInfo());
-  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>(
-    () => (new URLSearchParams(window.location.search).get('view') as 'daily' | 'weekly') || 'daily'
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly' | 'exam'>(
+    () => (new URLSearchParams(window.location.search).get('view') as 'daily' | 'weekly' | 'exam') || 'daily'
   );
+  const [selectedAssessment, setSelectedAssessment] = useState<AssessmentInfo | null>(() => {
+    const assessId = new URLSearchParams(window.location.search).get('openAssessment');
+    if (assessId) {
+      const all = getAssessments(2, 1);
+      return all.find((a) => a.id === assessId) || null;
+    }
+    return null;
+  });
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -170,6 +186,28 @@ export default function TimetableSection({
                 <LayoutGrid className="w-4 h-4 relative z-10" />
                 <span className="relative z-10">주간 전체</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('exam')}
+                className={`relative px-4 py-2 rounded-xl text-sm font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
+                  viewMode === 'exam'
+                    ? 'text-indigo-950'
+                    : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                {viewMode === 'exam' && (
+                  <motion.div
+                    layoutId="timetableViewModePill"
+                    className="absolute inset-0 bg-white rounded-xl shadow-2xs"
+                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+                  />
+                )}
+                <BookOpen className="w-4 h-4 relative z-10 text-indigo-600" />
+                <span className="relative z-10">시험범위</span>
+                <span className="relative z-10 text-[10px] bg-amber-200 text-amber-900 font-extrabold px-1.5 py-0.2 rounded-md">
+                  9/22
+                </span>
+              </button>
             </div>
 
             {onRefreshNeis && (
@@ -279,7 +317,9 @@ export default function TimetableSection({
       </motion.div>
 
       {/* Main Timetable Content */}
-      {viewMode === 'daily' ? (
+      {viewMode === 'exam' ? (
+        <ExamScopeSection grade={selectedGrade} />
+      ) : viewMode === 'daily' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left 2 Cols: Periods for the selected day */}
           <div className="lg:col-span-2 space-y-6">
@@ -335,6 +375,14 @@ export default function TimetableSection({
                         currentDayData.day === periodInfo.dayOfWeek &&
                         periodInfo.activePeriodNumber === p.period;
 
+                      const assessment = getAssessmentForPeriod(
+                        selectedGrade,
+                        selectedClass,
+                        currentDayData.day,
+                        p.period,
+                        p.subject
+                      );
+
                       return (
                         <motion.div
                           key={p.period}
@@ -364,15 +412,18 @@ export default function TimetableSection({
                             </span>
 
                             <div className="min-w-0 space-y-0.5">
-                              <div className="flex items-center gap-2">
+                              <div className="flex flex-wrap items-center gap-2">
                                 <h4
+                                  onClick={() => {
+                                    if (assessment) setSelectedAssessment(assessment);
+                                  }}
                                   className={`text-sm font-bold truncate ${
                                     p.isChanged
                                       ? 'text-amber-950 font-black'
                                       : isCurrent
                                       ? 'text-indigo-950'
                                       : 'text-slate-900'
-                                  }`}
+                                  } ${assessment ? 'cursor-pointer hover:underline' : ''}`}
                                 >
                                   {p.subject}
                                 </h4>
@@ -385,6 +436,17 @@ export default function TimetableSection({
                                   <span className="text-[11px] font-extrabold text-amber-950 bg-amber-200 px-2 py-0.5 rounded-md border border-amber-300">
                                     시간표 변경{p.originalSubject ? ` (원래: ${p.originalSubject})` : ''}
                                   </span>
+                                )}
+                                {assessment && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setSelectedAssessment(assessment)}
+                                    className="inline-flex items-center gap-1 text-[11px] font-black text-violet-800 bg-violet-100 hover:bg-violet-200 border border-violet-300 px-2.5 py-0.5 rounded-lg transition cursor-pointer shadow-2xs"
+                                    title="수행평가 내용 확인"
+                                  >
+                                    <FileText className="w-3.5 h-3.5 text-violet-600" />
+                                    <span>수행: {assessment.title.length > 12 ? `${assessment.title.slice(0, 12)}..` : assessment.title}</span>
+                                  </button>
                                 )}
                               </div>
                               <span className="text-[11px] text-slate-400 font-medium block">
@@ -491,10 +553,13 @@ export default function TimetableSection({
               </p>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-semibold text-amber-900 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                 노란색: 시간표 변경
+              </span>
+              <span className="text-xs font-semibold text-violet-800 bg-violet-100 border border-violet-300 px-3 py-1 rounded-full flex items-center gap-1.5">
+                <span>📝 보라색: 수행평가</span>
               </span>
               <span className="text-xs font-semibold text-indigo-700 bg-indigo-50 px-3 py-1 rounded-full">
                 {selectedGrade}학년 {selectedClass}반
@@ -552,6 +617,13 @@ export default function TimetableSection({
                           periodInfo.activePeriodNumber === pNum;
                         const isMondayPeriod1 = d.day === '월' && pNum === 1;
                         const isChanged = periodData?.isChanged;
+                        const assessment = getAssessmentForPeriod(
+                          selectedGrade,
+                          selectedClass,
+                          d.day,
+                          pNum,
+                          periodData?.subject
+                        );
 
                         return (
                           <td
@@ -575,9 +647,12 @@ export default function TimetableSection({
                             ) : periodData ? (
                               <div className="space-y-1">
                                 <div
+                                  onClick={() => {
+                                    if (assessment) setSelectedAssessment(assessment);
+                                  }}
                                   className={`truncate font-bold text-sm ${
                                     isChanged ? 'text-amber-950 font-black text-base' : 'text-slate-900'
-                                  }`}
+                                  } ${assessment ? 'cursor-pointer hover:underline' : ''}`}
                                 >
                                   {periodData.subject}
                                 </div>
@@ -593,8 +668,20 @@ export default function TimetableSection({
                                 {isChanged && (
                                   <div className="pt-0.5">
                                     <span className="inline-block text-[9px] font-extrabold text-amber-950 bg-amber-300 px-1.5 py-0.5 rounded border border-amber-400">
-                                      {periodData.originalSubject ? `원래: ${periodData.originalSubject}` : '시간표 변경'}
+                                      시간표 변경
                                     </span>
+                                  </div>
+                                )}
+                                {assessment && (
+                                  <div className="pt-0.5">
+                                    <button
+                                      type="button"
+                                      onClick={() => setSelectedAssessment(assessment)}
+                                      className="inline-flex items-center gap-0.5 text-[9px] font-black text-violet-800 bg-violet-100 hover:bg-violet-200 border border-violet-300 px-1.5 py-0.5 rounded transition cursor-pointer shadow-2xs"
+                                      title="수행평가 내용 보기"
+                                    >
+                                      <span>📝 수행</span>
+                                    </button>
                                   </div>
                                 )}
                                 {isCurrent && (
@@ -620,6 +707,46 @@ export default function TimetableSection({
           </div>
         </motion.div>
       )}
+
+      {/* Quick Link Banner for Exam Scopes (visible when not in exam mode) */}
+      {viewMode !== 'exam' && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          onClick={() => setViewMode('exam')}
+          className="p-5 rounded-[24px] bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-800 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:shadow-md transition group border border-black/[0.04]"
+        >
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center shadow-2xs shrink-0 group-hover:scale-105 transition border border-indigo-400/20">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="font-bold text-white text-base">
+                  2학기 1차 지필평가 (중간고사) 시험범위 안내 공간
+                </h4>
+                <span className="text-[10px] font-extrabold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                  9/22(월) 전체 공지 예정
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 mt-0.5 font-medium">
+                선생님 회의 및 월요일 공식 발표 직후 실시간 업데이트됩니다. 현재 공간이 사전 확보되어 있습니다.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-1 text-xs font-bold text-indigo-300 shrink-0 self-end sm:self-center group-hover:text-white transition">
+            <span>시험범위 공간 미리보기</span>
+            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+          </div>
+        </motion.div>
+      )}
+
+      {/* Assessment Detail Modal */}
+      <AssessmentDetailModal
+        assessment={selectedAssessment}
+        onClose={() => setSelectedAssessment(null)}
+      />
     </div>
   );
 }

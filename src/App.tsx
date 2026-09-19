@@ -38,7 +38,6 @@ import {
   adminDeleteSuggestion,
   adminDeleteComment,
   adminUpdateSuggestion,
-  adminClearAllSuggestions,
 } from './services/firebaseService';
 
 import {
@@ -226,17 +225,6 @@ export default function App() {
       setSuggestions((prev) =>
         prev.map((s) => (s.id === suggestionId ? { ...s, ...updates } : s))
       );
-      return true;
-    } catch (err) {
-      console.error(err);
-      return false;
-    }
-  };
-
-  const handleAdminClearAll = async (): Promise<boolean> => {
-    try {
-      await adminClearAllSuggestions();
-      setSuggestions([]);
       return true;
     } catch (err) {
       console.error(err);
@@ -435,7 +423,6 @@ export default function App() {
                 onAdminDeleteSuggestion={handleAdminDeleteSuggestion}
                 onAdminDeleteComment={handleAdminDeleteComment}
                 onAdminUpdateSuggestion={handleAdminUpdateSuggestion}
-                onAdminClearAll={handleAdminClearAll}
               />
             </motion.div>
           )}

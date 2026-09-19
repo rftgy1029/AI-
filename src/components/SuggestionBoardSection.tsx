@@ -40,7 +40,6 @@ interface SuggestionBoardSectionProps {
   onAdminDeleteSuggestion?: (id: string) => Promise<boolean>;
   onAdminDeleteComment?: (suggestionId: string, commentId: string) => Promise<boolean>;
   onAdminUpdateSuggestion?: (id: string, updates: Partial<SuggestionItem>) => Promise<boolean>;
-  onAdminClearAll?: () => Promise<boolean>;
 }
 
 const CATEGORIES: SuggestionCategory[] = [
@@ -64,7 +63,6 @@ export default function SuggestionBoardSection({
   onAdminDeleteSuggestion,
   onAdminDeleteComment,
   onAdminUpdateSuggestion,
-  onAdminClearAll,
 }: SuggestionBoardSectionProps) {
   const [selectedCategory, setSelectedCategory] = useState<SuggestionCategory>('전체');
   const [selectedStatus, setSelectedStatus] = useState<'all' | SuggestionStatus>('all');
@@ -232,7 +230,7 @@ export default function SuggestionBoardSection({
                 </span>
               </div>
               <p className="text-[11px] sm:text-xs text-slate-300 font-medium mt-0.5">
-                공지사항 상단 등록, 학생 글/댓글 즉시 수정 및 삭제, 테스트 데이터 초기화가 가능합니다.
+                공지사항 상단 등록, 학생 글/댓글 즉시 수정 및 개별 삭제 관리가 가능합니다.
               </p>
             </div>
           </div>
@@ -249,26 +247,6 @@ export default function SuggestionBoardSection({
               <Pin className="w-3.5 h-3.5 fill-current" />
               <span>공식 공지 등록</span>
             </button>
-            {onAdminClearAll && (
-              <button
-                type="button"
-                onClick={async () => {
-                  const confirmed = window.confirm(
-                    '[관리자 DB 일괄 정리]\n\n정말로 게시판의 모든 건의사항과 댓글을 초기화하시겠습니까?\n월요일 시험 출제 전 테스트 데이터 정리에 사용할 수 있습니다.'
-                  );
-                  if (confirmed) {
-                    const second = window.confirm('초기화 시 이전 데이터는 복구할 수 없습니다. 계속 진행하시겠습니까?');
-                    if (second) {
-                      await onAdminClearAll();
-                    }
-                  }
-                }}
-                className="px-3 py-2 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 text-xs font-bold transition flex items-center gap-1.5 cursor-pointer active:scale-95"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                <span>테스트글 일괄 비우기</span>
-              </button>
-            )}
           </div>
         </motion.div>
       )}

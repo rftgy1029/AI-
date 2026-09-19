@@ -514,16 +514,3 @@ export async function adminUpdateSuggestion(
     console.warn('[AdminUpdateSuggestion] Firestore update failed:', err);
   }
 }
-
-// Admin: Clear all suggestions (DB Reset / Bulk cleanup)
-export async function adminClearAllSuggestions(): Promise<void> {
-  saveLocalSuggestions([]);
-
-  try {
-    const snap = await getDocs(collection(db, 'suggestions'));
-    const deletePromises = snap.docs.map((d) => deleteDoc(d.ref));
-    await Promise.all(deletePromises);
-  } catch (err) {
-    console.warn('[AdminClearAllSuggestions] Firestore clear failed:', err);
-  }
-}

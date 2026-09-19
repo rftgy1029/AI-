@@ -92,7 +92,7 @@ const MASTER_TABLE_PRESETS: MasterTablePreset[] = [
     id: 'preset-g1-all',
     title: '[서대전고 1학년] 2학기 중간고사 전과목 시험범위표 (인쇄물 A4 1장)',
     grade: 1,
-    description: '서대전고 1학년 5개 전과목(국어, 수학, 영어, 통합사회, 통합과학) 통합 공지문',
+    description: '서대전고 1학년 6개 전과목(국어, 수학, 영어, 한국사, 통합사회, 통합과학) 통합 공지문',
     subjects: [
       {
         subject: '국어',
@@ -114,6 +114,13 @@ const MASTER_TABLE_PRESETS: MasterTablePreset[] = [
         textbookPages: 'p.45 ~ p.80',
         supplementary: '9월 모의평가 지문 20~35번',
         notice: '어휘 빈칸 및 핵심 문장 서술형 출제',
+      },
+      {
+        subject: '한국사',
+        scope: 'III. 일제 식민지 지배와 민족 운동의 전개 (1~4단원)',
+        textbookPages: 'p.65 ~ p.120',
+        supplementary: '한국사 학습 활동지 1~8차시',
+        notice: '사료 분석형 객관식 20문항 + 서술형 3문항',
       },
       {
         subject: '통합사회',

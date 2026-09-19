@@ -126,6 +126,17 @@ export const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     updatedAt: '',
   },
   {
+    id: 'scope-g1-history',
+    grade: 1,
+    subject: '한국사',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
     id: 'scope-g1-society',
     grade: 1,
     subject: '통합사회',

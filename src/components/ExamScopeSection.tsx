@@ -29,6 +29,7 @@ import {
   saveExamScopeToCloud,
   saveMultipleExamScopesToCloud,
 } from '../services/firebaseService';
+import { getCurrentAcademicPeriod } from '../utils/datetime';
 import ExamScopeOcrModal from './ExamScopeOcrModal';
 
 interface ExamScopeSectionProps {
@@ -50,6 +51,7 @@ export default function ExamScopeSection({
   const [editingItem, setEditingItem] = useState<ExamScopeItem | null>(null);
   const [isOcrOpen, setIsOcrOpen] = useState(false);
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
+  const academicPeriod = getCurrentAcademicPeriod();
 
   // Real-time Cloud Firestore sync + instant local cache fallback
   useEffect(() => {
@@ -121,7 +123,7 @@ export default function ExamScopeSection({
           <div className="flex flex-wrap items-center gap-2">
             <span className="text-xs font-bold text-indigo-300 bg-indigo-500/20 px-3 py-1 rounded-full border border-indigo-400/20 flex items-center gap-1.5">
               <Calendar className="w-3.5 h-3.5 text-indigo-300" />
-              2학기 1차 지필평가 (중간고사)
+              {academicPeriod.examFullTitle}
             </span>
             <span className="text-xs font-bold text-amber-300 bg-amber-500/20 px-3 py-1 rounded-full border border-amber-400/30 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
@@ -141,7 +143,7 @@ export default function ExamScopeSection({
           </div>
 
           <h2 className="text-xl sm:text-3xl font-black tracking-tight">
-            {grade}학년 {classNum ? `${classNum}반 ` : ''}2학기 중간고사 시험범위 안내
+            {grade}학년 {classNum ? `${classNum}반 ` : ''}{academicPeriod.examHeaderTitle} 시험범위 안내
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-2xl leading-relaxed">

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { ExamScopeItem } from '../services/assessmentService';
 import { compressImageFile } from '../utils/imageUtils';
+import { getCurrentAcademicPeriod } from '../utils/datetime';
 
 interface ExamScopeOcrModalProps {
   isOpen: boolean;
@@ -256,9 +257,10 @@ export default function ExamScopeOcrModal({
     ctx.strokeRect(8, 8, canvas.width - 16, canvas.height - 16);
 
     // Document Title Banner
+    const academicPeriod = getCurrentAcademicPeriod();
     ctx.fillStyle = '#1e293b';
     ctx.font = 'bold 13px -apple-system, BlinkMacSystemFont, "Nanum Gothic", sans-serif';
-    ctx.fillText(`2026학년도 2학기 1차 지필평가 교과별 시험범위표 (${preset.grade}학년)`, 20, 30);
+    ctx.fillText(`${academicPeriod.fullTitleWithYear} 교과별 시험범위표 (${preset.grade}학년)`, 20, 30);
 
     // Subtitle note
     ctx.font = '10px -apple-system, BlinkMacSystemFont, "Nanum Gothic", sans-serif';

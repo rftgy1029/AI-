@@ -17,6 +17,7 @@ import {
   getCurrentPeriodInfo,
   CurrentPeriodInfo,
   SEODAEJEON_BELL_SCHEDULE,
+  getCurrentAcademicPeriod,
 } from '../utils/datetime';
 import { PERIOD_TIMES, getOfficialSeodaejeonTimetable } from '../services/neisService';
 import AssessmentDetailModal from './AssessmentDetailModal';
@@ -53,6 +54,7 @@ export default function TimetableSection({
   const [viewMode, setViewMode] = useState<'daily' | 'weekly' | 'exam'>(
     () => (new URLSearchParams(window.location.search).get('view') as 'daily' | 'weekly' | 'exam') || 'daily'
   );
+  const academicPeriod = getCurrentAcademicPeriod();
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentInfo | null>(() => {
     const assessId = new URLSearchParams(window.location.search).get('openAssessment');
     if (assessId) {
@@ -740,7 +742,7 @@ export default function TimetableSection({
             <div>
               <div className="flex items-center gap-2">
                 <h4 className="font-bold text-white text-base">
-                  2학기 1차 지필평가 (중간고사) 시험범위 안내 공간
+                  {academicPeriod.examFullTitle} 시험범위 안내 공간
                 </h4>
                 <span className="text-[10px] font-extrabold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">
                   9/22(월) 전체 공지 예정

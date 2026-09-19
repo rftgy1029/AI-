@@ -360,3 +360,91 @@ export function getMealStatusInfo(dateInput: Date = new Date()): MealStatusInfo 
     targetMealDate: todayStr,
   };
 }
+
+export interface AcademicPeriodInfo {
+  year: number;
+  academicYear: number;
+  semester: 1 | 2;
+  semesterString: '1학기' | '2학기';
+  examRound: 1 | 2;
+  examTypeString: '중간고사' | '기말고사';
+  examFullTitle: string; // e.g. "2학기 1차 지필평가 (중간고사)"
+  examHeaderTitle: string; // e.g. "2학기 중간고사"
+  fullTitleWithYear: string; // e.g. "2026학년도 2학기 1차 지필평가 (중간고사)"
+  isVacation: boolean;
+  vacationName?: '여름방학' | '겨울방학';
+}
+
+/**
+ * 대한민국 고등학교 학사 일정 기준 학기(1학기/2학기) 및 지필평가 차수 자동 판별
+ * - 3월 1일 ~ 여름방학 (8월 15일): 1학기
+ *   - 3월 1일 ~ 5월 10일: 1학기 1차 지필평가 (중간고사)
+ *   - 5월 11일 ~ 8월 15일: 1학기 2차 지필평가 (기말고사)
+ * - 8월 16일 (여름방학 개학) ~ 이듬해 2월 말: 2학기
+ *   - 8월 16일 ~ 10월 31일: 2학기 1차 지필평가 (중간고사)
+ *   - 11월 1일 ~ 2월 말: 2학기 2차 지필평가 (기말고사)
+ */
+export function getCurrentAcademicPeriod(dateInput: Date = new Date()): AcademicPeriodInfo {
+  const kst = getKSTDate(dateInput);
+  const year = kst.getFullYear();
+  const month = kst.getMonth() + 1; // 1 ~ 12
+  const day = kst.getDate();
+
+  // 학사년도 (1~2월은 이전 학년도 2학기 마무리)
+  const academicYear = month <= 2 ? year - 1 : year;
+
+  let semester: 1 | 2;
+  let examRound: 1 | 2;
+  let isVacation = false;
+  let vacationName: '여름방학' | '겨울방학' | undefined = undefined;
+
+  // 1학기: 3월 1일 ~ 8월 15일
+  if (month >= 3 && (month < 8 || (month === 8 && day <= 15))) {
+    semester = 1;
+    // 3월 ~ 5월 10일: 1학기 중간고사, 5월 11일 ~ 8월 15일: 1학기 기말고사
+    if (month < 5 || (month === 5 && day <= 10)) {
+      examRound = 1;
+    } else {
+      examRound = 2;
+    }
+    // 여름방학 기간 (대략 7월 20일 ~ 8월 15일)
+    if ((month === 7 && day >= 20) || (month === 8 && day <= 15)) {
+      isVacation = true;
+      vacationName = '여름방학';
+    }
+  } else {
+    // 2학기: 8월 16일 ~ 이듬해 2월 말
+    semester = 2;
+    // 8월 16일 ~ 10월 31일: 2학기 중간고사, 11월 1일 ~ 2월 말: 2학기 기말고사
+    if (month >= 8 && month <= 10) {
+      examRound = 1;
+    } else {
+      examRound = 2;
+    }
+    // 겨울방학 기간 (대략 12월 25일 ~ 2월 말)
+    if ((month === 12 && day >= 25) || month === 1 || month === 2) {
+      isVacation = true;
+      vacationName = '겨울방학';
+    }
+  }
+
+  const semesterString = `${semester}학기` as const;
+  const examTypeString = examRound === 1 ? '중간고사' : '기말고사';
+  const examFullTitle = `${semesterString} ${examRound}차 지필평가 (${examTypeString})`;
+  const examHeaderTitle = `${semesterString} ${examTypeString}`;
+  const fullTitleWithYear = `${academicYear}학년도 ${examFullTitle}`;
+
+  return {
+    year,
+    academicYear,
+    semester,
+    semesterString,
+    examRound,
+    examTypeString,
+    examFullTitle,
+    examHeaderTitle,
+    fullTitleWithYear,
+    isVacation,
+    vacationName,
+  };
+}

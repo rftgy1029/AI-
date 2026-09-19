@@ -160,21 +160,11 @@ export const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
   },
 
   // 2학년 과목
+  // 1. 국영수 공통 및 선택
   {
-    id: 'scope-lit',
+    id: 'scope-g2-hwabeop',
     grade: 2,
-    subject: '문학',
-    status: 'pending',
-    scope: '',
-    textbookPages: '',
-    supplementary: '',
-    notice: '',
-    updatedAt: '',
-  },
-  {
-    id: 'scope-calc2',
-    grade: 2,
-    subject: '미적2',
+    subject: '화법',
     status: 'pending',
     scope: '',
     textbookPages: '',
@@ -194,9 +184,65 @@ export const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     updatedAt: '',
   },
   {
+    id: 'scope-g2-hwaktong',
+    grade: 2,
+    subject: '확통',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
+    id: 'scope-calc2',
+    grade: 2,
+    subject: '미적2',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
+    id: 'scope-g2-ecomath',
+    grade: 2,
+    subject: '경수',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  // 2. 과학탐구 선택
+  {
+    id: 'scope-g2-mechanics',
+    grade: 2,
+    subject: '역학',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
     id: 'scope-chem',
     grade: 2,
-    subject: '화학',
+    subject: '물질',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
+    id: 'scope-g2-cell',
+    grade: 2,
+    subject: '세포',
     status: 'pending',
     scope: '',
     textbookPages: '',
@@ -215,10 +261,90 @@ export const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
     notice: '',
     updatedAt: '',
   },
+  // 3. 사회탐구 선택
   {
-    id: 'scope-history',
+    id: 'scope-g2-hanji',
     grade: 2,
-    subject: '한국사',
+    subject: '한지',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
+    id: 'scope-g2-world',
+    grade: 2,
+    subject: '세계',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
+    id: 'scope-g2-econ',
+    grade: 2,
+    subject: '경제',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
+    id: 'scope-g2-intl',
+    grade: 2,
+    subject: '국제',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  // 4. 제2외국어 (지필 실시)
+  {
+    id: 'scope-g2-japanese',
+    grade: 2,
+    subject: '일본어',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
+    id: 'scope-g2-chinese',
+    grade: 2,
+    subject: '중국어',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  // 5. 정보/공학 (지필 실시)
+  {
+    id: 'scope-g2-datascience',
+    grade: 2,
+    subject: '데과',
+    status: 'pending',
+    scope: '',
+    textbookPages: '',
+    supplementary: '',
+    notice: '',
+    updatedAt: '',
+  },
+  {
+    id: 'scope-g2-creative-eng',
+    grade: 2,
+    subject: '창공',
     status: 'pending',
     scope: '',
     textbookPages: '',
@@ -295,8 +421,23 @@ export function getAssessmentForPeriod(
 export function getExamScopes(grade: number): ExamScopeItem[] {
   try {
     const raw = localStorage.getItem(EXAM_SCOPES_STORAGE_KEY);
-    const list: ExamScopeItem[] = raw ? JSON.parse(raw) : DEFAULT_EXAM_SCOPES;
-    return list.filter((s) => s.grade === grade);
+    if (!raw) return DEFAULT_EXAM_SCOPES.filter((s) => s.grade === grade);
+    const list: ExamScopeItem[] = JSON.parse(raw);
+    const defaults = DEFAULT_EXAM_SCOPES.filter((s) => s.grade === grade);
+    // Ensure all default subjects are present even if local cache was from an older version
+    const merged = defaults.map((def) => {
+      const found = list.find(
+        (s) => s.id === def.id || (s.grade === def.grade && s.subject === def.subject)
+      );
+      return found ? { ...def, ...found } : def;
+    });
+    // Append any extra subjects that were stored
+    for (const item of list.filter((s) => s.grade === grade)) {
+      if (!merged.some((m) => m.id === item.id || (m.grade === item.grade && m.subject === item.subject))) {
+        merged.push(item);
+      }
+    }
+    return merged;
   } catch {
     return DEFAULT_EXAM_SCOPES.filter((s) => s.grade === grade);
   }

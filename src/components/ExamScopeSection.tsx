@@ -24,6 +24,11 @@ import {
   saveExamScope,
   saveMultipleExamScopes,
 } from '../services/assessmentService';
+import {
+  subscribeToExamScopes,
+  saveExamScopeToCloud,
+  saveMultipleExamScopesToCloud,
+} from '../services/firebaseService';
 import ExamScopeOcrModal from './ExamScopeOcrModal';
 
 interface ExamScopeSectionProps {
@@ -44,10 +49,21 @@ export default function ExamScopeSection({
   const [filterStatus, setFilterStatus] = useState<'all' | 'announced' | 'pending'>('all');
   const [editingItem, setEditingItem] = useState<ExamScopeItem | null>(null);
   const [isOcrOpen, setIsOcrOpen] = useState(false);
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
-  // Fix bug: immediately sync when grade changes without needing to exit & re-enter
+  // Real-time Cloud Firestore sync + instant local cache fallback
   useEffect(() => {
+    // 1. Initial display from cache/defaults
     setScopes(getExamScopes(grade));
+
+    // 2. Real-time Firebase Firestore subscription across all devices
+    const unsubscribe = subscribeToExamScopes(grade, (cloudScopes) => {
+      setScopes(cloudScopes);
+    });
+
+    return () => {
+      unsubscribe();
+    };
   }, [grade]);
 
   const filteredScopes = scopes.filter((item) => {
@@ -60,23 +76,31 @@ export default function ExamScopeSection({
   const announcedCount = scopes.filter((s) => s.status === 'announced').length;
   const pendingCount = scopes.filter((s) => s.status === 'pending').length;
 
-  const handleSaveEdit = (updated: ExamScopeItem) => {
+  const handleSaveEdit = async (updated: ExamScopeItem) => {
     if (!isAdmin) {
       onOpenPasskeyModal?.();
       return;
     }
+    // Optimistic local update
     saveExamScope(updated);
     setScopes(getExamScopes(grade));
     setEditingItem(null);
+
+    // Primary Cloud Firestore sync
+    await saveExamScopeToCloud(updated);
   };
 
-  const handleSaveMultipleScopes = (newScopes: ExamScopeItem[]) => {
+  const handleSaveMultipleScopes = async (newScopes: ExamScopeItem[]) => {
     if (!isAdmin) {
       onOpenPasskeyModal?.();
       return;
     }
+    // Optimistic local update
     saveMultipleExamScopes(newScopes);
     setScopes(getExamScopes(grade));
+
+    // Primary Cloud Firestore sync
+    await saveMultipleExamScopesToCloud(newScopes);
   };
 
   const handleOcrButtonClick = () => {
@@ -350,6 +374,20 @@ export default function ExamScopeSection({
                     ※ {scope.notice}
                   </div>
                 )}
+
+                {/* Scanned/Captured original photo button */}
+                {scope.imageUrl && (
+                  <div className="pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setPreviewImageUrl(scope.imageUrl!)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-bold border border-indigo-200/80 transition cursor-pointer shadow-2xs"
+                    >
+                      <Camera className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>원본 시험범위표 사진 보기</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Updated At */}
@@ -486,6 +524,31 @@ export default function ExamScopeSection({
         onSaveMultipleScopes={handleSaveMultipleScopes}
         grade={grade}
       />
+
+      {/* Full-screen Lightbox Image Modal for Scanned Exam Table */}
+      {previewImageUrl && (
+        <div
+          className="fixed inset-0 z-70 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out animate-in fade-in duration-200"
+          onClick={() => setPreviewImageUrl(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
+            <button
+              type="button"
+              onClick={() => setPreviewImageUrl(null)}
+              className="absolute -top-12 right-0 p-2 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full transition cursor-pointer"
+              title="닫기"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img
+              src={previewImageUrl}
+              alt="시험범위표 원본 사진"
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10 cursor-default"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

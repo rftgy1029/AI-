@@ -14,6 +14,7 @@ import {
   Table,
 } from 'lucide-react';
 import { ExamScopeItem } from '../services/assessmentService';
+import { compressImageFile } from '../utils/imageUtils';
 
 interface ExamScopeOcrModalProps {
   isOpen: boolean;
@@ -261,20 +262,27 @@ export default function ExamScopeOcrModal({
     }, 1700);
   };
 
-  // Upload Custom Photo
-  const handleFileUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  // Upload Custom Photo (Client-side compressed for lightweight cloud sync)
+  const handleFileUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const url = event.target?.result as string;
-      setPreviewImage(url);
+    try {
+      const compressedUrl = await compressImageFile(file, 1200, 1200, 0.75);
+      setPreviewImage(compressedUrl);
       setHasScanned(false);
-
       triggerBatchScan(activePreset);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.warn('Image compression fallback:', err);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const url = event.target?.result as string;
+        setPreviewImage(url);
+        setHasScanned(false);
+        triggerBatchScan(activePreset);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // Field edit handler
@@ -297,6 +305,7 @@ export default function ExamScopeOcrModal({
       supplementary: item.supplementary,
       notice: item.notice,
       updatedAt: now,
+      imageUrl: previewImage || undefined,
     }));
 
     setIsSuccess(true);

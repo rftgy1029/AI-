@@ -24,6 +24,7 @@ export interface ExamScopeItem {
   supplementary?: string; // 부교재/모의고사/프린트
   notice?: string;
   updatedAt?: string;
+  imageUrl?: string;
 }
 
 const DEFAULT_ASSESSMENTS: AssessmentInfo[] = [
@@ -89,7 +90,7 @@ const DEFAULT_ASSESSMENTS: AssessmentInfo[] = [
   },
 ];
 
-const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
+export const DEFAULT_EXAM_SCOPES: ExamScopeItem[] = [
   // 1학년 과목
   {
     id: 'scope-g1-korean',

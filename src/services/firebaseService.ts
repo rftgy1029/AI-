@@ -15,6 +15,7 @@ import {
 import { getAuth } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { SuggestionItem, SuggestionComment } from '../types';
+import { ExamScopeItem, DEFAULT_EXAM_SCOPES } from './assessmentService';
 
 // Initialize Firebase App
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
@@ -514,3 +515,148 @@ export async function adminUpdateSuggestion(
     console.warn('[AdminUpdateSuggestion] Firestore update failed:', err);
   }
 }
+
+// ==================== EXAM SCOPES CLOUD SYNC ====================
+
+const EXAM_SCOPES_STORAGE_KEY = 'sdj_exam_scopes_v4';
+
+// Real-time listener for Exam Scopes by grade
+export function subscribeToExamScopes(
+  grade: number,
+  callback: (scopes: ExamScopeItem[]) => void
+): () => void {
+  const collectionRef = collection(db, 'exam_scopes');
+
+  const unsubscribe = onSnapshot(
+    collectionRef,
+    (snapshot) => {
+      const cloudList: ExamScopeItem[] = [];
+      snapshot.forEach((d) => {
+        const data = d.data() as ExamScopeItem;
+        if (data && data.grade === grade) {
+          cloudList.push(data);
+        }
+      });
+
+      // Merge with default scopes for the grade so that subjects not yet announced stay visible in pending status
+      const defaultForGrade = DEFAULT_EXAM_SCOPES.filter((s) => s.grade === grade);
+      const merged: ExamScopeItem[] = defaultForGrade.map((def) => {
+        const found = cloudList.find(
+          (c) => c.id === def.id || (c.grade === def.grade && c.subject === def.subject)
+        );
+        return found ? { ...def, ...found } : def;
+      });
+
+      // Include any extra subjects added in cloud that weren't in defaults
+      for (const cloudItem of cloudList) {
+        if (!merged.some((m) => m.id === cloudItem.id || (m.grade === cloudItem.grade && m.subject === cloudItem.subject))) {
+          merged.push(cloudItem);
+        }
+      }
+
+      // Update local storage cache
+      try {
+        const raw = localStorage.getItem(EXAM_SCOPES_STORAGE_KEY);
+        let allLocal: ExamScopeItem[] = raw ? JSON.parse(raw) : [...DEFAULT_EXAM_SCOPES];
+        allLocal = allLocal.filter((s) => s.grade !== grade).concat(merged);
+        localStorage.setItem(EXAM_SCOPES_STORAGE_KEY, JSON.stringify(allLocal));
+      } catch (err) {
+        console.warn('[ExamScope] Cache update failed:', err);
+      }
+
+      callback(merged);
+    },
+    (error) => {
+      handleFirestoreError(error, OperationType.LIST, 'exam_scopes');
+      // Fallback to local cache
+      try {
+        const raw = localStorage.getItem(EXAM_SCOPES_STORAGE_KEY);
+        const allLocal: ExamScopeItem[] = raw ? JSON.parse(raw) : [...DEFAULT_EXAM_SCOPES];
+        callback(allLocal.filter((s) => s.grade === grade));
+      } catch {
+        callback(DEFAULT_EXAM_SCOPES.filter((s) => s.grade === grade));
+      }
+    }
+  );
+
+  return unsubscribe;
+}
+
+// Save single exam scope to Cloud Firestore
+export async function saveExamScopeToCloud(scope: ExamScopeItem): Promise<boolean> {
+  // 1. Update local cache immediately (optimistic UI)
+  try {
+    const raw = localStorage.getItem(EXAM_SCOPES_STORAGE_KEY);
+    const list: ExamScopeItem[] = raw ? JSON.parse(raw) : [...DEFAULT_EXAM_SCOPES];
+    const idx = list.findIndex(
+      (s) => s.id === scope.id || (s.grade === scope.grade && s.subject === scope.subject)
+    );
+    if (idx >= 0) {
+      list[idx] = { ...list[idx], ...scope };
+    } else {
+      list.push(scope);
+    }
+    localStorage.setItem(EXAM_SCOPES_STORAGE_KEY, JSON.stringify(list));
+  } catch (err) {
+    console.warn('[ExamScope] Local save failed:', err);
+  }
+
+  // 2. Primary Cloud Firestore save
+  try {
+    const docId = scope.id || `scope-g${scope.grade}-${scope.subject}`;
+    const cleanData = cleanUndefined({
+      ...scope,
+      id: docId,
+      updatedAt: scope.updatedAt || new Date().toLocaleString('ko-KR'),
+    });
+    await setDoc(doc(db, 'exam_scopes', docId), cleanData, { merge: true });
+    return true;
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, `exam_scopes/${scope.id}`);
+    return false;
+  }
+}
+
+// Save multiple exam scopes to Cloud Firestore (e.g. after AI OCR Batch Scan)
+export async function saveMultipleExamScopesToCloud(newScopes: ExamScopeItem[]): Promise<boolean> {
+  if (!newScopes || newScopes.length === 0) return true;
+
+  // 1. Optimistic local cache update
+  try {
+    const raw = localStorage.getItem(EXAM_SCOPES_STORAGE_KEY);
+    const list: ExamScopeItem[] = raw ? JSON.parse(raw) : [...DEFAULT_EXAM_SCOPES];
+    for (const scope of newScopes) {
+      const idx = list.findIndex(
+        (s) => s.id === scope.id || (s.grade === scope.grade && s.subject === scope.subject)
+      );
+      if (idx >= 0) {
+        list[idx] = { ...list[idx], ...scope };
+      } else {
+        list.push(scope);
+      }
+    }
+    localStorage.setItem(EXAM_SCOPES_STORAGE_KEY, JSON.stringify(list));
+  } catch (err) {
+    console.warn('[ExamScope] Local multiple save failed:', err);
+  }
+
+  // 2. Save all to Cloud Firestore in parallel
+  try {
+    const promises = newScopes.map((scope) => {
+      const docId = scope.id || `scope-g${scope.grade}-${scope.subject}`;
+      const cleanData = cleanUndefined({
+        ...scope,
+        id: docId,
+        updatedAt: scope.updatedAt || new Date().toLocaleString('ko-KR'),
+      });
+      return setDoc(doc(db, 'exam_scopes', docId), cleanData, { merge: true });
+    });
+
+    await Promise.all(promises);
+    return true;
+  } catch (err) {
+    handleFirestoreError(err, OperationType.WRITE, 'exam_scopes/batch');
+    return false;
+  }
+}
+

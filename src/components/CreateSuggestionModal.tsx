@@ -431,12 +431,17 @@ export default function CreateSuggestionModal({
             </div>
             <textarea
               required
-              rows={5}
+              rows={6}
               maxLength={2000}
-              placeholder="1. 현재 겪고 있는 문제점이나 건의 배경&#10;2. 학교나 학생회에 바라는 구체적인 개선안&#10;3. 기대 효과나 전교생에게 돌아가는 혜택 등을 정중하게 작성해 주세요."
+              placeholder={`[서대전고 클린 디지털 소통 약속]
+💬 "화면 너머에도 나와 같은 소중한 학우와 선생님이 있습니다."
+
+1. 감정적인 비난이나 특정인 저격 대신, 문제 상황 자체에 집중해 주세요.
+2. 단순 불평을 넘어 '함께 바꿀 수 있는 구체적인 대안'을 정중하게 제안해 주세요.
+3. 우리 모두가 자부심을 가질 수 있는 건강하고 따뜻한 언어를 사용해 주세요.`}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-[#F5F5F7] rounded-xl border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none transition leading-relaxed resize-none"
+              className="w-full px-3.5 py-2.5 text-xs sm:text-sm bg-[#F5F5F7] rounded-xl border border-transparent focus:border-indigo-500 focus:bg-white focus:outline-none transition leading-relaxed resize-none placeholder:text-slate-400/90 placeholder:leading-relaxed"
             />
           </div>
 

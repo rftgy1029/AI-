@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { UserProfile } from '../types';
+import { getCurrentPeriodInfo } from '../utils/datetime';
 
 interface NavbarProps {
   activeTab: string;
@@ -45,29 +46,9 @@ export default function Navbar({
       });
       setTimeStr(formatter.format(now));
 
-      // Current period estimate based on KST hours/minutes
-      const kstTime = new Intl.DateTimeFormat('en-US', {
-        timeZone: 'Asia/Seoul',
-        hour: 'numeric',
-        minute: 'numeric',
-        hour12: false,
-      }).format(now);
-      const [h, m] = kstTime.split(':').map(Number);
-      const totalMinutes = h * 60 + m;
-
-      if (totalMinutes < 9 * 60) setPeriodStatus('등교 및 아침 자습');
-      else if (totalMinutes < 9 * 60 + 50) setPeriodStatus('1교시');
-      else if (totalMinutes < 10 * 60) setPeriodStatus('쉬는 시간');
-      else if (totalMinutes < 10 * 60 + 50) setPeriodStatus('2교시');
-      else if (totalMinutes < 11 * 60) setPeriodStatus('쉬는 시간');
-      else if (totalMinutes < 11 * 60 + 50) setPeriodStatus('3교시');
-      else if (totalMinutes < 12 * 60) setPeriodStatus('쉬는 시간');
-      else if (totalMinutes < 12 * 60 + 50) setPeriodStatus('4교시');
-      else if (totalMinutes < 13 * 60 + 50) setPeriodStatus('🍱 점심');
-      else if (totalMinutes < 14 * 60 + 40) setPeriodStatus('5교시');
-      else if (totalMinutes < 15 * 60 + 40) setPeriodStatus('6교시');
-      else if (totalMinutes < 16 * 60 + 40) setPeriodStatus('7교시');
-      else setPeriodStatus('방과후');
+      // Accurate real-time period status based on official bell schedule and KST time
+      const pInfo = getCurrentPeriodInfo(now);
+      setPeriodStatus(pInfo.subLabel || pInfo.label);
     };
 
     updateTime();

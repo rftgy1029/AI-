@@ -79,10 +79,30 @@ export default function App() {
     return DEFAULT_USER;
   });
 
-  // 2. Active Tab
+  // 2. Active Tab with browser history synchronization
   const [activeTab, setActiveTab] = useState<string>(
     () => new URLSearchParams(window.location.search).get('tab') || 'home'
   );
+
+  const handleTabChange = useCallback((tab: string) => {
+    setActiveTab(tab);
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.get('tab') !== tab) {
+        url.searchParams.set('tab', tab);
+        window.history.pushState({ tab }, '', url.toString());
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const tab = new URLSearchParams(window.location.search).get('tab') || 'home';
+      setActiveTab(tab);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // 3. Modals & Admin State
   const [isClassChangeOpen, setIsClassChangeOpen] = useState(false);
@@ -319,7 +339,7 @@ export default function App() {
       {/* Top Fixed Header */}
       <Navbar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleTabChange}
         currentUser={currentUser}
         onOpenClassChange={() => setIsClassChangeOpen(true)}
       />
@@ -340,7 +360,7 @@ export default function App() {
                 activeMeal={activeMeal}
                 timetable={timetable}
                 events={events}
-                onNavigate={(tab) => setActiveTab(tab)}
+                onNavigate={handleTabChange}
                 onOpenClassChange={() => setIsClassChangeOpen(true)}
               />
             </motion.div>

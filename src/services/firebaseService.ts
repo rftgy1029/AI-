@@ -136,7 +136,8 @@ export function saveLocalSuggestions(items: SuggestionItem[]) {
 async function fetchServerSuggestions(): Promise<SuggestionItem[] | null> {
   try {
     const res = await fetch('/api/suggestions');
-    if (res.ok) {
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
       if (data.success && Array.isArray(data.items)) {
         return data.items;
@@ -205,29 +206,48 @@ export function subscribeToSuggestions(
     console.warn('[Firestore Subscription Init Error]:', err);
   }
 
-  // 3. Complementary server API poll (for local dev environment)
-  const syncWithServer = async () => {
-    const serverItems = await fetchServerSuggestions();
-    if (serverItems && isMounted && serverItems.length > 0) {
-      const localCurrent = getLocalSuggestions();
-      const likedMap = new Map(localCurrent.map((i) => [i.id, i.likedByMe]));
-      const merged = serverItems.map((item) => ({
-        ...item,
-        likedByMe: likedMap.get(item.id) ?? false,
-      }));
-      saveLocalSuggestions(merged);
-      onUpdate(merged);
-    }
-  };
+  // 3. Complementary server API poll (for local dev environment only)
+  const isLocalDev =
+    typeof window !== 'undefined' &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.port === '3000' ||
+      window.location.port === '5173');
 
-  syncWithServer();
-  const pollInterval = setInterval(() => {
-    if (isMounted) syncWithServer();
-  }, 4000);
+  let pollInterval: ReturnType<typeof setInterval> | null = null;
+  if (isLocalDev) {
+    let failCount = 0;
+    const syncWithServer = async () => {
+      const serverItems = await fetchServerSuggestions();
+      if (serverItems && isMounted && serverItems.length > 0) {
+        failCount = 0;
+        const localCurrent = getLocalSuggestions();
+        const likedMap = new Map(localCurrent.map((i) => [i.id, i.likedByMe]));
+        const merged = serverItems.map((item) => ({
+          ...item,
+          likedByMe: likedMap.get(item.id) ?? false,
+        }));
+        saveLocalSuggestions(merged);
+        onUpdate(merged);
+      } else if (!serverItems) {
+        failCount++;
+        // If server API endpoint is not active, stop polling to avoid unnecessary requests
+        if (failCount >= 3 && pollInterval) {
+          clearInterval(pollInterval);
+          pollInterval = null;
+        }
+      }
+    };
+
+    syncWithServer();
+    pollInterval = setInterval(() => {
+      if (isMounted) syncWithServer();
+    }, 4000);
+  }
 
   return () => {
     isMounted = false;
-    clearInterval(pollInterval);
+    if (pollInterval) clearInterval(pollInterval);
     if (firestoreUnsub) firestoreUnsub();
   };
 }
@@ -338,7 +358,8 @@ export async function deleteSuggestion(id: string, pin: string): Promise<{ succe
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, pin }),
     });
-    if (res.ok) {
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
       const data = await res.json();
       return data;
     }

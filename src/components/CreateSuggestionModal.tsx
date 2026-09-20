@@ -1,4 +1,4 @@
-import { useState, useRef, type FormEvent, type ChangeEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent, type ChangeEvent } from 'react';
 import {
   X,
   Send,
@@ -88,7 +88,7 @@ export default function CreateSuggestionModal({
       : currentUser.name
   );
   const [grade, setGrade] = useState<number>(currentUser.grade || 2);
-  const [classNum, setClassNum] = useState<number>(currentUser.classNum || 3);
+  const [classNum, setClassNum] = useState<number>(currentUser.classNum || 1);
   const [studentNumber, setStudentNumber] = useState<string>(
     currentUser.studentNumber ? String(currentUser.studentNumber) : ''
   );
@@ -102,6 +102,20 @@ export default function CreateSuggestionModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Synchronize modal state with latest currentUser and notice state whenever opened
+  useEffect(() => {
+    if (isOpen) {
+      if (!isNotice) {
+        setAuthorName(currentUser.name === '서대전고 학생' ? '' : currentUser.name);
+      }
+      setGrade(currentUser.grade || 2);
+      setClassNum(currentUser.classNum || 1);
+      setStudentNumber(currentUser.studentNumber ? String(currentUser.studentNumber) : '');
+      setErrorMsg('');
+      setIsSuccess(false);
+    }
+  }, [isOpen, currentUser, isNotice]);
 
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;

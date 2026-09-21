@@ -548,7 +548,7 @@ export default function TimetableSection({
                   <span className="font-bold text-slate-900 font-mono">15:10 ~ 16:00</span>
                 </div>
                 <div className="flex justify-between py-1.5 px-3 rounded-xl bg-[#F5F5F7]">
-                  <span className="font-medium text-slate-600">종례 및 청소</span>
+                  <span className="font-medium text-slate-600">방과후 및 야자</span>
                   <span className="font-bold text-slate-900 font-mono">16:00 ~ 16:30</span>
                 </div>
               </div>

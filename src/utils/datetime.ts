@@ -27,7 +27,7 @@ export const SEODAEJEON_BELL_SCHEDULE: PeriodScheduleItem[] = [
   { period: 6, name: '6교시', startMinutes: 14 * 60 + 10, endMinutes: 15 * 60, timeRangeStr: '14:10 - 15:00' },
   { period: 'break', name: '쉬는 시간', startMinutes: 15 * 60, endMinutes: 15 * 60 + 10, timeRangeStr: '15:00 - 15:10', isBreak: true },
   { period: 7, name: '7교시', startMinutes: 15 * 60 + 10, endMinutes: 16 * 60, timeRangeStr: '15:10 - 16:00' },
-  { period: 'cleaning', name: '종례 및 청소', startMinutes: 16 * 60, endMinutes: 16 * 60 + 30, timeRangeStr: '16:00 - 16:30' },
+  { period: 'cleaning', name: '방과후 및 야자', startMinutes: 16 * 60, endMinutes: 16 * 60 + 30, timeRangeStr: '16:00 - 16:30' },
   { period: 'afterschool', name: '방과후 수업', startMinutes: 16 * 60 + 40, endMinutes: 17 * 60 + 40, timeRangeStr: '16:40 - 17:40' },
   { period: 'night', name: '야간 자율학습', startMinutes: 18 * 60 + 40, endMinutes: 21 * 60, timeRangeStr: '18:40 - 21:00' },
 ];

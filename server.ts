@@ -9,7 +9,61 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
 
-app.use(express.json());
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+import { GoogleGenAI } from '@google/genai';
+
+// Gemini 2.5 Flash Vision AI 기반 시험범위표 실시간 OCR 분석 API
+app.post('/api/ocr/exam-scope', async (req, res) => {
+  try {
+    const { imageBase64, mimeType } = req.body;
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      return res.status(503).json({
+        success: false,
+        error: '서버에 GEMINI_API_KEY 환경변수가 설정되지 않았습니다.',
+      });
+    }
+    if (!imageBase64) {
+      return res.status(400).json({ success: false, error: '이미지 데이터가 없습니다.' });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: [
+        {
+          role: 'user',
+          parts: [
+            {
+              inlineData: {
+                mimeType: mimeType || 'image/jpeg',
+                data: imageBase64.replace(/^data:[^;]+;base64,/, ''),
+              },
+            },
+            {
+              text: '대한민국 고등학교 시험범위표 인쇄물 분석: 각 과목별 subject, scope, textbookPages, supplementary, notice를 포함하는 JSON 형식({ "title": "...", "subjects": [...] })으로만 응답해주세요.',
+            },
+          ],
+        },
+      ],
+    });
+
+    const responseText = response.text?.trim() || '';
+    const cleanJson = responseText
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/i, '')
+      .trim();
+
+    const parsed = JSON.parse(cleanJson);
+    return res.json({ success: true, ...parsed });
+  } catch (err: any) {
+    console.error('Server OCR error:', err);
+    return res.status(500).json({ success: false, error: err?.message || 'OCR 처리 실패' });
+  }
+});
 
 // 컴시간 실시간 시간표 API 엔드포인트
 app.get('/api/timetable', async (req, res) => {

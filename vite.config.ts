@@ -138,9 +138,75 @@ function comciganApiPlugin(): Plugin {
   };
 }
 
+function geminiOcrApiPlugin(): Plugin {
+  return {
+    name: 'gemini-ocr-api-middleware',
+    configureServer(server) {
+      server.middlewares.use(async (req, res, next) => {
+        if (req.url !== '/api/ocr/exam-scope' || req.method !== 'POST') {
+          return next();
+        }
+
+        res.setHeader('Content-Type', 'application/json; charset=utf-8');
+
+        try {
+          const body = await parseJsonBody(req);
+          const apiKey = process.env.GEMINI_API_KEY;
+          if (!apiKey) {
+            res.statusCode = 503;
+            return res.end(JSON.stringify({
+              success: false,
+              error: '서버에 GEMINI_API_KEY 환경변수가 설정되지 않았습니다.',
+            }));
+          }
+
+          const { GoogleGenAI } = await import('@google/genai');
+          const ai = new GoogleGenAI({ apiKey });
+          const base64Data = (body.imageBase64 || '').replace(/^data:[^;]+;base64,/, '');
+
+          const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents: [
+              {
+                role: 'user',
+                parts: [
+                  {
+                    inlineData: {
+                      mimeType: body.mimeType || 'image/jpeg',
+                      data: base64Data,
+                    },
+                  },
+                  {
+                    text: '대한민국 고등학교 시험범위표 인쇄물 분석: 각 과목별 subject, scope, textbookPages, supplementary, notice를 포함하는 JSON 형식({ "title": "...", "subjects": [...] })으로만 응답해주세요.',
+                  },
+                ],
+              },
+            ],
+          });
+
+          const responseText = response.text?.trim() || '';
+          const cleanJson = responseText
+            .replace(/^```json\s*/i, '')
+            .replace(/^```\s*/i, '')
+            .replace(/\s*```$/i, '')
+            .trim();
+
+          const parsed = JSON.parse(cleanJson);
+          res.statusCode = 200;
+          return res.end(JSON.stringify({ success: true, ...parsed }));
+        } catch (error: any) {
+          console.error('[Vite Gemini OCR Middleware Error]:', error);
+          res.statusCode = 500;
+          return res.end(JSON.stringify({ success: false, error: error?.message || 'OCR 처리 실패' }));
+        }
+      });
+    },
+  };
+}
+
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss(), comciganApiPlugin(), suggestionsApiPlugin()],
+    plugins: [react(), tailwindcss(), comciganApiPlugin(), suggestionsApiPlugin(), geminiOcrApiPlugin()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

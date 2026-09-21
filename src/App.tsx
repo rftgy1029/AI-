@@ -317,7 +317,7 @@ export default function App() {
   }, [syncNeisData]);
 
   // Handle changing grade and class
-  const handleChangeClass = (grade: number, classNum: number, studentNumber?: number) => {
+  const handleChangeClass = async (grade: number, classNum: number, studentNumber?: number) => {
     setCurrentUser((prev) => ({
       ...prev,
       grade,
@@ -325,11 +325,25 @@ export default function App() {
       studentNumber: studentNumber || prev.studentNumber,
       department: `서대전고등학교 ${grade}학년 ${classNum}반`,
     }));
-    // 즉각적인 시간표 전환 (빈 화면 방지)
+    // 즉각적인 해당 반 고유 정규 시간표 전환 (옆반 복사 원천 방지)
+    const official = getOfficialSeodaejeonTimetable(grade, classNum);
     setTimetable((prev) => ({
       ...prev,
-      ...getOfficialSeodaejeonTimetable(grade, classNum),
+      ...official,
     }));
+
+    // 컴시간 실시간 라이브 API 비동기 최신화 (라이브 변경 사항 있을 시 갱신)
+    try {
+      const live = await fetchSeodaejeonTimetable(grade, classNum);
+      if (live && Object.keys(live).length > 0) {
+        setTimetable((prev) => ({
+          ...prev,
+          ...live,
+        }));
+      }
+    } catch {
+      // offline / static fallback
+    }
   };
 
   const activeMeal = findTodayOrClosestMeal(meals);

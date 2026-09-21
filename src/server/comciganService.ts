@@ -77,7 +77,8 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
     }
 
     // Node.js 컨텍스트에서 컴시간 헬퍼 함수(baSplit, Q자료, Q성명, Q과목명 등) 실행 환경 구성
-    const evalEnv = new Function(script + '; return { baSplit, Q자료, Q성명, Q과목명, mTime };')();
+    // Node.js 컨텍스트에서 컴시간 헬퍼 함수(baSplit, Q자료, Q성명, Q과목명 등) 실행 환경 구성 (numberPart 미선언 에러 방지)
+    const evalEnv = new Function('var numberPart;' + script + '; return { baSplit, Q자료, Q성명, Q과목명, mTime };')();
     const { baSplit, Q자료, Q성명, Q과목명 } = evalEnv;
 
     const classCount = data['학급수']; // [전체, 1학년반수, 2학년반수, 3학년반수]
@@ -94,12 +95,16 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
         // 1(월) ~ 5(금)
         for (let day = 1; day <= 5; day++) {
           const dayPeriods: ComciganPeriod[] = [];
+          const maxP = data.자료481?.[grade]?.[classNum]?.[day]?.[0] || 7;
 
-          for (let period = 1; period <= 8; period++) {
+          for (let period = 1; period <= maxP; period++) {
             const baseVal = Q자료(data.자료481?.[grade]?.[classNum]?.[day]?.[period]);
-            const dailyVal = Q자료(data.자료147?.[grade]?.[classNum]?.[day]?.[period]);
+            const dailyRaw = data.자료147?.[grade]?.[classNum]?.[day]?.[period];
+            const dailyVal = dailyRaw ? Q자료(dailyRaw) : 0;
+            // 일일자료(자료147)가 아직 미공지([0])된 요일은 원자료(자료481 정규 시간표)로 안전하게 Fallback
+            const effectiveVal = dailyVal > 0 ? dailyVal : baseVal;
 
-            const dailySplit = baSplit(dailyVal, baseVal, data.변경알림);
+            const dailySplit = baSplit(effectiveVal, baseVal, data.변경알림);
             const th = dailySplit[0];
             const sb = dailySplit[1];
             const status = dailySplit[2];
@@ -113,7 +118,7 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
             if (th > 0) {
               teacher = Q성명(data.자료446[th]) || '';
               subject = Q과목명(data.자료492[sb % 분리]) || '';
-              isChanged = (status === '변경');
+              isChanged = (status === '변경') || (dailyVal > 0 && String(dailyRaw).startsWith('>'));
 
               if (isChanged && baseVal) {
                 const baseSplit = baSplit(baseVal, baseVal, 0);

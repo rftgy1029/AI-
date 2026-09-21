@@ -1,4 +1,5 @@
 import { MealItem, TimetableDay, AcademicEvent, SchoolInfo } from '../types';
+import { SEODAEJEON_ALL_CLASSES_TIMETABLE } from '../data/seodaejeonTimetables';
 import {
   getKSTDate,
   getKSTDateString,
@@ -599,30 +600,39 @@ export function getOfficialSeodaejeonTimetable(
     return dt;
   });
 
-  // 2학년 1반: 컴시간 시간표 전용 매핑 (목요일 5교시 변경 내용 포함, 반별 상이한 교사명 제외)
-  if (grade === 2 && classNum === 1) {
+  // 서대전고 전 학급(1~3학년 1~10반) 고유 컴시간 정규 시간표 우선 적용 (옆반 복사 원천 방지)
+  const classSchedule = SEODAEJEON_ALL_CLASSES_TIMETABLE[classKey];
+  if (classSchedule) {
     const timetableDays: TimetableDay[] = dayNames.map((dayName, idx) => {
       const dateObj = weekDates[idx];
       const dateStr = dateObj ? getKSTDateString(dateObj) : undefined;
-      const comciganPeriods = COMCIGAN_2_1_TIMETABLE[dayName] || [];
+      const dayPeriods = classSchedule[dayName] || [];
 
-      const periods = comciganPeriods.map((item) => {
-        const isCurrent =
-          !periodInfo.isWeekend &&
-          periodInfo.dayOfWeek === dayName &&
-          periodInfo.activePeriodNumber === item.period;
+      const periods = dayPeriods
+        .map((item) => {
+          // 월요일 1교시 없음
+          if (dayName === '월' && item.period === 1) return null;
 
-        return {
-          period: item.period,
-          subject: item.subject,
-          timeRange: PERIOD_TIMES[item.period] || `${item.period}교시`,
-          room: '1반 교실',
-          isCurrent,
-          isChanged: item.isChanged,
-          originalSubject: item.originalSubject,
-          changeNote: item.changeNote,
-        };
-      });
+          const isCurrent =
+            !periodInfo.isWeekend &&
+            periodInfo.dayOfWeek === dayName &&
+            periodInfo.activePeriodNumber === item.period;
+
+          return {
+            period: item.period,
+            subject: item.subject,
+            teacher: item.teacher,
+            timeRange: PERIOD_TIMES[item.period] || `${item.period}교시`,
+            room: `${classNum}반 교실`,
+            isCurrent,
+            isChanged: item.isChanged,
+            originalSubject: item.originalSubject,
+            changeNote: item.isChanged
+              ? `시간표 변경${item.originalSubject ? ` (원래: ${item.originalSubject})` : ''}`
+              : undefined,
+          };
+        })
+        .filter((p): p is NonNullable<typeof p> => p !== null && Boolean(p.subject));
 
       return {
         day: dayName,
@@ -632,11 +642,11 @@ export function getOfficialSeodaejeonTimetable(
     });
 
     return {
-      '2-1': timetableDays,
       [classKey]: timetableDays,
     };
   }
 
+  // 예외 시 기본 교육과정 매핑
   const gradeCurriculum = SEODAEJEON_CURRICULUM[grade] || SEODAEJEON_CURRICULUM[2];
 
   const timetableDays: TimetableDay[] = dayNames.map((dayName, idx) => {

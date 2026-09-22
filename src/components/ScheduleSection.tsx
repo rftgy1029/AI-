@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AcademicEvent } from '../types';
+import ExamScopeSection from './ExamScopeSection';
 
 interface ScheduleSectionProps {
   events: AcademicEvent[];
@@ -25,6 +26,11 @@ interface ScheduleSectionProps {
   isAdmin?: boolean;
   onOpenAddSchedule?: () => void;
   onDeleteSchedule?: (id: string) => void;
+  grade?: number;
+  classNum?: number;
+  onOpenPasskeyModal?: () => void;
+  subView?: 'calendar' | 'exam';
+  onSubViewChange?: (view: 'calendar' | 'exam') => void;
 }
 
 export default function ScheduleSection({
@@ -33,7 +39,34 @@ export default function ScheduleSection({
   isAdmin = false,
   onOpenAddSchedule,
   onDeleteSchedule,
+  grade = 2,
+  classNum,
+  onOpenPasskeyModal,
+  subView,
+  onSubViewChange,
 }: ScheduleSectionProps) {
+  const [internalSubView, setInternalSubView] = useState<'calendar' | 'exam'>(() => {
+    if (typeof window !== 'undefined') {
+      const p = new URLSearchParams(window.location.search).get('sub');
+      if (p === 'exam' || p === 'calendar') return p;
+    }
+    return subView || 'calendar';
+  });
+
+  const activeSubView = subView !== undefined ? subView : internalSubView;
+  const handleSubViewChange = (v: 'calendar' | 'exam') => {
+    if (onSubViewChange) {
+      onSubViewChange(v);
+    } else {
+      setInternalSubView(v);
+    }
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('sub', v);
+      window.history.replaceState({}, '', url.toString());
+    }
+  };
+
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'exam' | 'test' | 'vacation' | 'holiday'>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -78,98 +111,171 @@ export default function ScheduleSection({
 
   return (
     <div className="space-y-6">
-      {/* Header Banner */}
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-[28px] p-6 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
-      >
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
-                NEIS 공식 연동
-              </span>
-              <span className="text-xs text-slate-400 font-medium">서대전고등학교 2025~2026학년도</span>
-            </div>
-            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">공식 학사일정 및 D-Day</h2>
-            <p className="text-xs text-slate-500 font-medium">
-              교육부 NEIS(교육행정정보시스템)에 공식 등록된 시험, 학력평가, 방학 일정을 실시간으로 안내합니다.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <button
-                type="button"
-                onClick={onOpenAddSchedule}
-                className="px-3.5 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>새 학사일정 등록</span>
-              </button>
+      {/* Top Segmented Sub-Nav Toggle */}
+      <div className="flex items-center justify-between gap-3 bg-white p-2 sm:p-2.5 rounded-2xl border border-black/[0.04] shadow-2xs">
+        <div className="flex items-center gap-1.5 p-1 bg-[#F5F5F7] rounded-xl">
+          <button
+            type="button"
+            onClick={() => handleSubViewChange('calendar')}
+            className={`relative px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-2 select-none ${
+              activeSubView === 'calendar' ? 'text-slate-900' : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            {activeSubView === 'calendar' && (
+              <motion.div
+                layoutId="scheduleSubViewPill"
+                className="absolute inset-0 bg-white rounded-lg shadow-2xs"
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              />
             )}
-            <span className="text-xs font-semibold text-slate-600 bg-[#F5F5F7] px-3 py-1.5 rounded-full border border-black/[0.03]">
-              총 {events.length}건 등록됨
+            <CalendarDays className="w-4 h-4 relative z-10 text-indigo-600" />
+            <span className="relative z-10">학사일정 및 D-Day</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleSubViewChange('exam')}
+            className={`relative px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors cursor-pointer flex items-center gap-2 select-none ${
+              activeSubView === 'exam' ? 'text-slate-900' : 'text-slate-500 hover:text-slate-800'
+            }`}
+          >
+            {activeSubView === 'exam' && (
+              <motion.div
+                layoutId="scheduleSubViewPill"
+                className="absolute inset-0 bg-white rounded-lg shadow-2xs"
+                transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+              />
+            )}
+            <BookOpen className="w-4 h-4 relative z-10 text-rose-600" />
+            <span className="relative z-10">지필평가 시험범위</span>
+            <span className="relative z-10 text-[10px] bg-rose-100 text-rose-700 font-extrabold px-1.5 py-0.2 rounded-md">
+              중간고사
             </span>
-          </div>
+          </button>
         </div>
 
-        {/* Admin Notification Banner */}
-        {isAdmin && (
-          <div className="mt-4 p-3.5 rounded-2xl bg-indigo-50/80 border border-indigo-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
-              <div className="text-xs text-indigo-950 font-medium">
-                <span className="font-bold text-indigo-900">교무실 관리자 권한 활성화됨:</span> 시험, 축제, 모의고사 일정을 직접 등록하거나 삭제할 수 있습니다.
+        <div className="hidden sm:flex items-center gap-2 text-xs text-slate-400 font-medium pr-2">
+          <span>{activeSubView === 'calendar' ? '서대전고 공식 학사일정' : '1·2·3학년 지필평가 출제범위'}</span>
+        </div>
+      </div>
+
+      {activeSubView === 'exam' ? (
+        <ExamScopeSection
+          grade={grade || 2}
+          classNum={classNum}
+          isAdmin={isAdmin}
+          onOpenPasskeyModal={onOpenPasskeyModal}
+        />
+      ) : (
+        <>
+          {/* Header Banner */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-[28px] p-6 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)]"
+          >
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-indigo-600 bg-indigo-50 px-2.5 py-0.5 rounded-full">
+                    NEIS 공식 연동
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">서대전고등학교 2025~2026학년도</span>
+                </div>
+                <h2 className="text-2xl font-bold text-slate-900 tracking-tight">공식 학사일정 및 D-Day</h2>
+                <p className="text-xs text-slate-500 font-medium">
+                  교육부 NEIS(교육행정정보시스템)에 공식 등록된 시험, 학력평가, 방학 일정을 실시간으로 안내합니다.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={onOpenAddSchedule}
+                    className="px-3.5 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-xs font-bold transition flex items-center gap-1.5 shadow-sm cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>새 학사일정 등록</span>
+                  </button>
+                )}
+                <span className="text-xs font-semibold text-slate-600 bg-[#F5F5F7] px-3 py-1.5 rounded-full border border-black/[0.03]">
+                  총 {events.length}건 등록됨
+                </span>
               </div>
             </div>
-            <button
-              type="button"
-              onClick={onOpenAddSchedule}
-              className="self-start sm:self-auto text-xs font-bold text-indigo-700 hover:text-indigo-900 underline flex items-center gap-1 cursor-pointer"
-            >
-              <Plus className="w-3 h-3" />
-              <span>일정 바로 등록하기</span>
-            </button>
-          </div>
-        )}
 
-        {/* Top 3 Upcoming D-Day Cards */}
-        {upcomingEvents.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-black/[0.04]">
-            {upcomingEvents.map((evt) => {
-              const badge = getCategoryBadge(evt.category);
-              const Icon = badge.icon;
-              return (
-                <motion.div
-                  key={evt.id}
-                  whileHover={{ y: -3, scale: 1.01 }}
-                  transition={{ duration: 0.2 }}
-                  className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F5F5F7] border border-black/[0.03] flex items-center justify-between gap-3 hover:bg-slate-100/80 transition cursor-default shadow-2xs"
+            {/* Admin Notification Banner */}
+            {isAdmin && (
+              <div className="mt-4 p-3.5 rounded-2xl bg-indigo-50/80 border border-indigo-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                  <div className="text-xs text-indigo-950 font-medium">
+                    <span className="font-bold text-indigo-900">교무실 관리자 권한 활성화됨:</span> 시험, 축제, 모의고사 일정을 직접 등록하거나 삭제할 수 있습니다.
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onOpenAddSchedule}
+                  className="self-start sm:self-auto text-xs font-bold text-indigo-700 hover:text-indigo-900 underline flex items-center gap-1 cursor-pointer"
                 >
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-1.5 mb-1">
-                      <Icon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                      <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${badge.bg}`}>
-                        {badge.label}
-                      </span>
-                    </div>
-                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{evt.title}</h4>
-                    <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">{evt.date}</p>
-                  </div>
+                  <Plus className="w-3 h-3" />
+                  <span>일정 바로 등록하기</span>
+                </button>
+              </div>
+            )}
 
-                  <div className="text-right shrink-0 bg-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-black/[0.04] shadow-2xs">
-                    <span className="text-xs sm:text-sm font-black text-rose-500">
-                      {evt.dDay === 0 ? 'D-Day' : `D-${evt.dDay}`}
-                    </span>
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
-        )}
-      </motion.div>
+            {/* Top 3 Upcoming D-Day Cards */}
+            {upcomingEvents.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-black/[0.04]">
+                {upcomingEvents.map((evt) => {
+                  const badge = getCategoryBadge(evt.category);
+                  const Icon = badge.icon;
+                  return (
+                    <motion.div
+                      key={evt.id}
+                      whileHover={{ y: -3, scale: 1.01 }}
+                      transition={{ duration: 0.2 }}
+                      className="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#F5F5F7] border border-black/[0.03] flex items-center justify-between gap-3 hover:bg-slate-100/80 transition cursor-default shadow-2xs"
+                    >
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <Icon className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                          <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${badge.bg}`}>
+                            {badge.label}
+                          </span>
+                        </div>
+                        <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{evt.title}</h4>
+                        <p className="text-[10px] sm:text-[11px] text-slate-400 font-medium mt-0.5">{evt.date}</p>
+                      </div>
+
+                      <div className="flex flex-col items-end gap-1.5 shrink-0">
+                        <div className="bg-white px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl border border-black/[0.04] shadow-2xs">
+                          <span className="text-xs sm:text-sm font-black text-rose-500">
+                            {evt.dDay === 0 ? 'D-Day' : `D-${evt.dDay}`}
+                          </span>
+                        </div>
+                        {evt.category === 'exam' && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleSubViewChange('exam');
+                            }}
+                            className="px-2 py-1 rounded-lg bg-rose-600 hover:bg-rose-700 active:scale-95 text-white text-[10px] font-bold transition flex items-center gap-1 cursor-pointer shadow-2xs"
+                            title="시험범위 바로보기"
+                          >
+                            <BookOpen className="w-3 h-3" />
+                            <span>범위 보기 →</span>
+                          </button>
+                        )}
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
 
       {/* Filter and Search Bar - Mobile scrollable tags */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 bg-white p-2.5 sm:p-3 rounded-2xl border border-black/[0.04] shadow-2xs">
@@ -310,9 +416,11 @@ export default function ScheduleSection({
               );
             })}
           </AnimatePresence>
-        </div>
+          </div>
         )}
       </div>
-    </div>
+    </>
+  )}
+</div>
   );
 }

@@ -83,6 +83,13 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>(
     () => new URLSearchParams(window.location.search).get('tab') || 'home'
   );
+  const [scheduleSubView, setScheduleSubView] = useState<'calendar' | 'exam'>(() => {
+    if (typeof window !== 'undefined') {
+      const sub = new URLSearchParams(window.location.search).get('sub');
+      if (sub === 'exam' || sub === 'calendar') return sub;
+    }
+    return 'calendar';
+  });
 
   const handleTabChange = useCallback((tab: string) => {
     setActiveTab(tab);
@@ -90,15 +97,33 @@ export default function App() {
       const url = new URL(window.location.href);
       if (url.searchParams.get('tab') !== tab) {
         url.searchParams.set('tab', tab);
+        if (tab !== 'schedule') {
+          url.searchParams.delete('sub');
+        }
         window.history.pushState({ tab }, '', url.toString());
       }
+    }
+  }, []);
+
+  const handleNavigateToSchedule = useCallback((subView: 'calendar' | 'exam' = 'calendar') => {
+    setScheduleSubView(subView);
+    setActiveTab('schedule');
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', 'schedule');
+      url.searchParams.set('sub', subView);
+      window.history.pushState({ tab: 'schedule', sub: subView }, '', url.toString());
     }
   }, []);
 
   useEffect(() => {
     const handlePopState = () => {
       const tab = new URLSearchParams(window.location.search).get('tab') || 'home';
+      const sub = new URLSearchParams(window.location.search).get('sub');
       setActiveTab(tab);
+      if (sub === 'exam' || sub === 'calendar') {
+        setScheduleSubView(sub);
+      }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
@@ -415,6 +440,7 @@ export default function App() {
                 lastSyncTime={lastNeisSync}
                 isAdmin={isAdmin}
                 onOpenPasskeyModal={() => setIsPasskeyModalOpen(true)}
+                onNavigateToSchedule={handleNavigateToSchedule}
               />
             </motion.div>
           )}
@@ -433,6 +459,11 @@ export default function App() {
                 isAdmin={isAdmin}
                 onOpenAddSchedule={() => setIsAddScheduleOpen(true)}
                 onDeleteSchedule={handleDeleteSchedule}
+                grade={currentUser.grade}
+                classNum={currentUser.classNum}
+                onOpenPasskeyModal={() => setIsPasskeyModalOpen(true)}
+                subView={scheduleSubView}
+                onSubViewChange={setScheduleSubView}
               />
             </motion.div>
           )}

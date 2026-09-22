@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Eye,
   KeyRound,
+  Printer,
 } from 'lucide-react';
 import {
   ExamScopeItem,
@@ -45,6 +46,7 @@ export default function ExamScopeSection({
   isAdmin = false,
   onOpenPasskeyModal,
 }: ExamScopeSectionProps) {
+  const [selectedGrade, setSelectedGrade] = useState<number>(grade);
   const [scopes, setScopes] = useState<ExamScopeItem[]>(() => getExamScopes(grade));
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'announced' | 'pending'>('all');
@@ -53,20 +55,24 @@ export default function ExamScopeSection({
   const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
   const academicPeriod = getCurrentAcademicPeriod();
 
+  useEffect(() => {
+    setSelectedGrade(grade);
+  }, [grade]);
+
   // Real-time Cloud Firestore sync + instant local cache fallback
   useEffect(() => {
     // 1. Initial display from cache/defaults
-    setScopes(getExamScopes(grade));
+    setScopes(getExamScopes(selectedGrade));
 
     // 2. Real-time Firebase Firestore subscription across all devices
-    const unsubscribe = subscribeToExamScopes(grade, (cloudScopes) => {
+    const unsubscribe = subscribeToExamScopes(selectedGrade, (cloudScopes) => {
       setScopes(cloudScopes);
     });
 
     return () => {
       unsubscribe();
     };
-  }, [grade]);
+  }, [selectedGrade]);
 
   const filteredScopes = scopes.filter((item) => {
     const matchesQuery = item.subject.toLowerCase().includes(searchQuery.toLowerCase());
@@ -85,7 +91,7 @@ export default function ExamScopeSection({
     }
     // Optimistic local update
     saveExamScope(updated);
-    setScopes(getExamScopes(grade));
+    setScopes(getExamScopes(selectedGrade));
     setEditingItem(null);
 
     // Primary Cloud Firestore sync
@@ -99,7 +105,7 @@ export default function ExamScopeSection({
     }
     // Optimistic local update
     saveMultipleExamScopes(newScopes);
-    setScopes(getExamScopes(grade));
+    setScopes(getExamScopes(selectedGrade));
 
     // Primary Cloud Firestore sync
     await saveMultipleExamScopesToCloud(newScopes);
@@ -115,6 +121,33 @@ export default function ExamScopeSection({
 
   return (
     <div className="space-y-6">
+      {/* Grade Switcher Chips */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-3 sm:p-4 rounded-2xl border border-black/[0.04] shadow-2xs">
+        <div className="flex items-center gap-2">
+          <span className="text-xs sm:text-sm font-bold text-slate-500 mr-1">학년 선택:</span>
+          {[1, 2, 3].map((g) => (
+            <button
+              key={g}
+              type="button"
+              onClick={() => setSelectedGrade(g)}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                selectedGrade === g
+                  ? 'bg-black text-white shadow-2xs'
+                  : 'bg-[#F5F5F7] hover:bg-slate-200/80 text-slate-700'
+              }`}
+            >
+              {g}학년
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
+          <span>선택됨:</span>
+          <span className="font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg border border-indigo-200/60">
+            {selectedGrade}학년 {selectedGrade === grade && classNum ? `${classNum}반` : '전체'}
+          </span>
+        </div>
+      </div>
+
       {/* Top Banner */}
       <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-800 text-white rounded-[28px] p-6 sm:p-8 border border-black/[0.04] shadow-[0_2px_12px_rgba(0,0,0,0.03)] relative overflow-hidden">
         <div className="absolute top-0 right-0 -mr-8 -mt-8 w-44 h-44 rounded-full bg-indigo-500/10 blur-2xl pointer-events-none" />
@@ -143,7 +176,7 @@ export default function ExamScopeSection({
           </div>
 
           <h2 className="text-xl sm:text-3xl font-black tracking-tight">
-            {grade}학년 {classNum ? `${classNum}반 ` : ''}{academicPeriod.examHeaderTitle} 시험범위 안내
+            {selectedGrade}학년 {selectedGrade === grade && classNum ? `${classNum}반 ` : ''}{academicPeriod.examHeaderTitle} 시험범위 안내
           </h2>
 
           <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-2xl leading-relaxed">
@@ -220,29 +253,28 @@ export default function ExamScopeSection({
             />
           </div>
 
-          {/* AI OCR Button */}
-          <button
-            type="button"
-            onClick={handleOcrButtonClick}
-            className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer transition shrink-0 active:scale-95 ${
-              isAdmin
-                ? 'bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 text-white shadow-xs'
-                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-2xs'
-            }`}
-            title={isAdmin ? 'AI 전과목 시험범위표 일괄 OCR' : '시험범위 일괄 등록 (교직원 패스키 로그인 필요)'}
-          >
-            {isAdmin ? (
-              <>
-                <Camera className="w-4 h-4" />
-                <span>📸 AI 전과목 시험범위표 일괄 OCR</span>
-              </>
-            ) : (
-              <>
-                <Lock className="w-4 h-4 text-slate-400" />
-                <span>시험범위 등록·수정 (패스키 로그인)</span>
-              </>
-            )}
-          </button>
+          {/* Action Button: Students get Print/PDF (0 cost), Admin gets AI OCR */}
+          {isAdmin ? (
+            <button
+              type="button"
+              onClick={handleOcrButtonClick}
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer transition shrink-0 active:scale-95 bg-gradient-to-r from-violet-600 via-indigo-600 to-indigo-700 hover:from-violet-700 hover:to-indigo-800 text-white shadow-xs"
+              title="AI 전과목 시험범위표 일괄 OCR (교직원 관리자 전용)"
+            >
+              <Camera className="w-4 h-4" />
+              <span>📸 AI 전과목 시험범위표 일괄 OCR</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer transition shrink-0 active:scale-95 bg-white text-slate-700 border border-slate-300 hover:bg-slate-50 hover:border-slate-400 shadow-2xs"
+              title="시험범위 인쇄 또는 PDF로 저장"
+            >
+              <Printer className="w-4 h-4 text-indigo-600" />
+              <span>📄 시험범위 인쇄 / PDF 저장</span>
+            </button>
+          )}
         </div>
 
         {/* Status Filter */}

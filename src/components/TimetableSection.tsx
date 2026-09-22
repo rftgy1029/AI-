@@ -21,7 +21,6 @@ import {
 } from '../utils/datetime';
 import { PERIOD_TIMES, getOfficialSeodaejeonTimetable } from '../services/neisService';
 import AssessmentDetailModal from './AssessmentDetailModal';
-import ExamScopeSection from './ExamScopeSection';
 import {
   getAssessmentForPeriod,
   getAssessments,
@@ -38,6 +37,7 @@ interface TimetableSectionProps {
   lastSyncTime?: string;
   isAdmin?: boolean;
   onOpenPasskeyModal?: () => void;
+  onNavigateToSchedule?: (subView?: 'calendar' | 'exam') => void;
 }
 
 export default function TimetableSection({
@@ -49,11 +49,10 @@ export default function TimetableSection({
   lastSyncTime,
   isAdmin,
   onOpenPasskeyModal,
+  onNavigateToSchedule,
 }: TimetableSectionProps) {
   const [periodInfo, setPeriodInfo] = useState<CurrentPeriodInfo>(() => getCurrentPeriodInfo());
-  const [viewMode, setViewMode] = useState<'daily' | 'weekly' | 'exam'>(
-    () => (new URLSearchParams(window.location.search).get('view') as 'daily' | 'weekly' | 'exam') || 'daily'
-  );
+  const [viewMode, setViewMode] = useState<'daily' | 'weekly'>('daily');
   const academicPeriod = getCurrentAcademicPeriod();
   const [selectedAssessment, setSelectedAssessment] = useState<AssessmentInfo | null>(() => {
     const assessId = new URLSearchParams(window.location.search).get('openAssessment');
@@ -200,28 +199,6 @@ export default function TimetableSection({
                 <LayoutGrid className="w-4 h-4 relative z-10" />
                 <span className="relative z-10">주간 전체</span>
               </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('exam')}
-                className={`relative px-4 py-2 rounded-xl text-sm font-bold transition-colors flex items-center gap-1.5 cursor-pointer ${
-                  viewMode === 'exam'
-                    ? 'text-indigo-950'
-                    : 'text-slate-500 hover:text-slate-800'
-                }`}
-              >
-                {viewMode === 'exam' && (
-                  <motion.div
-                    layoutId="timetableViewModePill"
-                    className="absolute inset-0 bg-white rounded-xl shadow-2xs"
-                    transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-                  />
-                )}
-                <BookOpen className="w-4 h-4 relative z-10 text-indigo-600" />
-                <span className="relative z-10">시험범위</span>
-                <span className="relative z-10 text-[10px] bg-amber-200 text-amber-900 font-extrabold px-1.5 py-0.2 rounded-md">
-                  9/22
-                </span>
-              </button>
             </div>
 
             {onRefreshNeis && (
@@ -342,14 +319,7 @@ export default function TimetableSection({
       </motion.div>
 
       {/* Main Timetable Content */}
-      {viewMode === 'exam' ? (
-        <ExamScopeSection
-          grade={selectedGrade}
-          classNum={selectedClass}
-          isAdmin={isAdmin}
-          onOpenPasskeyModal={onOpenPasskeyModal}
-        />
-      ) : viewMode === 'daily' ? (
+      {viewMode === 'daily' ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left 2 Cols: Periods for the selected day */}
           <div className="lg:col-span-2 space-y-6">
@@ -750,39 +720,37 @@ export default function TimetableSection({
         </motion.div>
       )}
 
-      {/* Quick Link Banner for Exam Scopes (visible when not in exam mode) */}
-      {viewMode !== 'exam' && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          onClick={() => setViewMode('exam')}
-          className="p-5 rounded-[24px] bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-800 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:shadow-md transition group border border-black/[0.04]"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center shadow-2xs shrink-0 group-hover:scale-105 transition border border-indigo-400/20">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h4 className="font-bold text-white text-base">
-                  {academicPeriod.examFullTitle} 시험범위 안내 공간
-                </h4>
-                <span className="text-[10px] font-extrabold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">
-                  9/22(월) 전체 공지 예정
-                </span>
-              </div>
-              <p className="text-xs text-slate-300 mt-0.5 font-medium">
-                선생님 회의 및 월요일 공식 발표 직후 실시간 업데이트됩니다. 현재 공간이 사전 확보되어 있습니다.
-              </p>
-            </div>
+      {/* Quick Link Banner for Exam Scopes (navigates to Schedule tab) */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        onClick={() => onNavigateToSchedule?.('exam')}
+        className="p-5 rounded-[24px] bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-800 text-white shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer hover:shadow-md transition group border border-black/[0.04]"
+      >
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-2xl bg-indigo-500/20 text-indigo-300 flex items-center justify-center shadow-2xs shrink-0 group-hover:scale-105 transition border border-indigo-400/20">
+            <BookOpen className="w-5 h-5" />
           </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="font-bold text-white text-base">
+                {academicPeriod.examFullTitle} 과목별 출제범위 안내
+              </h4>
+              <span className="text-[10px] font-extrabold text-amber-300 bg-amber-500/20 px-2.5 py-0.5 rounded-full border border-amber-400/30">
+                일정 탭 통합
+              </span>
+            </div>
+            <p className="text-xs text-slate-300 mt-0.5 font-medium">
+              2학기 지필평가 출제범위가 '일정' 탭으로 통합되었습니다. 클릭 시 1·2·3학년 전과목 시험범위 화면으로 바로 이동합니다.
+            </p>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-1 text-xs font-bold text-indigo-300 shrink-0 self-end sm:self-center group-hover:text-white transition">
-            <span>시험범위 공간 미리보기</span>
-            <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
-          </div>
-        </motion.div>
-      )}
+        <div className="flex items-center gap-1 text-xs font-bold text-indigo-300 shrink-0 self-end sm:self-center group-hover:text-white transition">
+          <span>일정 탭에서 시험범위 확인하기</span>
+          <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition" />
+        </div>
+      </motion.div>
 
       {/* Assessment Detail Modal */}
       <AssessmentDetailModal

@@ -2233,9 +2233,10 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
       },
       {
         "period": 4,
-        "subject": "중국",
-        "teacher": "이경",
-        "isChanged": false
+        "subject": "확통",
+        "teacher": "임재",
+        "isChanged": true,
+        "originalSubject": "중국"
       },
       {
         "period": 5,
@@ -2259,45 +2260,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "데과",
-        "teacher": "유의",
-        "isChanged": false
+        "subject": "미적2",
+        "teacher": "안상",
+        "isChanged": true,
+        "originalSubject": "데과"
       },
       {
         "period": 2,
-        "subject": "화법",
-        "teacher": "신순",
-        "isChanged": false
+        "subject": "영어2",
+        "teacher": "이규",
+        "isChanged": true,
+        "originalSubject": "화법"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "중국",
+        "teacher": "이경",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "지구",
+        "teacher": "정영",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "확통",
-        "teacher": "임재",
-        "isChanged": false
+        "subject": "데과",
+        "teacher": "유의",
+        "isChanged": true,
+        "originalSubject": "확통"
       },
       {
         "period": 6,
-        "subject": "미적2",
-        "teacher": "안상",
-        "isChanged": false
+        "subject": "화법",
+        "teacher": "신순",
+        "isChanged": true,
+        "originalSubject": "미적2"
       },
       {
         "period": 7,
-        "subject": "물질",
-        "teacher": "오동",
-        "isChanged": false
+        "subject": "중국",
+        "teacher": "이경",
+        "isChanged": true,
+        "originalSubject": "물질"
       }
     ],
     "목": [

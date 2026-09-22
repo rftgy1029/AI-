@@ -73,8 +73,9 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
       script += tag.replace(/<\/?script[^>]*>/gi, '') + '\n';
     }
 
-    // Node.js 컨텍스트에서 컴시간 헬퍼 함수(baSplit, Q자료, Q성명, Q과목명 등) 실행 환경 구성 (numberPart 미선언 에러 방지)
-    const evalEnv = new Function('var numberPart;' + script + '; return { baSplit, Q자료, Q성명, Q과목명, mTime };')();
+    // Node.js 컨텍스트에서 컴시간 헬퍼 함수(baSplit, Q자료, Q성명, Q과목명 등) 실행 환경 구성 ($, jQuery, window, document Proxy 더미 객체 제공)
+    const proxyShim = 'var dummy = new Proxy(function(){ return dummy; }, { get: () => (...args) => dummy, apply: () => dummy }); var numberPart, $ = dummy, jQuery = dummy, window = dummy, document = dummy;';
+    const evalEnv = new Function(proxyShim + script + '; return { baSplit, Q자료, Q성명, Q과목명, mTime };')();
     const { baSplit, Q자료, Q성명, Q과목명 } = evalEnv;
 
     const classCount = data['학급수']; // [전체, 1학년반수, 2학년반수, 3학년반수]

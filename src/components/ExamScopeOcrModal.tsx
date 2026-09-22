@@ -12,9 +12,7 @@ import {
   FileCheck2,
   AlertCircle,
   Table,
-  Key,
   ShieldCheck,
-  Check,
 } from 'lucide-react';
 import { ExamScopeItem } from '../services/assessmentService';
 import { compressImageFile, preprocessImageForOcr } from '../utils/imageUtils';
@@ -165,11 +163,6 @@ export default function ExamScopeOcrModal({
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Gemini Vision OCR & Preprocessing State
-  const [userApiKey, setUserApiKey] = useState<string>(() => {
-    return typeof window !== 'undefined' ? localStorage.getItem('gemini_api_key') || '' : '';
-  });
-  const [showApiKeyInput, setShowApiKeyInput] = useState(false);
-  const [apiKeySaved, setApiKeySaved] = useState(false);
   const [ocrEngineUsed, setOcrEngineUsed] = useState<'gemini-vision' | 'domain-template' | null>(null);
   const [ocrEngineMessage, setOcrEngineMessage] = useState<string>('');
 
@@ -177,12 +170,6 @@ export default function ExamScopeOcrModal({
   const [extractedList, setExtractedList] = useState(activePreset.subjects);
   const [hasScanned, setHasScanned] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
-
-  const handleSaveApiKey = () => {
-    localStorage.setItem('gemini_api_key', userApiKey.trim());
-    setApiKeySaved(true);
-    setTimeout(() => setApiKeySaved(false), 2000);
-  };
 
   // Draw paper document table on canvas
   const drawPaperTable = (preset: MasterTablePreset) => {
@@ -279,7 +266,7 @@ export default function ExamScopeOcrModal({
     if (imageToProcess) {
       setTimeout(() => {
         setScanProgress(45);
-        setScanStep('2단계: Gemini 2.5 Flash Vision AI 멀티모달 OCR 분석 중...');
+        setScanStep('2단계: Gemini 3.8 Flash Vision AI 멀티모달 OCR 분석 중...');
       }, 400);
 
       setTimeout(() => {
@@ -288,7 +275,7 @@ export default function ExamScopeOcrModal({
       }, 900);
 
       try {
-        const result = await extractExamScopesWithGemini(imageToProcess, userApiKey);
+        const result = await extractExamScopesWithGemini(imageToProcess);
         setExtractedList(result.subjects);
         setOcrEngineUsed(result.engine);
         setOcrEngineMessage(result.message);
@@ -458,58 +445,11 @@ export default function ExamScopeOcrModal({
                 ))}
               </div>
 
-              <button
-                type="button"
-                onClick={() => setShowApiKeyInput(!showApiKeyInput)}
-                className="px-2.5 py-1 rounded-xl text-[11px] font-bold bg-white/10 hover:bg-white/20 text-violet-200 hover:text-white border border-white/15 flex items-center gap-1.5 transition cursor-pointer"
-                title="Google AI Studio Gemini API 키 설정"
-              >
-                <Key className="w-3 h-3 text-amber-300" />
-                <span>{userApiKey ? '🔑 Gemini AI 키 연동됨' : 'Gemini AI 키 설정 (선택)'}</span>
-              </button>
+              <div className="text-[11px] font-semibold text-violet-200/90 flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/10">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>Gemini 3.8 Flash Vision AI 최적화</span>
+              </div>
             </div>
-
-            {/* Expandable API Key Setting Banner */}
-            {showApiKeyInput && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-3 p-3 bg-black/30 rounded-2xl border border-white/15 space-y-2 text-xs"
-              >
-                <div className="flex items-center justify-between text-violet-200">
-                  <span className="font-bold flex items-center gap-1.5">
-                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                    Google Gemini 2.5 Flash Vision AI 실시간 멀티모달 OCR 연동
-                  </span>
-                  <a
-                    href="https://aistudio.google.com/app/apikey"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[10px] text-amber-300 underline font-semibold hover:text-amber-200"
-                  >
-                    무료 API 키 발급받기 ↗
-                  </a>
-                </div>
-                <div className="flex gap-2">
-                  <input
-                    type="password"
-                    value={userApiKey}
-                    onChange={(e) => setUserApiKey(e.target.value)}
-                    placeholder="AIzaSy... (미입력 시 서대전고 맞춤형 템플릿 엔진으로 자동 분석)"
-                    className="flex-1 px-3 py-1.5 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/40 text-xs focus:outline-hidden focus:border-cyan-400 font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleSaveApiKey}
-                    className="px-3 py-1.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black text-xs flex items-center gap-1 transition cursor-pointer"
-                  >
-                    {apiKeySaved ? <Check className="w-3.5 h-3.5" /> : null}
-                    <span>{apiKeySaved ? '저장됨' : '저장'}</span>
-                  </button>
-                </div>
-              </motion.div>
-            )}
           </div>
 
           {/* Body Content */}

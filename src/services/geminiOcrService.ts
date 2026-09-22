@@ -240,28 +240,28 @@ const OCR_PROMPT = `
 `;
 
 /**
- * Gemini 2.5 Flash Vision AI 기반 시험범위표 실시간 분석
+ * Gemini 3.8 Flash Vision AI 기반 시험범위표 실시간 분석
  */
 export async function extractExamScopesWithGemini(
   imageDataUrl: string,
   userApiKey?: string
 ): Promise<OcrResult> {
-  // API Key 우선순위: 사용자 입력 -> Vite 환경변수 -> 로컬스토리지
+  // API Key 우선순위: Vite 환경변수 -> 사용자 입력 -> 로컬스토리지
   const apiKey =
+    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) ||
     userApiKey ||
     (typeof window !== 'undefined' ? localStorage.getItem('gemini_api_key') || '' : '') ||
-    (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_GEMINI_API_KEY) ||
     '';
 
   const base64Data = imageDataUrl.includes(',') ? imageDataUrl.split(',')[1] : imageDataUrl;
   const mimeType = imageDataUrl.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
 
-  // 1. 클라이언트 또는 서버에 API Key가 있으면 Gemini 2.5 Flash 호출
+  // 1. 클라이언트 또는 서버에 API Key가 있으면 Gemini 3.8 Flash 호출
   if (apiKey) {
     try {
       const ai = new GoogleGenAI({ apiKey });
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3.8-flash',
         contents: [
           {
             role: 'user',
@@ -303,7 +303,7 @@ export async function extractExamScopesWithGemini(
           grade: 2,
           title: parsed.title || '시험범위 일람표',
           subjects: normalizedList,
-          message: `Gemini 2.5 Flash Vision AI가 ${normalizedList.length}개 과목 시험범위를 정밀 추출했습니다.`,
+          message: `Gemini 3.8 Flash Vision AI가 ${normalizedList.length}개 과목 시험범위를 정밀 추출했습니다.`,
         };
       }
     } catch (err: any) {

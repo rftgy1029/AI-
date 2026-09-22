@@ -14,7 +14,7 @@ app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
 import { GoogleGenAI } from '@google/genai';
 
-// Gemini 2.5 Flash Vision AI 기반 시험범위표 실시간 OCR 분석 API
+// Gemini 3.8 Flash Vision AI 기반 시험범위표 실시간 OCR 분석 API
 app.post('/api/ocr/exam-scope', async (req, res) => {
   try {
     const { imageBase64, mimeType } = req.body;
@@ -31,7 +31,7 @@ app.post('/api/ocr/exam-scope', async (req, res) => {
 
     const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: 'gemini-3.8-flash',
       contents: [
         {
           role: 'user',

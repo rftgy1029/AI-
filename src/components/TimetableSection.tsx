@@ -617,11 +617,18 @@ export default function TimetableSection({
                             : 'bg-[#F5F5F7] text-slate-800'
                         } ${dIdx === days.length - 1 ? 'rounded-tr-2xl' : ''}`}
                       >
-                        <div className="flex items-center justify-center gap-1">
-                          <span>{d.day}요일</span>
-                          {isToday && (
-                            <span className="text-[10px] bg-white/20 px-1.5 py-0.2 rounded-full font-bold">
-                              오늘
+                        <div className="flex flex-col items-center justify-center gap-0.5">
+                          <div className="flex items-center gap-1">
+                            <span>{d.day}요일</span>
+                            {isToday && (
+                              <span className="text-[10px] bg-white/20 px-1.5 py-0.2 rounded-full font-bold">
+                                오늘
+                              </span>
+                            )}
+                          </div>
+                          {d.periods.length === 0 && !isToday && (
+                            <span className="text-[9px] font-bold text-slate-400 bg-slate-200/80 px-1.5 py-0.2 rounded-md">
+                              미공지
                             </span>
                           )}
                         </div>

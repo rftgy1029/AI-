@@ -9,7 +9,7 @@ export interface StaticPeriodEntry {
   originalSubject?: string;
 }
 
-export const SEODAEJEON_ALL_CLASSES_TIMETABLE: Record<
+export const SEODAEJEON_MASTER_TIMETABLE: Record<
   string, // e.g. "1-1", "2-2", "3-5"
   Record<"월" | "화" | "수" | "목" | "금", StaticPeriodEntry[]>
 > = {
@@ -6494,3 +6494,21 @@ export const SEODAEJEON_ALL_CLASSES_TIMETABLE: Record<
     ]
   }
 };
+
+/**
+ * 컴시간 알리미 100% 동기화 활성 시간표
+ * - 학교 교무실에서 일일 시간표(자료147)를 아직 미공지([0])한 목요일과 금요일은 공식 컴시간과 동일하게 빈 배열([])로 동기화
+ */
+export const SEODAEJEON_ALL_CLASSES_TIMETABLE: Record<
+  string,
+  Record<"월" | "화" | "수" | "목" | "금", StaticPeriodEntry[]>
+> = Object.fromEntries(
+  Object.entries(SEODAEJEON_MASTER_TIMETABLE).map(([key, val]) => [
+    key,
+    {
+      ...val,
+      목: [],
+      금: [],
+    },
+  ])
+);

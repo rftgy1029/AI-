@@ -427,6 +427,18 @@ export default function MealSection({
                       <dd className="font-bold text-slate-900">{activeMeal.nutritionInfo.vitaminA}</dd>
                     </div>
                   )}
+                  {activeMeal.nutritionInfo.thiamine && (
+                    <div className="flex justify-between py-1 border-b border-slate-100">
+                      <dt className="text-slate-500">티아민 (B1)</dt>
+                      <dd className="font-bold text-slate-900">{activeMeal.nutritionInfo.thiamine}</dd>
+                    </div>
+                  )}
+                  {activeMeal.nutritionInfo.riboflavin && (
+                    <div className="flex justify-between py-1 border-b border-slate-100">
+                      <dt className="text-slate-500">리보플라빈 (B2)</dt>
+                      <dd className="font-bold text-slate-900">{activeMeal.nutritionInfo.riboflavin}</dd>
+                    </div>
+                  )}
                   {activeMeal.nutritionInfo.vitaminC && (
                     <div className="flex justify-between py-1">
                       <dt className="text-slate-500">비타민 C</dt>

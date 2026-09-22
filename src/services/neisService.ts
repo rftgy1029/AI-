@@ -165,7 +165,13 @@ function parseNeisMealRow(row: any): MealItem {
       const parts = line.split(':').map((s: string) => s.trim());
       if (parts.length >= 2) {
         const key = parts[0];
-        const val = parts[1];
+        let val = parts[1];
+        const unitMatch = key.match(/\(([^)]+)\)/);
+        const unit = unitMatch ? unitMatch[1] : '';
+        if (unit && !val.toLowerCase().includes(unit.toLowerCase())) {
+          val = `${val}${unit}`;
+        }
+
         if (key.includes('탄수화물')) nutrition.carbs = val;
         else if (key.includes('단백질')) nutrition.protein = val;
         else if (key.includes('지방')) nutrition.fat = val;

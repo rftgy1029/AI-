@@ -128,7 +128,7 @@ export function getCurrentPeriodInfo(dateInput: Date = new Date()): CurrentPerio
       remainingMinutes: 0,
       remainingSeconds: 0,
       progressPercent: 0,
-      nextPeriodName: '월요일 1교시',
+      nextPeriodName: '월요일 2교시 (09:20)',
       dayOfWeek,
       dateFormatted,
       timeFormatted,
@@ -149,6 +149,27 @@ export function getCurrentPeriodInfo(dateInput: Date = new Date()): CurrentPerio
       const nextName = nextItem ? nextItem.name : '하교 및 귀가';
 
       if (typeof item.period === 'number') {
+        // 서대전고등학교 월요일 1교시 수업 없음 특성 반영
+        if (dayOfWeek === '월' && item.period === 1) {
+          return {
+            activePeriodNumber: null,
+            isLunchTime: false,
+            isBreakTime: false,
+            isSchoolHours: true,
+            isWeekend: false,
+            label: '월요일 1교시 수업 없음',
+            subLabel: `2교시(09:20) 시작까지 ${remainingMin}분 남음`,
+            timeRange: item.timeRangeStr,
+            remainingMinutes: remainingMin,
+            remainingSeconds: remainingSec,
+            progressPercent: progress,
+            nextPeriodName: '2교시 (09:20)',
+            dayOfWeek,
+            dateFormatted,
+            timeFormatted,
+          };
+        }
+
         return {
           activePeriodNumber: item.period,
           isLunchTime: false,
@@ -228,22 +249,28 @@ export function getCurrentPeriodInfo(dateInput: Date = new Date()): CurrentPerio
     }
   }
 
-  // Before 08:20
-  if (totalMinutes < 8 * 60 + 20) {
-    const diffToSchool = 8 * 60 + 20 - totalMinutes;
+  // Before 08:20 (or before 09:20 on Monday)
+  const isMondayMorning = dayOfWeek === '월';
+  const targetStartMin = isMondayMorning ? 9 * 60 + 20 : 8 * 60 + 20;
+
+  if (totalMinutes < targetStartMin) {
+    const diffToSchool = targetStartMin - totalMinutes;
+    const startDesc = isMondayMorning ? '09:20 2교시 시작까지' : '08:20 1교시 시작까지';
+    const nextPeriodDesc = isMondayMorning ? '2교시 (09:20)' : '1교시 (08:20)';
+
     return {
       activePeriodNumber: null,
       isLunchTime: false,
       isBreakTime: false,
       isSchoolHours: false,
       isWeekend: false,
-      label: '등교 전',
-      subLabel: `08:20 1교시 시작까지 ${Math.floor(diffToSchool / 60)}시간 ${diffToSchool % 60}분`,
-      timeRange: '등교 전',
+      label: isMondayMorning ? '등교 전 (월요일 2교시 시작)' : '등교 전',
+      subLabel: `${startDesc} ${Math.floor(diffToSchool / 60)}시간 ${diffToSchool % 60}분`,
+      timeRange: isMondayMorning ? '등교 전 (09:20 시작)' : '등교 전',
       remainingMinutes: diffToSchool,
       remainingSeconds: diffToSchool * 60,
       progressPercent: 0,
-      nextPeriodName: '1교시 (08:20)',
+      nextPeriodName: nextPeriodDesc,
       dayOfWeek,
       dateFormatted,
       timeFormatted,
@@ -251,6 +278,8 @@ export function getCurrentPeriodInfo(dateInput: Date = new Date()): CurrentPerio
   }
 
   // After school hours (post 21:00)
+  const nextSchoolDayText = dayOfWeek === '금' ? '월요일 2교시 (09:20)' : '내일 1교시 (08:20)';
+
   return {
     activePeriodNumber: null,
     isLunchTime: false,
@@ -263,7 +292,7 @@ export function getCurrentPeriodInfo(dateInput: Date = new Date()): CurrentPerio
     remainingMinutes: 0,
     remainingSeconds: 0,
     progressPercent: 100,
-    nextPeriodName: '내일 1교시',
+    nextPeriodName: nextSchoolDayText,
     dayOfWeek,
     dateFormatted,
     timeFormatted,

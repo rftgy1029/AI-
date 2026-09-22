@@ -310,10 +310,14 @@ export default function HomeDashboard({
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 text-sm sm:text-base">
-                    오늘 시간표 ({currentUser.grade}-{currentUser.classNum})
+                    {periodInfo.isWeekend ? '다음 주 시간표' : '오늘 시간표'} ({currentUser.grade}-{currentUser.classNum})
                   </h3>
                   <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">
-                    {todayTimetable.day}요일 정규 수업
+                    {periodInfo.isWeekend
+                      ? '다음 등교일(월요일) 수업 미리보기'
+                      : todayTimetable.periods.length === 0
+                      ? '컴시간 알리미 미공지 (수업 미등록)'
+                      : `${todayTimetable.day}요일 정규 수업`}
                   </span>
                 </div>
               </div>
@@ -387,9 +391,14 @@ export default function HomeDashboard({
                 })}
               </div>
             ) : (
-              <div className="py-8 sm:py-12 text-center text-slate-400 text-xs font-medium space-y-2">
-                <CalendarDays className="w-7 h-7 mx-auto text-slate-300" />
-                <p>오늘 등록된 수업 일정이 없습니다.</p>
+              <div className="py-8 sm:py-12 text-center text-slate-400 text-xs font-medium space-y-2.5 bg-[#F5F5F7]/60 rounded-2xl border border-dashed border-slate-200 mt-4">
+                <CalendarDays className="w-8 h-8 mx-auto text-slate-300" />
+                <div>
+                  <p className="text-sm font-bold text-slate-700">컴시간 알리미 시간표 미등록</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    학교(교무실)에서 아직 {todayTimetable.day}요일의 일일 시간표를 확정·공지하지 않았습니다.
+                  </p>
+                </div>
               </div>
             )}
           </div>

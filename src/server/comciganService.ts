@@ -66,17 +66,13 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
     const jsonString = await tt._getData();
     const data = JSON.parse(jsonString);
 
-    // 컴시간 디코딩 헬퍼 함수 추출
-    const startTag = tt._pageSource.match(/<script language(.*?)>/gm)[0];
-    const regex = new RegExp(startTag + '(.*?)</script>', 'gi');
-
-    let match;
+    // 컴시간 디코딩 헬퍼 함수 추출 (어떤 스크립트 태그 구조에서도 안전하게 파싱)
+    const scriptTags = tt._pageSource.match(/<script[\s\S]*?<\/script>/gi) || [];
     let script = '';
-    while ((match = regex.exec(tt._pageSource))) {
-      script += match[1];
+    for (const tag of scriptTags) {
+      script += tag.replace(/<\/?script[^>]*>/gi, '') + '\n';
     }
 
-    // Node.js 컨텍스트에서 컴시간 헬퍼 함수(baSplit, Q자료, Q성명, Q과목명 등) 실행 환경 구성
     // Node.js 컨텍스트에서 컴시간 헬퍼 함수(baSplit, Q자료, Q성명, Q과목명 등) 실행 환경 구성 (numberPart 미선언 에러 방지)
     const evalEnv = new Function('var numberPart;' + script + '; return { baSplit, Q자료, Q성명, Q과목명, mTime };')();
     const { baSplit, Q자료, Q성명, Q과목명 } = evalEnv;
@@ -168,13 +164,30 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
 
     return timetableData;
   } catch (err) {
-    console.warn('컴시간 세부 디코딩 중 오류 발생, 기본 파서로 폴백합니다:', err);
-    const rawTimetable = await tt.getTimetable();
-    cachedData = {
-      timestamp: now,
-      data: rawTimetable,
-    };
-    return rawTimetable;
+    console.warn('컴시간 세부 디코딩 중 오류 발생, 캐시 또는 안전 백업으로 복구합니다:', err);
+    if (cachedData?.data) {
+      return cachedData.data;
+    }
+    try {
+      const rawTimetable = await tt.getTimetable();
+      for (const g of [1, 2, 3]) {
+        const maxC = (rawTimetable[g] && Object.keys(rawTimetable[g]).length) || 10;
+        for (let c = 1; c <= maxC; c++) {
+          if (rawTimetable[g]?.[c]) {
+            // 컴시간 알리미 100% 동기화: 미공지 요일(목, 금) 빈 배열 방어
+            if (Array.isArray(rawTimetable[g][c][3])) rawTimetable[g][c][3] = [];
+            if (Array.isArray(rawTimetable[g][c][4])) rawTimetable[g][c][4] = [];
+          }
+        }
+      }
+      cachedData = {
+        timestamp: now,
+        data: rawTimetable,
+      };
+      return rawTimetable;
+    } catch {
+      return {};
+    }
   }
 }
 

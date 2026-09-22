@@ -314,23 +314,26 @@ export default function TimetableSection({
                       {dayItem.dateStr.slice(5)}
                     </span>
                   )}
-                  {isToday ? (
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full font-black inline-block mt-0.5 relative z-10 ${
-                        isSelected ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700'
-                      }`}
-                    >
-                      오늘
-                    </span>
-                  ) : dayItem.periods.length === 0 ? (
-                    <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold inline-block mt-0.5 relative z-10 ${
-                        isSelected ? 'bg-white/20 text-slate-200' : 'bg-slate-200/80 text-slate-500'
-                      }`}
-                    >
-                      미공지
-                    </span>
-                  ) : null}
+                  <div className="flex flex-wrap items-center justify-center gap-1 mt-0.5 relative z-10">
+                    {isToday && (
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full font-black inline-block ${
+                          isSelected ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700'
+                        }`}
+                      >
+                        오늘
+                      </span>
+                    )}
+                    {dayItem.periods.length === 0 && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold inline-block ${
+                          isSelected ? 'bg-white/20 text-slate-200' : 'bg-slate-200/80 text-slate-500'
+                        }`}
+                      >
+                        미공지
+                      </span>
+                    )}
+                  </div>
                 </motion.button>
               );
             })}

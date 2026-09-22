@@ -29,36 +29,51 @@ app.post('/api/ocr/exam-scope', async (req, res) => {
       return res.status(400).json({ success: false, error: '이미지 데이터가 없습니다.' });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
-      contents: [
-        {
-          role: 'user',
-          parts: [
+    const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash'];
+    let lastError: any = null;
+    let parsed: any = null;
+
+    for (const modelName of candidateModels) {
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: [
             {
-              inlineData: {
-                mimeType: mimeType || 'image/jpeg',
-                data: imageBase64.replace(/^data:[^;]+;base64,/, ''),
-              },
-            },
-            {
-              text: '대한민국 고등학교 시험범위표 인쇄물 분석: 각 과목별 subject, scope, textbookPages, supplementary, notice를 포함하는 JSON 형식({ "title": "...", "subjects": [...] })으로만 응답해주세요.',
+              role: 'user',
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: mimeType || 'image/jpeg',
+                    data: imageBase64.replace(/^data:[^;]+;base64,/, ''),
+                  },
+                },
+                {
+                  text: '대한민국 고등학교 시험범위표 인쇄물 분석: 각 과목별 subject, scope, textbookPages, supplementary, notice를 포함하는 JSON 형식({ "title": "...", "subjects": [...] })으로만 응답해주세요.',
+                },
+              ],
             },
           ],
-        },
-      ],
-    });
+        });
 
-    const responseText = response.text?.trim() || '';
-    const cleanJson = responseText
-      .replace(/^```json\s*/i, '')
-      .replace(/^```\s*/i, '')
-      .replace(/\s*```$/i, '')
-      .trim();
+        const responseText = response.text?.trim() || '';
+        const cleanJson = responseText
+          .replace(/^```json\s*/i, '')
+          .replace(/^```\s*/i, '')
+          .replace(/\s*```$/i, '')
+          .trim();
 
-    const parsed = JSON.parse(cleanJson);
-    return res.json({ success: true, ...parsed });
+        parsed = JSON.parse(cleanJson);
+        if (parsed && parsed.subjects) {
+          return res.json({ success: true, model: modelName, ...parsed });
+        }
+      } catch (err: any) {
+        lastError = err;
+        console.warn(`[OCR] ${modelName} model error, trying next candidate:`, err?.message || err);
+      }
+    }
+
+    throw lastError || new Error('시험범위표 OCR 분석 실패');
   } catch (err: any) {
     console.error('Server OCR error:', err);
     return res.status(500).json({ success: false, error: err?.message || 'OCR 처리 실패' });

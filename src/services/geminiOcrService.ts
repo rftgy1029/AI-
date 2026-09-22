@@ -256,58 +256,61 @@ export async function extractExamScopesWithGemini(
   const base64Data = imageDataUrl.includes(',') ? imageDataUrl.split(',')[1] : imageDataUrl;
   const mimeType = imageDataUrl.match(/data:([^;]+);/)?.[1] || 'image/jpeg';
 
-  // 1. 클라이언트 또는 서버에 API Key가 있으면 Gemini 3.8 Flash 호출
+  // 1. 클라이언트 또는 서버에 API Key가 있으면 Gemini 최신 Flash 모델 호출 (3.8-flash -> 3.6-flash 회복성 자동 전환)
   if (apiKey) {
-    try {
-      const ai = new GoogleGenAI({ apiKey });
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              {
-                inlineData: {
-                  mimeType,
-                  data: base64Data,
+    const candidateModels = ['gemini-3.8-flash', 'gemini-3.6-flash'];
+    for (const modelName of candidateModels) {
+      try {
+        const ai = new GoogleGenAI({ apiKey });
+        const response = await ai.models.generateContent({
+          model: modelName,
+          contents: [
+            {
+              role: 'user',
+              parts: [
+                {
+                  inlineData: {
+                    mimeType,
+                    data: base64Data,
+                  },
                 },
-              },
-              {
-                text: OCR_PROMPT,
-              },
-            ],
-          },
-        ],
-      });
+                {
+                  text: OCR_PROMPT,
+                },
+              ],
+            },
+          ],
+        });
 
-      const responseText = response.text?.trim() || '';
-      const cleanJson = responseText
-        .replace(/^```json\s*/i, '')
-        .replace(/^```\s*/i, '')
-        .replace(/\s*```$/i, '')
-        .trim();
+        const responseText = response.text?.trim() || '';
+        const cleanJson = responseText
+          .replace(/^```json\s*/i, '')
+          .replace(/^```\s*/i, '')
+          .replace(/\s*```$/i, '')
+          .trim();
 
-      const parsed = JSON.parse(cleanJson);
-      if (parsed.subjects && Array.isArray(parsed.subjects) && parsed.subjects.length > 0) {
-        const normalizedList: ExtractedExamScope[] = parsed.subjects.map((item: any) => ({
-          subject: normalizeSubjectName(item.subject || ''),
-          scope: item.scope || '',
-          textbookPages: item.textbookPages || '',
-          supplementary: item.supplementary || '',
-          notice: item.notice || '',
-        }));
+        const parsed = JSON.parse(cleanJson);
+        if (parsed.subjects && Array.isArray(parsed.subjects) && parsed.subjects.length > 0) {
+          const normalizedList: ExtractedExamScope[] = parsed.subjects.map((item: any) => ({
+            subject: normalizeSubjectName(item.subject || ''),
+            scope: item.scope || '',
+            textbookPages: item.textbookPages || '',
+            supplementary: item.supplementary || '',
+            notice: item.notice || '',
+          }));
 
-        return {
-          success: true,
-          engine: 'gemini-vision',
-          grade: 2,
-          title: parsed.title || '시험범위 일람표',
-          subjects: normalizedList,
-          message: `Gemini 3.8 Flash Vision AI가 ${normalizedList.length}개 과목 시험범위를 정밀 추출했습니다.`,
-        };
+          return {
+            success: true,
+            engine: 'gemini-vision',
+            grade: 2,
+            title: parsed.title || '시험범위 일람표',
+            subjects: normalizedList,
+            message: `Gemini ${modelName.replace('gemini-', '')} Vision AI가 ${normalizedList.length}개 과목 시험범위를 정밀 추출했습니다.`,
+          };
+        }
+      } catch (err: any) {
+        console.warn(`Gemini (${modelName}) Vision OCR failed, trying next candidate:`, err?.message || err);
       }
-    } catch (err: any) {
-      console.warn('Gemini Client Vision OCR failed or invalid response:', err?.message || err);
     }
   }
 

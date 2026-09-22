@@ -523,8 +523,24 @@ export const COMCIGAN_2_1_TIMETABLE: Record<'월' | '화' | '수' | '목' | '금
     { period: 6, subject: 'C_미적2' },
     { period: 7, subject: '물질' },
   ],
-  목: [], // 컴시간 알리미 미공지 상태 동기화
-  금: [], // 컴시간 알리미 미공지 상태 동기화
+  목: [
+    { period: 1, subject: 'A_스생2' },
+    { period: 2, subject: '확통' },
+    { period: 3, subject: '역학' },
+    { period: 4, subject: '진로' },
+    { period: 5, subject: '특색' },
+    { period: 6, subject: '지구' },
+    { period: 7, subject: '영어2' },
+  ],
+  금: [
+    { period: 1, subject: '미적2' },
+    { period: 2, subject: '영어2' },
+    { period: 3, subject: '확통' },
+    { period: 4, subject: 'C_지구' },
+    { period: 5, subject: '데과' },
+    { period: 6, subject: 'B_화법' },
+    { period: 7, subject: '중국' },
+  ],
 };
 
 // 서대전고등학교 학년별 정규 교육과정 기준 시간표 (공식 NEIS 교육과정 매핑)
@@ -535,26 +551,36 @@ export const SEODAEJEON_CURRICULUM: Record<number, Record<string, string[]>> = {
     월: ['통합과학2', '한국사2', '공통수학2', '공통영어2', '통합사회2', '체육2'],
     화: ['공통국어2', '공통영어2', '미술', '체육2', '과학탐구실험', '공통수학2', '정보'],
     수: ['공통수학2', '통합사회2', '자율·자치활동', '동아리활동', '공통국어2', '진로활동', '한국사2'],
-    목: [],
-    금: [],
+    목: ['한국사2', '통합과학2', '공통영어2', '공통국어2', '공통수학2', '음악', '통합사회2'],
+    금: ['공통국어2', '한국사2', '통합사회2', '통합과학2', '공통수학2', '공통영어2', '체육2'],
   },
   2: {
     // 2학년 일반 교육과정 (2-1은 상단 COMCIGAN_2_1_TIMETABLE 전용 매핑)
     월: ['스생2', '역학', '화법', 'B_물질', '미적2', '중국'],
     화: ['역학', '물질', '영어2', 'C_중국', '특색', '데과', '지구'],
     수: ['A_데과', 'B_화법', '창체', '창체', '확통', 'C_미적2', '물질'],
-    목: [],
-    금: [],
+    목: ['A_스생2', '확통', '역학', '진로', '지구', '지구', '영어2'],
+    금: ['미적2', '영어2', '확통', 'C_지구', '데과', 'B_화법', '중국'],
   },
   3: {
     // 월요일은 1교시 수업 없음 (2교시~7교시, 6개 과목)
     월: ['화법과 작문', '미적분', '체육 탐구', '지구과학Ⅱ', '영어Ⅱ', '심화 국어'],
     화: ['확률과 통계', '세계사', '영어Ⅱ', '화법과 작문', '미적분', '진로 탐구', '윤리와 사상'],
     수: ['영어Ⅱ', '기하', '자율·자치활동', '동아리활동', '독서', '정치와 법', '생명과학Ⅱ'],
-    목: [],
-    금: [],
+    목: ['물리학Ⅱ', '체육 탐구', '영어Ⅱ', '독서', '확률과 통계', '고전과 윤리', '화학Ⅱ'],
+    금: ['사회·문화', '독서', '심화 국어', '영어 독해와 작문', '정치와 법', '미적분', '심화 영어'],
   },
 };
+
+/**
+ * 2026-09-21 주간 기준 학교(교무실) 컴시간 알리미 일일 시간표 미공지 날짜 집합
+ * - 요일(목/금)을 영구 하드코딩하지 않고, 해당 주간의 미공지 일자('2026-09-24', '2026-09-25')에 한해서만 미공지로 처리합니다.
+ * - 다음 주(2026-09-28 이후)나 학교에서 일일 시간표를 공지한 날짜는 자동으로 정규 시간표가 복원됩니다.
+ */
+export const COMCIGAN_UNANNOUNCED_DATES = new Set<string>([
+  '2026-09-24', // 9/21 주간 목요일 (학교 미확정)
+  '2026-09-25', // 9/21 주간 금요일 (학교 미확정)
+]);
 
 /**
  * 서대전고등학교 공식 시간표 기본 데이터 생성
@@ -591,9 +617,8 @@ export function getOfficialSeodaejeonTimetable(
       const dateObj = weekDates[idx];
       const dateStr = dateObj ? getKSTDateString(dateObj) : undefined;
 
-      // 컴시간 알리미 100% 동기화: 학교에서 목·금요일 일일 시간표를 아직 확정·공지하지 않은 상태([0])
-      // 공식 컴시간과 동일하게 목요일과 금요일은 빈 시간표([])로 완벽 일치 처리
-      if (dayName === '목' || dayName === '금') {
+      // 컴시간 알리미 미공지 일자인 경우에만 빈 시간표([])로 처리 (다음 주는 정상 복원)
+      if (dateStr && COMCIGAN_UNANNOUNCED_DATES.has(dateStr)) {
         return {
           day: dayName,
           dateStr,
@@ -648,8 +673,8 @@ export function getOfficialSeodaejeonTimetable(
     const dateObj = weekDates[idx];
     const dateStr = dateObj ? getKSTDateString(dateObj) : undefined;
 
-    // 컴시간 알리미 100% 동기화: 학교에서 목·금요일 일일 시간표를 아직 확정·공지하지 않은 상태([0])
-    if (dayName === '목' || dayName === '금') {
+    // 컴시간 알리미 미공지 일자인 경우에만 빈 시간표([])로 처리 (다음 주는 정상 복원)
+    if (dateStr && COMCIGAN_UNANNOUNCED_DATES.has(dateStr)) {
       return {
         day: dayName,
         dateStr,

@@ -6496,19 +6496,11 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
 };
 
 /**
- * 컴시간 알리미 100% 동기화 활성 시간표
- * - 학교 교무실에서 일일 시간표(자료147)를 아직 미공지([0])한 목요일과 금요일은 공식 컴시간과 동일하게 빈 배열([])로 동기화
+ * 서대전고등학교 30개 학급 전수 정규 시간표 (월~금 전 교시 완비)
+ * - 특정 주간의 컴시간 일일 미공지 상태는 날짜 기반 동적 엔진에서 처리하여 다음 주 수업이 절대 삭제되지 않습니다.
  */
 export const SEODAEJEON_ALL_CLASSES_TIMETABLE: Record<
   string,
   Record<"월" | "화" | "수" | "목" | "금", StaticPeriodEntry[]>
-> = Object.fromEntries(
-  Object.entries(SEODAEJEON_MASTER_TIMETABLE).map(([key, val]) => [
-    key,
-    {
-      ...val,
-      목: [],
-      금: [],
-    },
-  ])
-);
+> = SEODAEJEON_MASTER_TIMETABLE;
+

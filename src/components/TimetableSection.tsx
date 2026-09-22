@@ -120,8 +120,8 @@ export default function TimetableSection({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-1.5 sm:space-y-2">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] sm:text-xs font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200/60">
-                교육부 NEIS hisTimetable 연동
+              <span className="text-[10px] sm:text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                컴시간 알리미 실시간 연동
               </span>
 
               {periodInfo.isSchoolHours && !periodInfo.isWeekend && periodInfo.activePeriodNumber ? (

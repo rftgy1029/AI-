@@ -80,7 +80,7 @@ export const ClassChangeModal: React.FC<ClassChangeModalProps> = ({
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900">학년 및 학급 선택</h3>
-              <p className="text-xs text-slate-400 font-medium">NEIS 시간표를 조회할 학년과 반을 선택하세요</p>
+              <p className="text-xs text-slate-400 font-medium">시간표를 조회할 학년과 반을 선택하세요</p>
             </div>
           </div>
 

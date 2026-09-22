@@ -4,6 +4,7 @@ import {
   collection,
   doc,
   getDocs,
+  getDoc,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -330,28 +331,52 @@ export async function toggleSuggestionLike(id: string, currentlyLiked: boolean):
 // Delete suggestion with PIN verification
 export async function deleteSuggestion(id: string, pin: string): Promise<{ success: boolean; message: string }> {
   const current = getLocalSuggestions();
-  const target = current.find((item) => item.id === id);
+  let target = current.find((item) => item.id === id);
+
+  // 1. Fetch latest Firestore document to verify authentic passwordHash
+  let firestorePasswordHash: string | undefined = undefined;
+  try {
+    const docRef = doc(db, 'suggestions', id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const data = docSnap.data() as SuggestionItem;
+      firestorePasswordHash = data.passwordHash;
+      if (!target) {
+        target = data;
+      }
+    }
+  } catch (err) {
+    console.warn('[Delete] Firestore getDoc check error:', err);
+  }
 
   if (!target) {
     return { success: false, message: '해당 건의사항을 찾을 수 없습니다.' };
   }
 
-  // Check pin (if set)
-  if (target.passwordHash && target.passwordHash !== pin && pin !== '0000' && pin !== 'sdjhsadminlogin') {
+  const expectedPin = firestorePasswordHash || target.passwordHash;
+  const isAdminPasskey = pin === 'sdjhsadminlogin';
+  const isMatchingPin = !!(expectedPin && expectedPin === pin);
+
+  // Strict PIN verification:
+  // - If author PIN exists, entered PIN must match exactly (or master admin passkey)
+  // - If author PIN does not exist, only master admin passkey can delete
+  // - '0000' is NOT a universal bypass PIN and will only succeed if the author set their PIN as '0000'
+  if (!isAdminPasskey && !isMatchingPin) {
     return { success: false, message: '설정하신 4자리 비밀번호가 일치하지 않습니다.' };
   }
 
+  // 2. Only perform deletion after strict verification succeeds
   const updated = current.filter((item) => item.id !== id);
   saveLocalSuggestions(updated);
 
-  // 1. Primary Cloud Firestore delete
+  // Primary Cloud Firestore delete
   try {
     await deleteDoc(doc(db, 'suggestions', id));
   } catch (err) {
     console.warn('[Delete] Firestore delete failed:', err);
   }
 
-  // 2. Local Server API sync (for dev)
+  // Local Server API sync (for dev)
   try {
     const res = await fetch('/api/suggestions/delete', {
       method: 'POST',

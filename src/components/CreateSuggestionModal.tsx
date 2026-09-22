@@ -112,6 +112,7 @@ export default function CreateSuggestionModal({
       setGrade(currentUser.grade || 2);
       setClassNum(currentUser.classNum || 1);
       setStudentNumber(currentUser.studentNumber ? String(currentUser.studentNumber) : '');
+      setPin('');
       setErrorMsg('');
       setIsSuccess(false);
     }
@@ -184,7 +185,7 @@ export default function CreateSuggestionModal({
         status: isNotice ? '답변완료' : '접수대기',
         likeCount: 0,
         likedByMe: false,
-        passwordHash: pin || '0000',
+        passwordHash: pin && pin.length >= 4 ? pin : isAdmin ? 'sdjhsadminlogin' : pin,
         createdAt: new Date().toISOString(),
         viewCount: 1,
         comments: [],

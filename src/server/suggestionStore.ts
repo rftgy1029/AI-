@@ -117,13 +117,11 @@ export function deleteSuggestionItem(
     return { success: false, message: '해당 게시글을 찾을 수 없습니다.' };
   }
 
-  // Master password or matching PIN
-  if (
-    target.passwordHash &&
-    target.passwordHash !== pin &&
-    pin !== '0000' &&
-    pin !== 'sdjhsadminlogin'
-  ) {
+  const expectedPin = target.passwordHash;
+  const isAdminPasskey = pin === 'sdjhsadminlogin';
+  const isMatchingPin = !!(expectedPin && expectedPin === pin);
+
+  if (!isAdminPasskey && !isMatchingPin) {
     return { success: false, message: '비밀번호(PIN)가 일치하지 않습니다.' };
   }
 

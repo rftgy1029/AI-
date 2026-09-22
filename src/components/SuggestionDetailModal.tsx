@@ -355,7 +355,11 @@ export default function SuggestionDetailModal({
                 ) : (
                   <button
                     type="button"
-                    onClick={() => setShowDeletePrompt(true)}
+                    onClick={() => {
+                      setDeletePin('');
+                      setDeleteError('');
+                      setShowDeletePrompt(true);
+                    }}
                     title="건의사항 삭제"
                     className="p-2 rounded-full hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition cursor-pointer"
                   >

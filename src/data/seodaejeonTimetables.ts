@@ -10,7 +10,7 @@ export interface StaticPeriodEntry {
 }
 
 export const SEODAEJEON_MASTER_TIMETABLE: Record<
-  string, // e.g. "1-1", "2-2", "3-5"
+  string,
   Record<"월" | "화" | "수" | "목" | "금", StaticPeriodEntry[]>
 > = {
   "1-1": {
@@ -99,45 +99,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "국어2",
-        "teacher": "전고",
-        "isChanged": false
+        "subject": "통사2",
+        "teacher": "김기",
+        "isChanged": true,
+        "originalSubject": "국어2"
       },
       {
         "period": 2,
-        "subject": "체육2",
-        "teacher": "김한",
-        "isChanged": false
+        "subject": "진로",
+        "teacher": "정연",
+        "isChanged": true,
+        "originalSubject": "체육2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "통과2",
+        "teacher": "오동",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "공영2",
+        "teacher": "김태",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "한국2",
-        "teacher": "손승",
-        "isChanged": false
+        "subject": "음악",
+        "teacher": "서한",
+        "isChanged": true,
+        "originalSubject": "한국2"
       },
       {
         "period": 6,
-        "subject": "통과2",
-        "teacher": "정영",
-        "isChanged": false
+        "subject": "국어2",
+        "teacher": "전고",
+        "isChanged": true,
+        "originalSubject": "통과2"
       },
       {
         "period": 7,
-        "subject": "공영2",
-        "teacher": "김태",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "임현",
+        "isChanged": true,
+        "originalSubject": "공영2"
       }
     ],
     "목": [
@@ -239,9 +246,10 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
       },
       {
         "period": 3,
-        "subject": "공수2",
-        "teacher": "임현",
-        "isChanged": false
+        "subject": "과탐",
+        "teacher": "이호",
+        "isChanged": true,
+        "originalSubject": "공수2"
       },
       {
         "period": 4,
@@ -263,9 +271,10 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
       },
       {
         "period": 7,
-        "subject": "과탐",
-        "teacher": "이호",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "임현",
+        "isChanged": true,
+        "originalSubject": "과탐"
       }
     ],
     "화": [
@@ -315,45 +324,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "체육2",
-        "teacher": "김한",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "임현",
+        "isChanged": true,
+        "originalSubject": "체육2"
       },
       {
         "period": 2,
-        "subject": "진로",
-        "teacher": "정연",
-        "isChanged": false
+        "subject": "글로",
+        "teacher": "김운",
+        "isChanged": true,
+        "originalSubject": "진로"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "공영2",
+        "teacher": "김태",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "통과2",
+        "teacher": "이호",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "국어2",
-        "teacher": "전고",
-        "isChanged": false
+        "subject": "한국2",
+        "teacher": "손승",
+        "isChanged": true,
+        "originalSubject": "국어2"
       },
       {
         "period": 6,
-        "subject": "통과2",
-        "teacher": "조수",
-        "isChanged": false
+        "subject": "음악",
+        "teacher": "서한",
+        "isChanged": true,
+        "originalSubject": "통과2"
       },
       {
         "period": 7,
-        "subject": "글로",
-        "teacher": "김운",
-        "isChanged": false
+        "subject": "통사2",
+        "teacher": "김기",
+        "isChanged": true,
+        "originalSubject": "글로"
       }
     ],
     "목": [
@@ -531,45 +547,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "공수2",
-        "teacher": "임현",
-        "isChanged": false
+        "subject": "통과2",
+        "teacher": "정영",
+        "isChanged": true,
+        "originalSubject": "공수2"
       },
       {
         "period": 2,
-        "subject": "통과2",
-        "teacher": "조수",
-        "isChanged": false
+        "subject": "음악",
+        "teacher": "서한",
+        "isChanged": true,
+        "originalSubject": "통과2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "한국2",
+        "teacher": "손승",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "임현",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "공영2",
-        "teacher": "김태",
-        "isChanged": false
+        "subject": "통사2",
+        "teacher": "최종",
+        "isChanged": true,
+        "originalSubject": "공영2"
       },
       {
         "period": 6,
-        "subject": "체육2",
-        "teacher": "서의",
-        "isChanged": false
+        "subject": "국어2",
+        "teacher": "정순",
+        "isChanged": true,
+        "originalSubject": "체육2"
       },
       {
         "period": 7,
-        "subject": "음악",
-        "teacher": "서한",
-        "isChanged": false
+        "subject": "글로",
+        "teacher": "김운",
+        "isChanged": true,
+        "originalSubject": "음악"
       }
     ],
     "목": [
@@ -747,45 +770,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "음악",
-        "teacher": "서한",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "박종",
+        "isChanged": true,
+        "originalSubject": "음악"
       },
       {
         "period": 2,
-        "subject": "공영2",
-        "teacher": "김태",
-        "isChanged": false
+        "subject": "국어2",
+        "teacher": "전고",
+        "isChanged": true,
+        "originalSubject": "공영2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "체육2",
+        "teacher": "서의",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "통과2",
+        "teacher": "조수",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "글로",
-        "teacher": "김운",
-        "isChanged": false
+        "subject": "진로",
+        "teacher": "정연",
+        "isChanged": true,
+        "originalSubject": "글로"
       },
       {
         "period": 6,
-        "subject": "공수2",
-        "teacher": "임현",
-        "isChanged": false
+        "subject": "공영2",
+        "teacher": "김태",
+        "isChanged": true,
+        "originalSubject": "공수2"
       },
       {
         "period": 7,
-        "subject": "국어2",
-        "teacher": "정순",
-        "isChanged": false
+        "subject": "한국2",
+        "teacher": "손승",
+        "isChanged": true,
+        "originalSubject": "국어2"
       }
     ],
     "목": [
@@ -963,45 +993,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "글로",
-        "teacher": "김지",
-        "isChanged": false
+        "subject": "국어2",
+        "teacher": "전고",
+        "isChanged": true,
+        "originalSubject": "글로"
       },
       {
         "period": 2,
         "subject": "한국2",
         "teacher": "손승",
-        "isChanged": false
+        "isChanged": true,
+        "originalSubject": "한국2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "음악",
+        "teacher": "서한",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "통과2",
+        "teacher": "오동",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "음악",
-        "teacher": "서한",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "임현",
+        "isChanged": true,
+        "originalSubject": "음악"
       },
       {
         "period": 6,
-        "subject": "국어2",
-        "teacher": "정순",
-        "isChanged": false
+        "subject": "통사2",
+        "teacher": "최종",
+        "isChanged": true,
+        "originalSubject": "국어2"
       },
       {
         "period": 7,
-        "subject": "통과2",
-        "teacher": "정영",
-        "isChanged": false
+        "subject": "공영2",
+        "teacher": "김태",
+        "isChanged": true,
+        "originalSubject": "통과2"
       }
     ],
     "목": [
@@ -1179,45 +1216,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "자탐",
-        "teacher": "이승",
-        "isChanged": false
+        "subject": "한국2",
+        "teacher": "김중",
+        "isChanged": true,
+        "originalSubject": "자탐"
       },
       {
         "period": 2,
-        "subject": "통사2",
-        "teacher": "김상",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "김경",
+        "isChanged": true,
+        "originalSubject": "통사2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "통과2",
+        "teacher": "이호",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "국어2",
+        "teacher": "정순",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "공수2",
-        "teacher": "김경",
-        "isChanged": false
+        "subject": "미술",
+        "teacher": "강윤",
+        "isChanged": true,
+        "originalSubject": "공수2"
       },
       {
         "period": 6,
-        "subject": "미술",
-        "teacher": "강윤",
-        "isChanged": false
+        "subject": "공영2",
+        "teacher": "이윤",
+        "isChanged": true,
+        "originalSubject": "미술"
       },
       {
         "period": 7,
-        "subject": "과탐",
-        "teacher": "손거",
-        "isChanged": false
+        "subject": "통사2",
+        "teacher": "김혜",
+        "isChanged": true,
+        "originalSubject": "과탐"
       }
     ],
     "목": [
@@ -1395,45 +1439,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "공영2",
-        "teacher": "이윤",
-        "isChanged": false
+        "subject": "통사2",
+        "teacher": "김상",
+        "isChanged": true,
+        "originalSubject": "공영2"
       },
       {
         "period": 2,
-        "subject": "통과2",
-        "teacher": "오동",
-        "isChanged": false
+        "subject": "공영2",
+        "teacher": "이윤",
+        "isChanged": true,
+        "originalSubject": "통과2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "국어2",
+        "teacher": "정순",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "김경",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "자탐",
-        "teacher": "이승",
-        "isChanged": false
+        "subject": "과탐",
+        "teacher": "손거",
+        "isChanged": true,
+        "originalSubject": "자탐"
       },
       {
         "period": 6,
-        "subject": "공수2",
-        "teacher": "김경",
-        "isChanged": false
+        "subject": "체육2",
+        "teacher": "김종",
+        "isChanged": true,
+        "originalSubject": "공수2"
       },
       {
         "period": 7,
-        "subject": "통사2",
-        "teacher": "김상",
-        "isChanged": false
+        "subject": "진로",
+        "teacher": "정연",
+        "isChanged": true,
+        "originalSubject": "통사2"
       }
     ],
     "목": [
@@ -1611,45 +1662,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "미술",
-        "teacher": "강윤",
-        "isChanged": false
+        "subject": "체육2",
+        "teacher": "김종",
+        "isChanged": true,
+        "originalSubject": "미술"
       },
       {
         "period": 2,
-        "subject": "한국2",
-        "teacher": "남재",
-        "isChanged": false
+        "subject": "미술",
+        "teacher": "강윤",
+        "isChanged": true,
+        "originalSubject": "한국2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "공영2",
+        "teacher": "이윤",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "박종",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "통과2",
-        "teacher": "이호",
-        "isChanged": false
+        "subject": "자탐",
+        "teacher": "이승",
+        "isChanged": true,
+        "originalSubject": "통과2"
       },
       {
         "period": 6,
-        "subject": "공영2",
-        "teacher": "이윤",
-        "isChanged": false
+        "subject": "과탐",
+        "teacher": "이호",
+        "isChanged": true,
+        "originalSubject": "공영2"
       },
       {
         "period": 7,
-        "subject": "체육2",
-        "teacher": "김종",
-        "isChanged": false
+        "subject": "통과2",
+        "teacher": "오동",
+        "isChanged": true,
+        "originalSubject": "체육2"
       }
     ],
     "목": [
@@ -1827,45 +1885,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "통과2",
-        "teacher": "이호",
-        "isChanged": false
+        "subject": "자탐",
+        "teacher": "정순",
+        "isChanged": true,
+        "originalSubject": "통과2"
       },
       {
         "period": 2,
-        "subject": "국어2",
-        "teacher": "정순",
-        "isChanged": false
+        "subject": "체육2",
+        "teacher": "김종",
+        "isChanged": true,
+        "originalSubject": "국어2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "통과2",
+        "teacher": "정영",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "한국2",
+        "teacher": "남재",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "통사2",
-        "teacher": "최종",
-        "isChanged": false
+        "subject": "공영2",
+        "teacher": "이윤",
+        "isChanged": true,
+        "originalSubject": "통사2"
       },
       {
         "period": 6,
-        "subject": "진로",
-        "teacher": "정연",
-        "isChanged": false
+        "subject": "미술",
+        "teacher": "강윤",
+        "isChanged": true,
+        "originalSubject": "진로"
       },
       {
         "period": 7,
-        "subject": "공영2",
-        "teacher": "이윤",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "박종",
+        "isChanged": true,
+        "originalSubject": "공영2"
       }
     ],
     "목": [
@@ -2043,45 +2108,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "공수2",
-        "teacher": "김경",
-        "isChanged": false
+        "subject": "과탐",
+        "teacher": "이호",
+        "isChanged": true,
+        "originalSubject": "공수2"
       },
       {
         "period": 2,
-        "subject": "체육2",
-        "teacher": "김종",
-        "isChanged": false
+        "subject": "한국2",
+        "teacher": "남재",
+        "isChanged": true,
+        "originalSubject": "체육2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "미술",
+        "teacher": "강윤",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "체육2",
+        "teacher": "김종",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "통과2",
-        "teacher": "오동",
-        "isChanged": false
+        "subject": "자탐",
+        "teacher": "전고",
+        "isChanged": true,
+        "originalSubject": "통과2"
       },
       {
         "period": 6,
-        "subject": "통과2",
-        "teacher": "이호",
-        "isChanged": false
+        "subject": "통사2",
+        "teacher": "김상",
+        "isChanged": true,
+        "originalSubject": "통과2"
       },
       {
         "period": 7,
-        "subject": "국어2",
-        "teacher": "전고",
-        "isChanged": false
+        "subject": "공수2",
+        "teacher": "김경",
+        "isChanged": true,
+        "originalSubject": "국어2"
       }
     ],
     "목": [
@@ -2457,9 +2529,10 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
       },
       {
         "period": 4,
-        "subject": "일본",
-        "teacher": "송수",
-        "isChanged": false
+        "subject": "확통",
+        "teacher": "이희",
+        "isChanged": true,
+        "originalSubject": "일본"
       },
       {
         "period": 5,
@@ -2483,45 +2556,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "창공",
-        "teacher": "김영",
-        "isChanged": false
+        "subject": "물질",
+        "teacher": "오동",
+        "isChanged": true,
+        "originalSubject": "창공"
       },
       {
         "period": 2,
-        "subject": "미적2",
-        "teacher": "안상",
-        "isChanged": false
+        "subject": "화법",
+        "teacher": "신순",
+        "isChanged": true,
+        "originalSubject": "미적2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "일본",
+        "teacher": "송수",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "영어2",
+        "teacher": "이규",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "확통",
-        "teacher": "이희",
-        "isChanged": false
+        "subject": "창공",
+        "teacher": "김영",
+        "isChanged": true,
+        "originalSubject": "확통"
       },
       {
         "period": 6,
-        "subject": "영어2",
-        "teacher": "이규",
-        "isChanged": false
+        "subject": "지구",
+        "teacher": "김병",
+        "isChanged": true,
+        "originalSubject": "영어2"
       },
       {
         "period": 7,
-        "subject": "화법",
-        "teacher": "신순",
-        "isChanged": false
+        "subject": "일본",
+        "teacher": "송수",
+        "isChanged": true,
+        "originalSubject": "화법"
       }
     ],
     "목": [
@@ -2699,45 +2779,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "세계",
-        "teacher": "김중",
-        "isChanged": false
+        "subject": "중국",
+        "teacher": "이경",
+        "isChanged": true,
+        "originalSubject": "세계"
       },
       {
         "period": 2,
-        "subject": "윤리",
-        "teacher": "김기",
-        "isChanged": false
+        "subject": "세계",
+        "teacher": "김중",
+        "isChanged": true,
+        "originalSubject": "윤리"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "미적2",
+        "teacher": "안상",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "국제",
+        "teacher": "김혜",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "데과",
-        "teacher": "유의",
-        "isChanged": false
+        "subject": "화법",
+        "teacher": "신순",
+        "isChanged": true,
+        "originalSubject": "데과"
       },
       {
         "period": 6,
-        "subject": "국제",
-        "teacher": "김혜",
-        "isChanged": false
+        "subject": "윤리",
+        "teacher": "김기",
+        "isChanged": true,
+        "originalSubject": "국제"
       },
       {
         "period": 7,
-        "subject": "확통",
-        "teacher": "임재",
-        "isChanged": false
+        "subject": "영어2",
+        "teacher": "이규",
+        "isChanged": true,
+        "originalSubject": "확통"
       }
     ],
     "목": [
@@ -2915,45 +3002,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "경제",
-        "teacher": "김형",
-        "isChanged": false
+        "subject": "일본",
+        "teacher": "송수",
+        "isChanged": true,
+        "originalSubject": "경제"
       },
       {
         "period": 2,
-        "subject": "국제",
-        "teacher": "김혜",
-        "isChanged": false
+        "subject": "경제",
+        "teacher": "김형",
+        "isChanged": true,
+        "originalSubject": "국제"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "화법",
+        "teacher": "신순",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "윤리",
+        "teacher": "김기",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "창공",
-        "teacher": "김영",
-        "isChanged": false
+        "subject": "미적2",
+        "teacher": "안상",
+        "isChanged": true,
+        "originalSubject": "창공"
       },
       {
         "period": 6,
-        "subject": "윤리",
-        "teacher": "김기",
-        "isChanged": false
+        "subject": "국제",
+        "teacher": "김혜",
+        "isChanged": true,
+        "originalSubject": "윤리"
       },
       {
         "period": 7,
-        "subject": "확통",
-        "teacher": "이희",
-        "isChanged": false
+        "subject": "영어2",
+        "teacher": "김지",
+        "isChanged": true,
+        "originalSubject": "확통"
       }
     ],
     "목": [
@@ -3131,45 +3225,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "국제",
-        "teacher": "김혜",
-        "isChanged": false
+        "subject": "확통",
+        "teacher": "임재",
+        "isChanged": true,
+        "originalSubject": "국제"
       },
       {
         "period": 2,
-        "subject": "세계",
-        "teacher": "김중",
-        "isChanged": false
+        "subject": "국제",
+        "teacher": "김혜",
+        "isChanged": true,
+        "originalSubject": "세계"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "영어2",
+        "teacher": "김지",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "경제",
+        "teacher": "김형",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "경수",
-        "teacher": "송영",
-        "isChanged": false
+        "subject": "일본",
+        "teacher": "송수",
+        "isChanged": true,
+        "originalSubject": "경수"
       },
       {
         "period": 6,
-        "subject": "경제",
-        "teacher": "김형",
-        "isChanged": false
+        "subject": "세계",
+        "teacher": "김중",
+        "isChanged": true,
+        "originalSubject": "경제"
       },
       {
         "period": 7,
-        "subject": "영어2",
-        "teacher": "김지",
-        "isChanged": false
+        "subject": "경수",
+        "teacher": "송영",
+        "isChanged": true,
+        "originalSubject": "영어2"
       }
     ],
     "목": [
@@ -3347,45 +3448,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "역학",
-        "teacher": "박조",
-        "isChanged": false
+        "subject": "확통",
+        "teacher": "이희",
+        "isChanged": true,
+        "originalSubject": "역학"
       },
       {
         "period": 2,
-        "subject": "지구",
-        "teacher": "정영",
-        "isChanged": false
+        "subject": "역학",
+        "teacher": "박조",
+        "isChanged": true,
+        "originalSubject": "지구"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "화법",
+        "teacher": "한동",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "물질",
+        "teacher": "손거",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "미적2",
-        "teacher": "전순",
-        "isChanged": false
+        "subject": "영어2",
+        "teacher": "김지",
+        "isChanged": true,
+        "originalSubject": "미적2"
       },
       {
         "period": 6,
-        "subject": "물질",
-        "teacher": "손거",
-        "isChanged": false
+        "subject": "지구",
+        "teacher": "정영",
+        "isChanged": true,
+        "originalSubject": "물질"
       },
       {
         "period": 7,
-        "subject": "일본",
-        "teacher": "송수",
-        "isChanged": false
+        "subject": "미적2",
+        "teacher": "전순",
+        "isChanged": true,
+        "originalSubject": "일본"
       }
     ],
     "목": [
@@ -3563,45 +3671,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "물질",
-        "teacher": "손거",
-        "isChanged": false
+        "subject": "영어2",
+        "teacher": "김지",
+        "isChanged": true,
+        "originalSubject": "물질"
       },
       {
         "period": 2,
-        "subject": "역학",
-        "teacher": "박조",
-        "isChanged": false
+        "subject": "물질",
+        "teacher": "손거",
+        "isChanged": true,
+        "originalSubject": "역학"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "미적2",
+        "teacher": "전순",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "세포",
+        "teacher": "윤하",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "스생2",
-        "teacher": "김종",
-        "isChanged": false
+        "subject": "확통",
+        "teacher": "임재",
+        "isChanged": true,
+        "originalSubject": "스생2"
       },
       {
         "period": 6,
-        "subject": "세포",
-        "teacher": "윤하",
-        "isChanged": false
+        "subject": "역학",
+        "teacher": "박조",
+        "isChanged": true,
+        "originalSubject": "세포"
       },
       {
         "period": 7,
         "subject": "데과",
         "teacher": "유의",
-        "isChanged": false
+        "isChanged": true,
+        "originalSubject": "데과"
       }
     ],
     "목": [
@@ -3779,45 +3894,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "한지",
-        "teacher": "최종",
-        "isChanged": false
+        "subject": "화법",
+        "teacher": "한동",
+        "isChanged": true,
+        "originalSubject": "한지"
       },
       {
         "period": 2,
-        "subject": "세포",
-        "teacher": "윤하",
-        "isChanged": false
+        "subject": "한지",
+        "teacher": "최종",
+        "isChanged": true,
+        "originalSubject": "세포"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "경수",
+        "teacher": "하재",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "지구",
+        "teacher": "김병",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "화법",
-        "teacher": "한동",
-        "isChanged": false
+        "subject": "확통",
+        "teacher": "이희",
+        "isChanged": true,
+        "originalSubject": "화법"
       },
       {
         "period": 6,
-        "subject": "지구",
-        "teacher": "김병",
-        "isChanged": false
+        "subject": "세포",
+        "teacher": "윤하",
+        "isChanged": true,
+        "originalSubject": "지구"
       },
       {
         "period": 7,
         "subject": "창공",
         "teacher": "김영",
-        "isChanged": false
+        "isChanged": true,
+        "originalSubject": "창공"
       }
     ],
     "목": [
@@ -3995,45 +4117,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "화법",
-        "teacher": "한동",
-        "isChanged": false
+        "subject": "미적2",
+        "teacher": "전순",
+        "isChanged": true,
+        "originalSubject": "화법"
       },
       {
         "period": 2,
-        "subject": "확통",
-        "teacher": "임재",
-        "isChanged": false
+        "subject": "데과",
+        "teacher": "유의",
+        "isChanged": true,
+        "originalSubject": "확통"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "세포",
+        "teacher": "윤하",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "중국",
+        "teacher": "이경",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "중국",
-        "teacher": "이경",
-        "isChanged": false
+        "subject": "역학",
+        "teacher": "박조",
+        "isChanged": true,
+        "originalSubject": "중국"
       },
       {
         "period": 6,
-        "subject": "역학",
-        "teacher": "박조",
-        "isChanged": false
+        "subject": "화법",
+        "teacher": "한동",
+        "isChanged": true,
+        "originalSubject": "역학"
       },
       {
         "period": 7,
-        "subject": "미적2",
-        "teacher": "전순",
-        "isChanged": false
+        "subject": "물질",
+        "teacher": "손거",
+        "isChanged": true,
+        "originalSubject": "미적2"
       }
     ],
     "목": [
@@ -4211,45 +4340,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "영어2",
-        "teacher": "이규",
-        "isChanged": false
+        "subject": "세포",
+        "teacher": "윤하",
+        "isChanged": true,
+        "originalSubject": "영어2"
       },
       {
         "period": 2,
-        "subject": "확통",
-        "teacher": "이희",
-        "isChanged": false
+        "subject": "창공",
+        "teacher": "김영",
+        "isChanged": true,
+        "originalSubject": "확통"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "역학",
+        "teacher": "박조",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "일본",
+        "teacher": "송수",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "일본",
-        "teacher": "송수",
-        "isChanged": false
+        "subject": "화법",
+        "teacher": "한동",
+        "isChanged": true,
+        "originalSubject": "일본"
       },
       {
         "period": 6,
-        "subject": "화법",
-        "teacher": "한동",
-        "isChanged": false
+        "subject": "스생2",
+        "teacher": "서의",
+        "isChanged": true,
+        "originalSubject": "화법"
       },
       {
         "period": 7,
-        "subject": "세포",
-        "teacher": "윤하",
-        "isChanged": false
+        "subject": "미적2",
+        "teacher": "안상",
+        "isChanged": true,
+        "originalSubject": "세포"
       }
     ],
     "목": [
@@ -4428,44 +4564,51 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
       {
         "period": 1,
         "subject": "심국",
-        "teacher": "최보",
-        "isChanged": false
+        "teacher": "강대",
+        "isChanged": true,
+        "originalSubject": "심국"
       },
       {
         "period": 2,
-        "subject": "수과",
-        "teacher": "김효",
-        "isChanged": false
+        "subject": "체탐",
+        "teacher": "서의",
+        "isChanged": true,
+        "originalSubject": "수과"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "생환",
+        "teacher": "조수",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "정치",
+        "teacher": "김승",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "세계",
-        "teacher": "남재",
-        "isChanged": false
+        "subject": "논술",
+        "teacher": "최보",
+        "isChanged": true,
+        "originalSubject": "세계"
       },
       {
         "period": 6,
-        "subject": "생환",
-        "teacher": "서준",
-        "isChanged": false
+        "subject": "심영",
+        "teacher": "임남",
+        "isChanged": true,
+        "originalSubject": "생환"
       },
       {
         "period": 7,
-        "subject": "수사",
-        "teacher": "송영",
-        "isChanged": false
+        "subject": "세계",
+        "teacher": "남재",
+        "isChanged": true,
+        "originalSubject": "수사"
       }
     ],
     "목": [
@@ -4643,45 +4786,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "심영",
-        "teacher": "임남",
-        "isChanged": false
+        "subject": "심국",
+        "teacher": "최보",
+        "isChanged": true,
+        "originalSubject": "심영"
       },
       {
         "period": 2,
-        "subject": "고수",
-        "teacher": "박종",
-        "isChanged": false
+        "subject": "심리",
+        "teacher": "이승",
+        "isChanged": true,
+        "originalSubject": "고수"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "세지",
+        "teacher": "최종",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "윤리",
+        "teacher": "김상",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "생환",
-        "teacher": "서준",
-        "isChanged": false
+        "subject": "체탐",
+        "teacher": "서의",
+        "isChanged": true,
+        "originalSubject": "생환"
       },
       {
         "period": 6,
-        "subject": "세지",
-        "teacher": "최종",
-        "isChanged": false
+        "subject": "수사",
+        "teacher": "이희",
+        "isChanged": true,
+        "originalSubject": "세지"
       },
       {
         "period": 7,
-        "subject": "수사",
-        "teacher": "김효",
-        "isChanged": false
+        "subject": "생환",
+        "teacher": "조수",
+        "isChanged": true,
+        "originalSubject": "수사"
       }
     ],
     "목": [
@@ -4861,43 +5011,50 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
         "period": 1,
         "subject": "수사",
         "teacher": "하재",
-        "isChanged": false
+        "isChanged": true,
+        "originalSubject": "수사"
       },
       {
         "period": 2,
-        "subject": "수과",
-        "teacher": "전순",
-        "isChanged": false
+        "subject": "심국",
+        "teacher": "최보",
+        "isChanged": true,
+        "originalSubject": "수과"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "윤리",
+        "teacher": "김상",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "생환",
+        "teacher": "서준",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "정치",
-        "teacher": "김승",
-        "isChanged": false
+        "subject": "심영",
+        "teacher": "임남",
+        "isChanged": true,
+        "originalSubject": "정치"
       },
       {
         "period": 6,
-        "subject": "윤리",
-        "teacher": "김상",
-        "isChanged": false
+        "subject": "수사",
+        "teacher": "임재",
+        "isChanged": true,
+        "originalSubject": "윤리"
       },
       {
         "period": 7,
-        "subject": "논술",
-        "teacher": "최보",
-        "isChanged": false
+        "subject": "정치",
+        "teacher": "김승",
+        "isChanged": true,
+        "originalSubject": "논술"
       }
     ],
     "목": [
@@ -5075,45 +5232,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "환경",
-        "teacher": "이경",
-        "isChanged": false
+        "subject": "심영",
+        "teacher": "임남",
+        "isChanged": true,
+        "originalSubject": "환경"
       },
       {
         "period": 2,
-        "subject": "기하",
-        "teacher": "송영",
-        "isChanged": false
+        "subject": "체탐",
+        "teacher": "이규",
+        "isChanged": true,
+        "originalSubject": "기하"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "물리2",
+        "teacher": "김민",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "심리",
+        "teacher": "이승",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "심국",
-        "teacher": "최보",
-        "isChanged": false
+        "subject": "고수",
+        "teacher": "전순",
+        "isChanged": true,
+        "originalSubject": "심국"
       },
       {
         "period": 6,
-        "subject": "사문",
-        "teacher": "김중",
-        "isChanged": false
+        "subject": "화학2",
+        "teacher": "서준",
+        "isChanged": true,
+        "originalSubject": "사문"
       },
       {
         "period": 7,
-        "subject": "심영",
-        "teacher": "임남",
-        "isChanged": false
+        "subject": "심국",
+        "teacher": "강대",
+        "isChanged": true,
+        "originalSubject": "심영"
       }
     ],
     "목": [
@@ -5291,45 +5455,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "디자",
-        "teacher": "여연",
-        "isChanged": false
+        "subject": "물리2",
+        "teacher": "김민",
+        "isChanged": true,
+        "originalSubject": "디자"
       },
       {
         "period": 2,
-        "subject": "심국",
-        "teacher": "강대",
-        "isChanged": false
+        "subject": "고수",
+        "teacher": "김효",
+        "isChanged": true,
+        "originalSubject": "심국"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "심영",
+        "teacher": "임남",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "심국",
+        "teacher": "최보",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "심영",
-        "teacher": "임남",
-        "isChanged": false
+        "subject": "환경",
+        "teacher": "이경",
+        "isChanged": true,
+        "originalSubject": "심영"
       },
       {
         "period": 6,
-        "subject": "환경",
-        "teacher": "이경",
-        "isChanged": false
+        "subject": "사문",
+        "teacher": "김승",
+        "isChanged": true,
+        "originalSubject": "환경"
       },
       {
         "period": 7,
-        "subject": "기하",
-        "teacher": "하재",
-        "isChanged": false
+        "subject": "화학2",
+        "teacher": "서준",
+        "isChanged": true,
+        "originalSubject": "기하"
       }
     ],
     "목": [
@@ -5507,45 +5678,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "체탐",
-        "teacher": "이규",
-        "isChanged": false
+        "subject": "심영",
+        "teacher": "박미",
+        "isChanged": true,
+        "originalSubject": "체탐"
       },
       {
         "period": 2,
-        "subject": "물리2",
-        "teacher": "김민",
-        "isChanged": false
+        "subject": "환경",
+        "teacher": "여연",
+        "isChanged": true,
+        "originalSubject": "물리2"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "체탐",
+        "teacher": "이규",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "고수",
+        "teacher": "김효",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "지구2",
-        "teacher": "김병",
-        "isChanged": false
+        "subject": "사문",
+        "teacher": "김형",
+        "isChanged": true,
+        "originalSubject": "지구2"
       },
       {
         "period": 6,
-        "subject": "심리",
-        "teacher": "강대",
-        "isChanged": false
+        "subject": "물리2",
+        "teacher": "김민",
+        "isChanged": true,
+        "originalSubject": "심리"
       },
       {
         "period": 7,
         "subject": "심국",
         "teacher": "이승",
-        "isChanged": false
+        "isChanged": true,
+        "originalSubject": "심국"
       }
     ],
     "목": [
@@ -5725,43 +5903,50 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
         "period": 1,
         "subject": "심국",
         "teacher": "이승",
-        "isChanged": false
+        "isChanged": true,
+        "originalSubject": "심국"
       },
       {
         "period": 2,
-        "subject": "체탐",
-        "teacher": "이규",
-        "isChanged": false
+        "subject": "고수",
+        "teacher": "박종",
+        "isChanged": true,
+        "originalSubject": "체탐"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "심리",
+        "teacher": "강대",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "물리2",
+        "teacher": "김민",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "환경",
-        "teacher": "여연",
-        "isChanged": false
+        "subject": "심영",
+        "teacher": "김운",
+        "isChanged": true,
+        "originalSubject": "환경"
       },
       {
         "period": 6,
-        "subject": "고수",
-        "teacher": "박종",
-        "isChanged": false
+        "subject": "기하",
+        "teacher": "하재",
+        "isChanged": true,
+        "originalSubject": "고수"
       },
       {
         "period": 7,
-        "subject": "심영",
-        "teacher": "박미",
-        "isChanged": false
+        "subject": "사문",
+        "teacher": "김형",
+        "isChanged": true,
+        "originalSubject": "심영"
       }
     ],
     "목": [
@@ -5939,45 +6124,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "화학2",
-        "teacher": "서준",
-        "isChanged": false
+        "subject": "고수",
+        "teacher": "송영",
+        "isChanged": true,
+        "originalSubject": "화학2"
       },
       {
         "period": 2,
-        "subject": "심영",
-        "teacher": "박미",
-        "isChanged": false
+        "subject": "화학2",
+        "teacher": "서준",
+        "isChanged": true,
+        "originalSubject": "심영"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "심국",
+        "teacher": "이승",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "기하",
+        "teacher": "하재",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "기하",
-        "teacher": "하재",
-        "isChanged": false
+        "subject": "심리",
+        "teacher": "강대",
+        "isChanged": true,
+        "originalSubject": "기하"
       },
       {
         "period": 6,
-        "subject": "디자",
-        "teacher": "여연",
-        "isChanged": false
+        "subject": "체탐",
+        "teacher": "이규",
+        "isChanged": true,
+        "originalSubject": "디자"
       },
       {
         "period": 7,
-        "subject": "사문",
-        "teacher": "김승",
-        "isChanged": false
+        "subject": "심영",
+        "teacher": "박미",
+        "isChanged": true,
+        "originalSubject": "사문"
       }
     ],
     "목": [
@@ -6155,45 +6347,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "지구2",
-        "teacher": "김병",
-        "isChanged": false
+        "subject": "환경",
+        "teacher": "김영",
+        "isChanged": true,
+        "originalSubject": "지구2"
       },
       {
         "period": 2,
-        "subject": "심영",
-        "teacher": "김운",
-        "isChanged": false
+        "subject": "지구2",
+        "teacher": "김병",
+        "isChanged": true,
+        "originalSubject": "심영"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "기하",
+        "teacher": "송영",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "심영",
+        "teacher": "박미",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "체탐",
-        "teacher": "이규",
-        "isChanged": false
+        "subject": "고수",
+        "teacher": "김효",
+        "isChanged": true,
+        "originalSubject": "체탐"
       },
       {
         "period": 6,
         "subject": "심국",
         "teacher": "이승",
-        "isChanged": false
+        "isChanged": true,
+        "originalSubject": "심국"
       },
       {
         "period": 7,
-        "subject": "물리2",
-        "teacher": "김민",
-        "isChanged": false
+        "subject": "디자",
+        "teacher": "여연",
+        "isChanged": true,
+        "originalSubject": "물리2"
       }
     ],
     "목": [
@@ -6371,45 +6570,52 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
     "수": [
       {
         "period": 1,
-        "subject": "사문",
-        "teacher": "김승",
-        "isChanged": false
+        "subject": "환경",
+        "teacher": "유의",
+        "isChanged": true,
+        "originalSubject": "사문"
       },
       {
         "period": 2,
-        "subject": "심국",
-        "teacher": "이승",
-        "isChanged": false
+        "subject": "사문",
+        "teacher": "김승",
+        "isChanged": true,
+        "originalSubject": "심국"
       },
       {
         "period": 3,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "디자",
+        "teacher": "여연",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 4,
-        "subject": "창체",
-        "teacher": "창*",
-        "isChanged": false
+        "subject": "기하",
+        "teacher": "송영",
+        "isChanged": true,
+        "originalSubject": "창체"
       },
       {
         "period": 5,
-        "subject": "심영",
-        "teacher": "박미",
-        "isChanged": false
+        "subject": "체탐",
+        "teacher": "이규",
+        "isChanged": true,
+        "originalSubject": "심영"
       },
       {
         "period": 6,
-        "subject": "고수",
-        "teacher": "김효",
-        "isChanged": false
+        "subject": "심국",
+        "teacher": "이승",
+        "isChanged": true,
+        "originalSubject": "고수"
       },
       {
         "period": 7,
-        "subject": "생명2",
-        "teacher": "조수",
-        "isChanged": false
+        "subject": "고수",
+        "teacher": "김효",
+        "isChanged": true,
+        "originalSubject": "생명2"
       }
     ],
     "목": [
@@ -6503,10 +6709,6 @@ export const SEODAEJEON_MASTER_TIMETABLE: Record<
   }
 };
 
-/**
- * 서대전고등학교 30개 학급 전수 정규 시간표 (월~금 전 교시 완비)
- * - 특정 주간의 컴시간 일일 미공지 상태는 날짜 기반 동적 엔진에서 처리하여 다음 주 수업이 절대 삭제되지 않습니다.
- */
 export const SEODAEJEON_ALL_CLASSES_TIMETABLE: Record<
   string,
   Record<"월" | "화" | "수" | "목" | "금", StaticPeriodEntry[]>

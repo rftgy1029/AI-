@@ -95,16 +95,25 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
         // 1(월) ~ 5(금)
         for (let day = 1; day <= 5; day++) {
           const dayPeriods: ComciganPeriod[] = [];
-          const maxP = data.자료481?.[grade]?.[classNum]?.[day]?.[0] || 7;
+          const dailyDayRaw = data.자료147?.[grade]?.[classNum]?.[day];
+
+          // 컴시간 알리미 100% 동기화: 학교에서 해당 요일의 일일자료(자료147)를 아직 확정·공지하지 않은 경우 ([0] 또는 빈 배열)
+          // 원래시간표(자료481)를 임의로 채우지 않고 공식 컴시간 알리미와 100% 동일하게 빈 시간표(미등록) 처리
+          const isDailyAnnounced = Array.isArray(dailyDayRaw) && dailyDayRaw.length > 1 && dailyDayRaw[0] > 0;
+
+          if (!isDailyAnnounced) {
+            weekPeriods.push([]);
+            continue;
+          }
+
+          const maxP = dailyDayRaw[0];
 
           for (let period = 1; period <= maxP; period++) {
             const baseVal = Q자료(data.자료481?.[grade]?.[classNum]?.[day]?.[period]);
-            const dailyRaw = data.자료147?.[grade]?.[classNum]?.[day]?.[period];
+            const dailyRaw = dailyDayRaw[period];
             const dailyVal = dailyRaw ? Q자료(dailyRaw) : 0;
-            // 일일자료(자료147)가 아직 미공지([0])된 요일은 원자료(자료481 정규 시간표)로 안전하게 Fallback
-            const effectiveVal = dailyVal > 0 ? dailyVal : baseVal;
 
-            const dailySplit = baSplit(effectiveVal, baseVal, data.변경알림);
+            const dailySplit = baSplit(dailyVal, baseVal, data.변경알림);
             const th = dailySplit[0];
             const sb = dailySplit[1];
             const status = dailySplit[2];

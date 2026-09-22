@@ -314,7 +314,7 @@ export default function TimetableSection({
                       {dayItem.dateStr.slice(5)}
                     </span>
                   )}
-                  {isToday && (
+                  {isToday ? (
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full font-black inline-block mt-0.5 relative z-10 ${
                         isSelected ? 'bg-indigo-500 text-white' : 'bg-indigo-100 text-indigo-700'
@@ -322,7 +322,15 @@ export default function TimetableSection({
                     >
                       오늘
                     </span>
-                  )}
+                  ) : dayItem.periods.length === 0 ? (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold inline-block mt-0.5 relative z-10 ${
+                        isSelected ? 'bg-white/20 text-slate-200' : 'bg-slate-200/80 text-slate-500'
+                      }`}
+                    >
+                      미공지
+                    </span>
+                  ) : null}
                 </motion.button>
               );
             })}
@@ -349,7 +357,9 @@ export default function TimetableSection({
                     {selectedGrade}학년 {selectedClass}반 {currentDayData?.day}요일 시간표
                   </h3>
                   <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
-                    {currentDayData?.day === '월'
+                    {currentDayData?.periods?.length === 0
+                      ? '컴시간 알리미 미공지 (학교 일일시간표 미확정)'
+                      : currentDayData?.day === '월'
                       ? '월요일 1교시 수업 없음 (2교시~7교시 총 6시간)'
                       : `총 ${currentDayData?.periods?.length || 0}교시 정규 교과`}
                   </p>
@@ -490,9 +500,12 @@ export default function TimetableSection({
                     })}
                   </motion.div>
                 ) : (
-                  <div className="py-12 text-center text-slate-400 text-xs font-medium space-y-2">
-                    <CalendarDays className="w-8 h-8 mx-auto text-slate-300" />
-                    <p>등록된 시간표 정보가 없습니다.</p>
+                  <div className="py-14 text-center text-slate-400 text-xs font-medium space-y-2.5 bg-[#F5F5F7]/60 rounded-2xl border border-dashed border-slate-200">
+                    <CalendarDays className="w-9 h-9 mx-auto text-slate-300" />
+                    <div>
+                      <p className="text-sm font-bold text-slate-700">컴시간 알리미 시간표 미등록</p>
+                      <p className="text-xs text-slate-400 mt-1">학교(교무실)에서 아직 해당 요일의 일일 시간표를 확정·공지하지 않았습니다.</p>
+                    </div>
                   </div>
                 )}
               </AnimatePresence>

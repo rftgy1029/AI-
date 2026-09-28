@@ -120,7 +120,8 @@ export default function TimetableSection({
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6">
           <div className="space-y-1.5 sm:space-y-2">
             <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-              <span className="text-[10px] sm:text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+              <span className="text-[10px] sm:text-xs font-bold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/80 flex items-center gap-1.5 shadow-2xs">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 컴시간 알리미 실시간 연동
               </span>
 
@@ -559,10 +560,17 @@ export default function TimetableSection({
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-amber-900 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
-                노란색: 시간표 변경
-              </span>
+              {days.some((d) => d.periods.some((p) => p.isChanged)) ? (
+                <span className="text-xs font-semibold text-amber-950 bg-amber-100 border border-amber-300 px-3 py-1 rounded-full flex items-center gap-1.5 shadow-2xs">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                  노란색: 시간표 변경 ({days.reduce((acc, d) => acc + d.periods.filter((p) => p.isChanged).length, 0)}건)
+                </span>
+              ) : (
+                <span className="text-xs font-medium text-emerald-800 bg-emerald-50 border border-emerald-200/80 px-3 py-1 rounded-full flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  시간표 변동 없음 (정규 일과)
+                </span>
+              )}
               <span className="text-xs font-semibold text-violet-800 bg-violet-100 border border-violet-300 px-3 py-1 rounded-full flex items-center gap-1.5">
                 <span>📝 보라색: 수행평가</span>
               </span>

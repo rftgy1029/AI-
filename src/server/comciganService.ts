@@ -66,10 +66,11 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
     const jsonString = await tt._getData();
     const data = JSON.parse(jsonString);
 
-    // 컴시간 디코딩 헬퍼 함수 추출 (어떤 스크립트 태그 구조에서도 안전하게 파싱)
+    // 컴시간 디코딩 헬퍼 함수 추출 (외부 스크립트 제외 및 안전 파싱)
     const scriptTags = tt._pageSource.match(/<script[\s\S]*?<\/script>/gi) || [];
     let script = '';
     for (const tag of scriptTags) {
+      if (tag.includes('src=')) continue;
       script += tag.replace(/<\/?script[^>]*>/gi, '') + '\n';
     }
 
@@ -171,16 +172,6 @@ export async function fetchAllComciganTimetable(): Promise<Record<number, Record
     }
     try {
       const rawTimetable = await tt.getTimetable();
-      for (const g of [1, 2, 3]) {
-        const maxC = (rawTimetable[g] && Object.keys(rawTimetable[g]).length) || 10;
-        for (let c = 1; c <= maxC; c++) {
-          if (rawTimetable[g]?.[c]) {
-            // 컴시간 알리미 100% 동기화: 미공지 요일(목, 금) 빈 배열 방어
-            if (Array.isArray(rawTimetable[g][c][3])) rawTimetable[g][c][3] = [];
-            if (Array.isArray(rawTimetable[g][c][4])) rawTimetable[g][c][4] = [];
-          }
-        }
-      }
       cachedData = {
         timestamp: now,
         data: rawTimetable,

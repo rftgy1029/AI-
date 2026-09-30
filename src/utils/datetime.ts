@@ -85,6 +85,15 @@ export function getKSTDateString(dateInput: Date = new Date()): string {
 }
 
 /**
+ * ISO 타임스탬프(UTC)를 KST 기준 날짜 문자열(YYYY-MM-DD)로 변환
+ * - toISOString().slice(0, 10)은 UTC 날짜라 KST 00:00~08:59 작성분이 전날로 표시됨
+ */
+export function toKSTDateString(isoString: string): string {
+  const date = new Date(isoString);
+  return Number.isNaN(date.getTime()) ? isoString.slice(0, 10) : getKSTDateString(date);
+}
+
+/**
  * 한국 표준시(KST) 기준 요일 (일, 월, 화, 수, 목, 금, 토)
  */
 export function getKSTDayOfWeek(dateInput: Date = new Date()): '일' | '월' | '화' | '수' | '목' | '금' | '토' {

@@ -161,8 +161,8 @@ app.post('/api/suggestions/comment', (req, res) => {
 
 app.post('/api/suggestions/reply', (req, res) => {
   try {
-    const { id, reply } = req.body;
-    const item = addReplyToSuggestion(id, reply);
+    const { id, reply, status } = req.body;
+    const item = addReplyToSuggestion(id, reply, status);
     if (!item) return res.status(404).json({ success: false });
     res.json({ success: true, item });
   } catch (err: any) {

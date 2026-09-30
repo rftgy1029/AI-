@@ -341,7 +341,7 @@ export default function ExamScopeSection({
                       </h3>
                     </div>
                     <span className="text-[11px] text-slate-400 block mt-0.5">
-                      {grade}학년 정규 지필평가 과목
+                      {selectedGrade}학년 정규 지필평가 과목
                     </span>
                   </div>
 
@@ -556,7 +556,7 @@ export default function ExamScopeSection({
         isOpen={isOcrOpen}
         onClose={() => setIsOcrOpen(false)}
         onSaveMultipleScopes={handleSaveMultipleScopes}
-        grade={grade}
+        grade={selectedGrade}
       />
 
       {/* Full-screen Lightbox Image Modal for Scanned Exam Table */}

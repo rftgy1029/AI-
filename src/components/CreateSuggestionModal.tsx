@@ -103,12 +103,17 @@ export default function CreateSuggestionModal({
   const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // Synchronize modal state with latest currentUser and notice state whenever opened
+  // Synchronize modal state with latest currentUser and notice mode whenever opened
   useEffect(() => {
     if (isOpen) {
-      if (!isNotice) {
-        setAuthorName(currentUser.name === '서대전고 학생' ? '' : currentUser.name);
-      }
+      setIsNotice(initialNotice);
+      setAuthorName(
+        initialNotice
+          ? '학생생활안전부 (관리자)'
+          : currentUser.name === '서대전고 학생'
+          ? ''
+          : currentUser.name
+      );
       setGrade(currentUser.grade || 2);
       setClassNum(currentUser.classNum || 1);
       setStudentNumber(currentUser.studentNumber ? String(currentUser.studentNumber) : '');
@@ -116,7 +121,7 @@ export default function CreateSuggestionModal({
       setErrorMsg('');
       setIsSuccess(false);
     }
-  }, [isOpen, currentUser, isNotice]);
+  }, [isOpen, currentUser, initialNotice]);
 
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -291,6 +296,8 @@ export default function CreateSuggestionModal({
                     setIsNotice(e.target.checked);
                     if (e.target.checked && (!authorName || authorName === '서대전고 학생')) {
                       setAuthorName('학생생활안전부 (관리자)');
+                    } else if (!e.target.checked && authorName === '학생생활안전부 (관리자)') {
+                      setAuthorName(currentUser.name === '서대전고 학생' ? '' : currentUser.name);
                     }
                   }}
                   className="sr-only peer"

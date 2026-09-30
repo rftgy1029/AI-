@@ -14,6 +14,7 @@ import {
   getDocFromServer,
   arrayUnion,
   increment,
+  runTransaction,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -307,11 +308,20 @@ export async function toggleSuggestionLike(id: string, currentlyLiked: boolean):
   });
   saveLocalSuggestions(updated);
 
-  // 1. Primary Cloud Firestore sync (atomic increment so concurrent likes are not lost)
+  // 1. Primary Cloud Firestore sync (atomic so concurrent likes are not lost)
   try {
-    await updateDoc(doc(db, 'suggestions', id), {
-      likeCount: increment(currentlyLiked ? -1 : 1),
-    });
+    const docRef = doc(db, 'suggestions', id);
+    if (currentlyLiked) {
+      // Guarded decrement: never let the stored count drop below zero
+      await runTransaction(db, async (tx) => {
+        const snap = await tx.get(docRef);
+        if (!snap.exists()) return;
+        const count = Number(snap.data().likeCount) || 0;
+        tx.update(docRef, { likeCount: Math.max(0, count - 1) });
+      });
+    } else {
+      await updateDoc(docRef, { likeCount: increment(1) });
+    }
   } catch (err) {
     console.warn('[Like] Firestore update failed:', err);
   }

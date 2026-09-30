@@ -12,6 +12,8 @@ import {
   query,
   orderBy,
   getDocFromServer,
+  arrayUnion,
+  increment,
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import firebaseConfig from '../../firebase-applet-config.json';
@@ -305,10 +307,10 @@ export async function toggleSuggestionLike(id: string, currentlyLiked: boolean):
   });
   saveLocalSuggestions(updated);
 
-  // 1. Primary Cloud Firestore sync
+  // 1. Primary Cloud Firestore sync (atomic increment so concurrent likes are not lost)
   try {
     await updateDoc(doc(db, 'suggestions', id), {
-      likeCount: newCount,
+      likeCount: increment(currentlyLiked ? -1 : 1),
     });
   } catch (err) {
     console.warn('[Like] Firestore update failed:', err);
@@ -421,10 +423,10 @@ export async function addCommentToSuggestion(
   });
   saveLocalSuggestions(updated);
 
-  // 1. Primary Cloud Firestore update
+  // 1. Primary Cloud Firestore update (arrayUnion so other users' concurrent comments are not overwritten)
   try {
     await updateDoc(doc(db, 'suggestions', suggestionId), {
-      comments: cleanUndefined(updatedComments),
+      comments: arrayUnion(cleanUndefined(comment)),
     });
   } catch (err) {
     console.warn('[Comment] Firestore update failed:', err);

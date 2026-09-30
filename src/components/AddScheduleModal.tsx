@@ -67,6 +67,7 @@ export default function AddScheduleModal({
     // Reset and close
     setTitle('');
     setDescription('');
+    setErrorMsg('');
     onClose();
   };
 

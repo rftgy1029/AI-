@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import {
   X,
   ThumbsUp,
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SuggestionItem, UserProfile, SuggestionCategory, SuggestionStatus } from '../types';
+import { getKSTDateString, toKSTDateString } from '../utils/datetime';
 
 interface SuggestionDetailModalProps {
   suggestion: SuggestionItem | null;
@@ -100,6 +101,20 @@ export default function SuggestionDetailModal({
   const [replyContent, setReplyContent] = useState('');
   const [replyStatus, setReplyStatus] = useState<'검토중' | '답변완료'>('답변완료');
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+
+  // Reset per-post UI state when another post is opened (or the modal closes),
+  // so an edit form / PIN / reply draft from the previous post never carries over
+  useEffect(() => {
+    setIsEditing(false);
+    setShowDeletePrompt(false);
+    setDeletePin('');
+    setDeleteError('');
+    setShowReplyForm(false);
+    setReplyContent('');
+    setCustomDepartment('');
+    setPreviewImage(null);
+    setCommentText('');
+  }, [suggestion?.id]);
 
   const handleStartEdit = () => {
     if (!suggestion) return;
@@ -240,7 +255,7 @@ export default function SuggestionDetailModal({
         {
           author: finalAuthor,
           content: replyContent.trim(),
-          date: new Date().toISOString().slice(0, 10),
+          date: getKSTDateString(),
         },
         replyStatus
       );
@@ -501,7 +516,7 @@ export default function SuggestionDetailModal({
                       <div className="flex items-center gap-3 text-[11px] text-slate-400">
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3.5 h-3.5" />
-                          {suggestion.createdAt.slice(0, 10)}
+                          {toKSTDateString(suggestion.createdAt)}
                         </span>
                         {suggestion.viewCount !== undefined && (
                           <span className="flex items-center gap-1">
@@ -757,7 +772,7 @@ export default function SuggestionDetailModal({
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-[10px] text-slate-400">
-                          {cmt.createdAt.slice(0, 10)}
+                          {toKSTDateString(cmt.createdAt)}
                         </span>
                         {isAdmin && (
                           <button

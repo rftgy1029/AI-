@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { SuggestionItem, SuggestionCategory, SuggestionStatus, UserProfile } from '../types';
+import { toKSTDateString } from '../utils/datetime';
 import CreateSuggestionModal from './CreateSuggestionModal';
 import SuggestionDetailModal from './SuggestionDetailModal';
 
@@ -474,7 +475,7 @@ export default function SuggestionBoardSection({
                     {/* Card Footer: Date, Stats, Upvote button, Admin Delete */}
                     <div className="flex items-center justify-between pt-2 border-t border-black/[0.03] text-xs text-slate-400">
                       <span className="text-[11px]">
-                        {item.createdAt.slice(0, 10)}
+                        {toKSTDateString(item.createdAt)}
                       </span>
 
                       <div className="flex items-center gap-2.5 sm:gap-3">
